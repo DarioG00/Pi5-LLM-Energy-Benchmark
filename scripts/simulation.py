@@ -51,12 +51,8 @@ class FakeOtii:
         }
 
 
-_PERF = (
-    "llama_perf_context_print: prompt eval time = 120.00 ms / 24 tokens "
-    "( 5.00 ms per token, 200.00 tokens per second)\n"
-    "llama_perf_context_print:        eval time = 800.00 ms / 64 runs "
-    "( 12.50 ms per token, 80.00 tokens per second)\n"
-)
+# Formato compatto come quello emesso dal build di llama.cpp in uso.
+_PERF = "Prompt: 200.00 t/s | Generation: 80.00 t/s\n"
 
 
 class FakeSSH:

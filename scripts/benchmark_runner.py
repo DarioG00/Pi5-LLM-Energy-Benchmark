@@ -22,7 +22,7 @@ from typing import List, Optional
 from . import scoring
 from . import thermal
 from .datasets_loader import Sample, load_all
-from .llama_parser import parse_timings, extract_response, estimate_tokens
+from .llama_parser import parse_timings, extract_response
 
 log = logging.getLogger("runner")
 
@@ -167,7 +167,9 @@ class BenchmarkRunner:
             energy = self.otii.window_energy(rec, t0, t1)
             response = extract_response(raw, s.prompt)
             ptim = parse_timings(raw)
-            gen_tokens = ptim.get("gen_tokens") or estimate_tokens(response)
+            # Il formato compatto dei t/s non riporta il numero di token: si
+            # approssima con n_predict (-n), ossia il massimo di token generati.
+            gen_tokens = ptim.get("gen_tokens") or llama_cfg.get("n_predict", 128)
             meta = dict(s.meta)
             meta.setdefault("prompt", s.prompt)
             sc = scoring.score(s.btype, response, s.expected, meta)

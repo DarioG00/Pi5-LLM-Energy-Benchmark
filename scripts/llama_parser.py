@@ -4,8 +4,16 @@ from __future__ import annotations
 import re
 from typing import Optional
 
-# Funziona sia con i vecchi "llama_print_timings:" sia con i nuovi
-# "llama_perf_context_print:".
+# Formato compatto effettivamente prodotto dal build di llama.cpp in uso, es.:
+#   "Prompt: 200.00 t/s | Generation: 80.00 t/s"
+# (gestisce anche la virgola come separatore decimale).
+_COMPACT_RE = re.compile(
+    r"Prompt:\s*([\d.,]+)\s*t/s\s*\|\s*Generation:\s*([\d.,]+)\s*t/s",
+    re.IGNORECASE,
+)
+
+# Fallback per il formato classico ("llama_print_timings:" /
+# "llama_perf_context_print:"), che fornisce anche il conteggio dei token.
 _PROMPT_RE = re.compile(
     r"(?:prompt eval time)\s*=\s*([\d.]+)\s*ms\s*/\s*(\d+)\s*tokens?.*?([\d.]+)\s*tokens per second",
     re.IGNORECASE | re.DOTALL,
@@ -17,10 +25,22 @@ _EVAL_RE = re.compile(
 _LOAD_RE = re.compile(r"load time\s*=\s*([\d.]+)\s*ms", re.IGNORECASE)
 
 
+def _to_float(s: Optional[str]) -> Optional[float]:
+    """Converte una stringa numerica in float gestendo la virgola decimale."""
+    if s is None:
+        return None
+    try:
+        return float(s.replace(",", "."))
+    except ValueError:
+        return None
+
+
 def parse_timings(text: str) -> dict:
     """Estrae prompt/gen tokens-per-second, token e tempi dall'output.
 
-    I campi mancanti vengono restituiti come None.
+    Prova prima il formato compatto del build in uso ("Prompt: x t/s |
+    Generation: y t/s") e, in subordine, il formato classico di llama.cpp
+    (che fornisce anche il numero di token). I campi mancanti restano None.
     """
     res = {
         "prompt_tps": None,
@@ -31,19 +51,29 @@ def parse_timings(text: str) -> dict:
         "gen_eval_ms": None,
         "load_ms": None,
     }
+
+    # 1) formato compatto (prioritario: è quello realmente emesso)
+    m = _COMPACT_RE.search(text)
+    if m:
+        res["prompt_tps"] = _to_float(m.group(1))
+        res["gen_tps"] = _to_float(m.group(2))
+
+    # 2) formato classico: completa i t/s mancanti e i conteggi di token
     m = _PROMPT_RE.search(text)
     if m:
-        res["prompt_eval_ms"] = float(m.group(1))
+        res["prompt_eval_ms"] = _to_float(m.group(1))
         res["prompt_tokens"] = int(m.group(2))
-        res["prompt_tps"] = float(m.group(3))
+        if res["prompt_tps"] is None:
+            res["prompt_tps"] = _to_float(m.group(3))
     m = _EVAL_RE.search(text)
     if m:
-        res["gen_eval_ms"] = float(m.group(1))
+        res["gen_eval_ms"] = _to_float(m.group(1))
         res["gen_tokens"] = int(m.group(2))
-        res["gen_tps"] = float(m.group(3))
+        if res["gen_tps"] is None:
+            res["gen_tps"] = _to_float(m.group(3))
     m = _LOAD_RE.search(text)
     if m:
-        res["load_ms"] = float(m.group(1))
+        res["load_ms"] = _to_float(m.group(1))
     return res
 
 
@@ -66,6 +96,9 @@ def extract_response(raw: str, prompt: str) -> str:
             continue
         # scarta le righe di log/diagnostica di llama.cpp
         if re.match(r"^(llama_|llm_|ggml_|main:|system_info|sampler|generate:|build:)", s):
+            continue
+        # scarta la riga compatta delle statistiche di velocità
+        if _COMPACT_RE.search(s):
             continue
         lines.append(line.rstrip())
     out = "\n".join(lines).strip()

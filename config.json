@@ -25,7 +25,7 @@
     "models_dir": "~/LLMs",
     "ctx_size": 512,
     "n_predict": 128,
-    "extra_args": ["-i", "--no-warmup"],
+    "extra_args": [],
     "ready_prompt": "> ",
     "load_timeout": 180,
     "infer_timeout": 240
