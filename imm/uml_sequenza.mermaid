@@ -1,0 +1,52 @@
+sequenceDiagram
+    autonumber
+    participant M as run_benchmark (main)
+    participant R as BenchmarkRunner
+    participant O as OtiiController
+    participant S as PiSSH
+    participant T as thermal
+    participant P as llama_parser
+    participant Sc as scoring
+    participant A as analysis
+
+    M->>R: load_samples()
+    R->>R: load_all(benchmarks)
+
+    M->>R: setup_hardware()
+    R->>O: connect()
+    R->>O: configure_power()  (5 V, limite corrente, canali)
+    R->>O: power_on()  (avvio boot del Pi)
+    R->>S: wait_for_boot_and_connect()
+    R->>S: open_shell()
+    R->>O: measure_idle_bias()
+
+    M->>R: run()
+    loop per modello x thread x ripetizione
+        opt cooldown_enabled
+            R->>T: wait_until_cool(ssh)
+            T->>S: measure_temp() / get_throttled_raw()
+        end
+        R->>O: new_project() / start_recording()
+        R->>S: launch_model(cmd)
+        Note over S: attende il prompt ">"
+        loop per ogni prompt dei 5 benchmark
+            R->>S: send_prompt(prompt)
+            Note over S: attende il prompt ">"
+            R->>T: read_state(ssh)
+            T->>S: measure_temp() / get_throttled_raw()
+        end
+        R->>S: stop_model()
+        R->>O: stop_recording()
+        R->>O: window_energy(rec, t0, t1)
+        R->>P: parse_timings() / extract_response()
+        R->>Sc: score(btype, response, expected)
+        Note over R: crea le righe (energia, J/token, latenza, score, temp)
+    end
+
+    M->>R: save_csv()
+    M->>A: run_analysis(csv)
+    A-->>M: grafici + tabelle aggregate
+
+    M->>R: teardown()
+    R->>S: stop_model() / close()
+    R->>O: power_off() / disconnect()
