@@ -1,6 +1,6 @@
 """Scoring semplice e per-benchmark della qualità delle risposte.
 
-Filosofia (scelta dall'utente): scoring di base automatico + revisione manuale
+Filosofia: scoring di base automatico + revisione manuale
 successiva. Ogni funzione restituisce un dizionario con:
   - score       : 0.0/1.0 (o frazione) confronto con l'atteso
   - confidence  : "high" se il match è affidabile, "low" se euristico
