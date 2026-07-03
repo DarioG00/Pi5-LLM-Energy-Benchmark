@@ -1,0 +1,68 @@
+\documentclass[12pt,a4paper]{report}
+
+\usepackage[italian]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{tabularx}
+\usepackage{textcomp}
+
+\title{Valutazione del consumo energetico di Large Language Model in dispositivi dell'Internet delle Cose}
+\author{Dario Guidi}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+
+    \includegraphics[width=0.8\textwidth]{imm/logo.png}
+    {\Large Dipartimento di Ingegneria dell'Informazione\par}
+    {\Large\bfseries Corso di Laurea in Ingegneria Informatica\par}
+
+    \vspace{1.0cm}
+
+    {\Huge\bfseries
+    Valutazione del consumo energetico di Large Language Model in dispositivi dell'Internet delle Cose
+    \par}
+
+    \vspace{2.5cm}
+
+    \begin{minipage}{0.45\textwidth}
+        \raggedright\Large\textbf{Candidato}\\[0.3cm]
+        Dario Guidi
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.45\textwidth}
+        \raggedleft\Large\textbf{Relatore}\\[0.3cm]
+        Prof.\ Alessio Vecchio
+    \end{minipage}
+
+    \vfill
+
+    {\Large
+    Anno Accademico 2025--2026
+    \par}
+
+\end{titlepage}
+
+\tableofcontents
+\clearpage
+
+\include{capitoli/intro}
+\include{capitoli/setup}
+\include{capitoli/esperimento}
+%\include{capitoli/risultati}
+%\include{capitoli/conclusioni}
+%\include{capitoli/ringraziamenti}
+
+\bibliographystyle{plain}
+\nocite{*}
+\bibliography{bibliografia}
+
+
+\end{document}

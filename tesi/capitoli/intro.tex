@@ -1,0 +1,113 @@
+\chapter{Introduzione}
+
+In questo capitolo introduttivo della tesi viene delineato uno dei temi più
+rilevanti legati all'utilizzo dell'intelligenza artificiale (IA), ovvero
+l'impatto energetico e ambientale dei \textit{Large Language Model (LLM)}.
+La tesi si inserisce nell'ambito della ricerca sull'IA sostenibile,
+concentrandosi sulla sperimentazione di una delle sue frontiere emergenti:
+il \textit{Green Edge AI}. Successivamente, vengono descritti gli obiettivi
+principali del lavoro.
+
+\section{Background e Motivazioni}
+
+Negli ultimi anni, l'utilizzo dei \textit{LLM} ha conosciuto una rapida
+diffusione, trovando applicazione in numerosi ambiti e scenari operativi.
+Questa crescita ha comportato un significativo incremento dei consumi
+energetici e ha imposto requisiti sempre più elevati alle infrastrutture
+di rete incaricate di gestire il crescente carico computazionale e di
+traffico.
+
+Un approccio innovativo proposto dalla ricerca consiste nello spostamento
+delle capacità di elaborazione intelligente dalle infrastrutture cloud verso
+dispositivi \textit{edge} e \textit{Internet of Things (IoT)}, avvicinando
+l'esecuzione dei modelli al dispositivo dell'utente finale. Tale paradigma,
+oltre a ridurre la dipendenza dalle infrastrutture cloud centralizzate,
+consente una maggiore tutela della privacy dei dati e una riduzione della
+latenza delle applicazioni.
+
+Questa evoluzione è resa possibile dallo sviluppo di tecniche di
+quantizzazione quali la \textit{Post-Training Quantization (PTQ)} e la
+\textit{Quantization-Aware Training (QAT)}, che permettono di ridurre la
+precisione numerica con cui vengono rappresentati i pesi delle reti neurali.
+In questo modo, dispositivi \textit{edge} e \textit{IoT}, caratterizzati da
+risorse computazionali e di memoria limitate, possono supportare l'esecuzione
+locale di LLM. Tuttavia, tali tecniche introducono generalmente una
+degradazione della qualità delle risposte generate dai modelli e non
+garantiscono necessariamente un miglioramento ottimale delle prestazioni
+di latenza.
+
+\section{Obiettivi della Tesi}
+
+La presente tesi propone un benchmark relativo a tre aspetti fondamentali
+dell'esecuzione locale di LLM quantizzati: \textit{efficienza energetica},
+\textit{qualità delle risposte} e \textit{latenza di inferenza}. La valutazione
+viene effettuata su sei LLM quantizzati mediante tecnica \textit{Post-Training
+Quantization (PTQ)}, eseguiti localmente su un dispositivo
+\textbf{Raspberry Pi 5 con 8 GB di RAM}.
+
+I modelli analizzati sono riportati nella Tabella~\ref{tab:llm}. Come si può
+osservare, sono state considerate tre differenti famiglie di modelli, per
+ciascuna delle quali sono stati valutati due livelli di quantizzazione:
+\textit{4-bit} e \textit{8-bit}. Inoltre, i modelli sono stati selezionati
+considerando tre differenti dimensioni in termini di numero di parametri:
+1.5 miliardi, 2 miliardi e 3 miliardi. In questo modo, la tesi fornisce una
+valutazione rappresentativa di una parte della gamma di dimensioni dei modelli
+LLM eseguibili su Raspberry Pi 5.
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{lcc}
+        \hline
+        Modello & Parametri & Livello di quantizzazione \\
+        \hline
+        Qwen2.5 & 1.5B & 4 bit \\
+        Qwen2.5 & 1.5B & 8 bit \\
+        Gemma2 & 2B & 4 bit \\
+        Gemma2 & 2B & 8 bit \\
+        Llama3.2 & 3B & 4 bit \\
+        Llama3.2 & 3B & 8 bit \\
+        \hline
+    \end{tabular}
+    \caption{\textit{LLM} quantizzati utilizzati nell'esperimento di tesi.}
+    \label{tab:llm}
+\end{table}
+
+Per ciascuno dei sei modelli vengono analizzati tre indicatori principali:
+l'\textit{efficienza energetica}, la \textit{qualità della risposta} generata e la \textit{latenza di
+inferenza}. La valutazione viene condotta mediante cinque differenti benchmark
+di inferenza, ciascuno rappresentato da un dataset standardizzato selezionato
+per analizzare specifiche capacità degli LLM in scenari caratterizzati da
+risorse computazionali limitate.
+
+I benchmark utilizzati sono:
+
+\begin{itemize}
+    \item \textit{CommonsenseQA}: benchmark finalizzato alla valutazione delle
+    capacità di ragionamento basate sul senso comune attraverso quesiti a
+    scelta multipla;
+
+    \item \textit{BIG-Bench Hard}: insieme di task complessi derivati dal
+    benchmark BIG-Bench, utilizzato per misurare capacità avanzate di
+    ragionamento e generalizzazione;
+
+    \item \textit{TruthfulQA}: benchmark progettato per valutare la
+    correttezza e l'affidabilità delle risposte generate dal modello in
+    presenza di domande soggette a misconcezioni o informazioni errate;
+
+    \item \textit{GSM8K}: benchmark composto da problemi matematici elementari
+    che richiedono ragionamento aritmetico articolato in più passaggi;
+
+    \item \textit{HumanEval}: benchmark per la valutazione della generazione
+    automatica di codice tramite esercizi di programmazione verificati
+    attraverso apposite suite di test.
+\end{itemize}
+
+Infine, considerando l'architettura quad-core del processore del Raspberry Pi 5,
+la valutazione viene estesa anche allo studio dell'effetto del parallelismo
+nell'inferenza. Per ciascun modello vengono quindi analizzate tre configurazioni
+relative al numero di thread di esecuzione (1, 2 e 4 thread), con l'obiettivo
+di studiare la relazione tra grado di parallelismo, consumo energetico e
+latenza di inferenza.
+
+Nel capitolo successivo viene descritto il setup sperimentale adottato per
+l'acquisizione delle misure considerate nell'analisi.

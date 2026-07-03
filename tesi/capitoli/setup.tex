@@ -1,0 +1,169 @@
+\chapter{Setup sperimentale}
+
+Questo capitolo descrive l'ambiente sperimentale utilizzato per la valutazione
+dell'esecuzione locale di LLM quantizzati su Raspberry Pi 5.
+
+Le metriche di analisi adottate nel dettaglio e le procedure sperimentali per
+l'esecuzione dei benchmark vengono descritte nel capitolo successivo a questo.
+
+\section{Configurazione hardware}
+
+Oltre al Raspberry Pi 5 e al computer host per le misurazioni, vediamo gli accessori
+hardware fondamentali da tenere conto.
+
+\subsection{Qoitech Otii Arc}
+Per effettuare il monitoraggio del consumo energetico del sistema, è stato
+utilizzato il power monitor \textit{Otii Arc}, prodotto da \textit{Qoitech}.
+Questo strumento consente di monitorare e registrare il consumo energetico di
+dispositivi elettronici, fornendo informazioni dettagliate sull'andamento
+nel tempo di tensione, corrente e potenza assorbita.
+
+Il monitoraggio di Otii Arc avviene tramite computer host collegato con
+l'interfaccia USB, utilizzando il software \textit{Otii 3 Desktop App}
+che consente la visualizzazione in tempo reale delle grandezze elettriche
+misurate. Inoltre, il software permette di esportare i dati acquisiti per
+successive analisi energetiche.
+
+Per alimentare il Raspberry Pi 5, l'Otii Arc viene collegato tramite i
+connettori a banana (+) e (-) ai pin dell'interfaccia \textit{GPIO}
+(\textit{General Purpose Input/Output}). La scheda è quella mostrata in
+Figura~\ref{fig:GPIO}. I piedini \textit{pin 2} e \textit{pin 6} dell'interfaccia
+GPIO vengono utilizzati rispettivamente per fornire la tensione di alimentazione
+(5 V) e il riferimento di massa (GND). Il connettore positivo (+) dell'Otii Arc
+deve quindi essere collegato al \textit{pin 2} del GPIO, mentre il connettore
+negativo (-) deve essere collegato al \textit{pin 6}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1.0\textwidth]{imm/GPIO_pinout.png}
+    \caption{Piedini GPIO del Raspberry Pi 5.}
+    \label{fig:GPIO}
+\end{figure}
+
+Dal momento che il Raspberry Pi 5 richiede una tensione di alimentazione pari a 5 V
+e può richiedere, in condizioni di carico elevato, correnti superiori alla corrente
+massima erogabile dall'Otii Arc, è necessario utilizzare un'alimentazione esterna.
+Infatti, l'Otii Arc è in grado di erogare una corrente continua massima di 2,4 A;\@
+per supportare assorbimenti superiori, il dispositivo deve essere alimentato mediante
+un alimentatore esterno in corrente continua (DC), collegato all'apposito ingresso di
+alimentazione. Questa configurazione consente di mantenere il monitoraggio delle
+grandezze elettriche del Raspberry Pi 5 durante le misurazioni, evitando interruzioni
+o spegnimenti dovuti a un'alimentazione insufficiente.
+
+\subsection{Ventola di raffreddamento}
+Il Raspberry Pi 5 è dotato di una \textit{ventola di raffreddamento attiva},
+integrata nel case utilizzato per gli esperimenti e alimentata tramite il
+connettore a quattro pin contrassegnato dalla dicitura ``FAN'' sulla scheda.
+La presenza del sistema di raffreddamento consente di mantenere la temperatura
+operativa del dispositivo entro valori adeguati durante l'esecuzione di carichi
+computazionali intensivi.
+
+\subsection{Connessione via Ethernet}
+
+Per consentire la comunicazione tra il Raspberry Pi 5 e il computer host,
+è stato utilizzato un collegamento di rete tramite cavo Ethernet. Tale
+configurazione permette di accedere al dispositivo mediante protocollo \textit{SSH},
+consentendo l'esecuzione remota dei comandi e delle inferenze LLM.\@
+
+Per semplificare l'accesso remoto, il Raspberry Pi 5 è stato configurato con un
+indirizzo \textit{IP statico}. A differenza di una configurazione basata su protocollo
+\textit{DHCP}, che può assegnare un indirizzo IP differente a ogni connessione,
+questa soluzione garantisce che il dispositivo sia sempre raggiungibile allo stesso
+indirizzo, rendendo più affidabile l'automazione degli esperimenti e l'esecuzione degli
+script di acquisizione.
+
+La scelta di una connessione cablata è inoltre motivata dalla necessità di
+garantire condizioni sperimentali il più possibile controllate e riproducibili.
+Rispetto a una connessione Wi-Fi, il collegamento Ethernet presenta infatti un
+comportamento più stabile e prevedibile, riducendo la variabilità del carico di
+rete e del consumo energetico dovuta a interferenze, fluttuazioni del segnale o
+ad altre attività del sottosistema wireless. In questo modo è possibile ottenere
+una stima più accurata del consumo energetico attribuibile esclusivamente
+all'esecuzione dei modelli quantizzati.
+
+La maggiore stabilità del consumo del sistema in condizioni di inattività
+(\textit{idle}) consente inoltre di utilizzare tale valore come riferimento per
+stimare con maggiore accuratezza il consumo energetico aggiuntivo introdotto dal
+processo di inferenza, riducendo l'influenza di fattori esterni non direttamente
+correlati all'esecuzione dei modelli.
+
+\section{Configurazione software}
+
+\subsection{Software del Raspberry Pi 5}
+
+Sul Raspberry Pi 5 è stato installato il sistema operativo \textbf{Raspberry Pi OS (64-bit)}
+su una scheda microSD da 32 GB, utilizzata come memoria di archiviazione principale.
+Durante la fase di avvio, il sistema operativo viene caricato dalla microSD, fornendo
+l'ambiente software necessario per l'esecuzione dei sei modelli quantizzati discussi
+nel Capitolo 1.
+
+Per l'inferenza dei modelli è stato adottato il framework \textbf{\texttt{llama.cpp}},
+progettato per consentire l'esecuzione efficiente di Large Language Models anche su dispositivi
+caratterizzati da risorse computazionali limitate. La scelta di questo framework è motivata
+dalla possibilità di eseguire modelli quantizzati in modo ottimizzato, configurare il numero
+di thread impiegati durante l'inferenza e gestire l'esecuzione tramite interfaccia a riga di comando.
+Inoltre, rispetto ad altri framework esistenti, offre una maggiore flessibilità nella selezione dei modelli
+quantizzati supportati.
+
+\subsection{Software del computer host}
+
+Sul computer host, con sistema operativo Windows 11 (64-bit, Intel), oltre all'applicazione desktop
+\textit{Otii 3 Desktop App}, utilizzata per la visualizzazione tramite interfaccia grafica dei
+parametri energetici, è stato impiegato anche \textit{Otii Automation Toolbox}. Questa licenza
+software estende le funzionalità dell'ambiente Otii introducendo meccanismi di automazione basati
+su script.
+
+In particolare, la licenza rende disponibile \textit{Otii Server}, un servizio che consente
+di integrare il sistema di acquisizione all'interno di procedure di test automatizzate.
+Otii Server può essere eseguito sia come componente integrato in Otii 3 Desktop App sia come
+applicazione server dedicata. Ai fini dell'esperimento è sufficiente utilizzare una sola delle
+due modalità, poiché le due istanze non possono essere eseguite contemporaneamente sullo
+stesso computer.
+
+L'automazione delle misurazioni avviene tramite le API messe a disposizione da Otii Server
+(\textit{Otii TCP Server API}), che consentono il controllo programmabile del dispositivo
+Otii Arc e la sua integrazione con script sviluppati in diversi linguaggi di programmazione,
+tra cui Python.
+
+Nel contesto di questa tesi è stato sviluppato uno script in linguaggio Python per automatizzare
+l'intera procedura sperimentale. In particolare, lo script esegue le seguenti operazioni:
+\begin{itemize}
+    \item configurazione iniziale dello strumento Otii Arc;
+    \item impostazione dei parametri di acquisizione;
+    \item avvio e arresto automatico delle misurazioni;
+    \item esecuzione automatica dell'inferenza dei modelli quantizzati;
+    \item acquisizione e memorizzazione dei dati sperimentali;
+    \item elaborazione delle misure raccolte per il calcolo delle metriche relative
+        al consumo energetico, alle prestazioni e alla qualità delle risposte;
+    \item generazione automatica dei grafici impiegati nell'analisi comparativa dei risultati sperimentali.
+\end{itemize}
+
+Lo script viene eseguito sul computer host all'interno di un ambiente virtuale Python
+isolato (\texttt{venv}), nel quale le dipendenze necessarie sono installate a versioni
+fissate tramite il file \texttt{requirements.txt}.\footnote{Le dipendenze possono essere
+installate con il comando \texttt{pip install -r requirements.txt}.} L'adozione di un
+ambiente isolato con dipendenze versionate contribuisce alla riproducibilità
+dell'esperimento.
+
+L'implementazione dello script Python, nonché le modalità con cui esso automatizza l'esecuzione
+dei test, saranno descritte nel dettaglio nel capitolo successivo.
+
+L'architettura \textit{hardware} finale del sistema di acquisizione automatizzato è illustrata
+in Figura~\ref{fig:hw_architecture}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{./imm/hw_architecture.png}
+    \caption{Architettura hardware del sistema di acquisizione automatizzato.}
+    \label{fig:hw_architecture}
+\end{figure}
+
+L'architettura \textit{software} finale del sistema di acquisizione automatizzato è illustrata
+in Figura~\ref{fig:sw_architecture}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{./imm/sw_architecture.png}
+    \caption{Architettura software del sistema di acquisizione automatizzato.}
+    \label{fig:sw_architecture}
+\end{figure}
