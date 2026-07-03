@@ -68,7 +68,10 @@ quanto il dispositivo produce ciascun token con un dispendio energetico minore.
 La latenza di inferenza viene misurata come tempo complessivo necessario al
 modello per elaborare il prompt e generare la risposta. Tale tempo viene rilevato
 direttamente dal computer host come intervallo \textit{wall-clock} tra l'invio del
-prompt al Raspberry Pi 5 e il completamento della generazione.
+prompt al Raspberry Pi 5 e il completamento della generazione. Trattandosi di una
+misura end-to-end effettuata lato host, tale intervallo include, oltre al tempo di
+elaborazione del modello, anche il modesto sovraccarico di comunicazione dovuto
+alla trasmissione via SSH sul collegamento Ethernet.
 
 A complemento della latenza assoluta, vengono raccolte le statistiche prodotte da
 \texttt{llama.cpp} al termine di ogni inferenza, che distinguono due fasi
