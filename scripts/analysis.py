@@ -64,6 +64,7 @@ def per_config(df: pd.DataFrame) -> pd.DataFrame:
                 energy_net_j=("energy_net_j", "mean"),
                 j_per_token=("j_per_token", "mean"),
                 avg_power_w=("avg_power_w", "mean"),
+                prompt_tps=("prompt_tps", "mean"),
                 gen_tps=("gen_tps", "mean"),
                 score=("score", "mean"))
            .reset_index())
@@ -123,6 +124,19 @@ def plot_power(cfg_df, out):
     ax.set_title("Potenza media assorbita (W) per modello e thread")
     ax.set_xlabel(""); ax.set_ylabel("Potenza media (W)")
     ax.tick_params(axis="x", rotation=20)
+    _save(fig, out)
+
+
+def plot_throughput(cfg_df, out):
+    fig, axes = plt.subplots(1, 2, figsize=(15, 6))
+    sns.barplot(data=cfg_df, x="model", y="prompt_tps", hue="threads", ax=axes[0])
+    axes[0].set_title("Prompt processing (t/s) per modello e thread")
+    axes[0].set_xlabel(""); axes[0].set_ylabel("token/s")
+    axes[0].tick_params(axis="x", rotation=20)
+    sns.barplot(data=cfg_df, x="model", y="gen_tps", hue="threads", ax=axes[1])
+    axes[1].set_title("Generation (t/s) per modello e thread")
+    axes[1].set_xlabel(""); axes[1].set_ylabel("token/s")
+    axes[1].tick_params(axis="x", rotation=20)
     _save(fig, out)
 
 
@@ -194,6 +208,7 @@ def run_analysis(csv_path: str, cfg: dict, base_dir: str = ".") -> None:
     plot_latency(cfgv, os.path.join(plots_dir, "latency.png"))
     plot_quality(agg, os.path.join(plots_dir, "quality_heatmap.png"))
     plot_power(cfgv, os.path.join(plots_dir, "power.png"))
+    plot_throughput(cfgv, os.path.join(plots_dir, "throughput.png"))
     plot_tradeoff(cfgv, os.path.join(plots_dir, "tradeoff.png"))
     plot_composite(comp, os.path.join(plots_dir, "ranking_composite.png"))
     plot_thermal(df, os.path.join(plots_dir, "thermal.png"))

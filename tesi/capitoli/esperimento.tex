@@ -339,13 +339,14 @@ Figura~\ref{fig:sw_architecture}. I componenti principali sono:
     \item modulo di \textbf{analisi}: aggrega i dati e genera i grafici comparativi.
 \end{itemize}
 
-L'organizzazione a classi dei componenti principali e le relazioni tra di essi
-sono riassunte nel diagramma UML di Figura~\ref{fig:uml_classi}, che evidenzia
-il ruolo centrale di orchestrazione della classe \texttt{BenchmarkRunner}.
+Ciascun modulo è realizzato da una o più classi Python: l'organizzazione
+complessiva e le relazioni tra di esse sono riassunte nel diagramma UML di
+Figura~\ref{fig:uml_classi}, che evidenzia il ruolo centrale di orchestrazione
+della classe \texttt{BenchmarkRunner}.
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=\textwidth]{imm/uml_classi.png}
+    \includegraphics[width=\textwidth,height=0.85\textheight,keepaspectratio]{imm/uml_classi.png}
     \caption{Diagramma delle classi dello script di automazione.}
     \label{fig:uml_classi}
 \end{figure}
@@ -370,7 +371,8 @@ mediante le librerie \texttt{pandas} (per l'aggregazione e la media sulle
 ripetizioni), \texttt{seaborn} e \texttt{matplotlib} (per la visualizzazione) e
 \texttt{scikit-learn} (per la normalizzazione delle metriche). A partire dal file
 CSV vengono generati i grafici relativi all'efficienza energetica, alla latenza,
-alla potenza media assorbita e alla qualità delle risposte, per ciascun modello e
+alla potenza media assorbita, alla velocità di elaborazione (prompt processing e
+generation, in token/s) e alla qualità delle risposte, per ciascun modello e
 configurazione di thread, oltre a un grafico riassuntivo del compromesso tra
 efficienza energetica e qualità.
 

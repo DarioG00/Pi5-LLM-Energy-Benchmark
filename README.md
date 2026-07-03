@@ -24,8 +24,16 @@ Il PC host orchestra tutto:
 
 ## Modelli (6)
 
-gemma-2-2b-it, Llama-3.2-3B-Instruct, qwen2.5-1.5b-instruct, ciascuno in Q4_K_M
-e Q8_0.
+Tre famiglie, ciascuna in due livelli di quantizzazione (Q4_K_M e Q8_0):
+
+| Modello | Quant. | Dimensione su disco |
+|---|---|---|
+| qwen2.5-1.5b-instruct | Q4_K_M | 1,12 GB |
+| qwen2.5-1.5b-instruct | Q8_0   | 1,89 GB |
+| gemma-2-2b-it         | Q4_K_M | 1,71 GB |
+| gemma-2-2b-it         | Q8_0   | 2,78 GB |
+| Llama-3.2-3B-Instruct | Q4_K_M | 2,02 GB |
+| Llama-3.2-3B-Instruct | Q8_0   | 3,42 GB |
 
 Comando di lancio (per configurazione):
 
@@ -63,6 +71,7 @@ scripts/
   analysis.py               aggregazione e grafici (pandas/seaborn/scikit-learn)
   simulation.py             backend simulati per il dry-run (--simulate)
 recordings/                 progetti Otii, CSV risultati, raw, plots
+imm/                        schemi (hardware, software) e diagrammi UML
 ```
 
 ## Metriche
@@ -72,8 +81,9 @@ recordings/                 progetti Otii, CSV risultati, raw, plots
   inferenza (canale Main Power `mp` dell'Otii). Il numero di token generati non
   è riportato dal formato di output compatto di llama.cpp, quindi viene
   **approssimato con `n_predict`** (il massimo impostato da `-n`, cioè 128).
-- **Latenza**: tempo wall-clock dell'inferenza (misurato dall'host) più le
-  statistiche `prompt processing` e `generation` (token/s). Il parser riconosce
+- **Latenza**: tempo wall-clock dell'inferenza misurato dall'host (misura
+  end-to-end: include anche il modesto overhead di comunicazione SSH/Ethernet),
+  più le statistiche `prompt processing` e `generation` (token/s). Il parser riconosce
   il formato compatto realmente emesso dal build in uso
   (`Prompt: <x> t/s | Generation: <y> t/s`, con virgola o punto decimale) e, in
   subordine, il formato classico di llama.cpp.
@@ -138,8 +148,9 @@ Output principali:
   benchmark, campione) con energia netta, latenza, token, J/token, prompt/gen
   t/s, score, temperatura e stato di throttling;
 - `recordings/raw/aggregated_by_benchmark.csv`, `recordings/raw/ranking_composite.csv`;
-- `recordings/plots/*.png` — efficienza (J/token), latenza, potenza, qualità
-  (heatmap), trade-off efficienza/qualità, classifica composita e termico.
+- `recordings/plots/*.png` — efficienza (J/token), latenza, potenza, throughput
+  (prompt processing e generation, t/s), qualità (heatmap), trade-off
+  efficienza/qualità, classifica composita e termico.
 
 ## Note operative
 
