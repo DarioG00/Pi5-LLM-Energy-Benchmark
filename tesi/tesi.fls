@@ -209,11 +209,6 @@ INPUT ./capitoli/setup.tex
 INPUT capitoli/setup.tex
 INPUT c:/texlive/2026/texmf-dist/fonts/tfm/jknappen/ec/ecrm1440.tfm
 INPUT c:/texlive/2026/texmf-dist/fonts/tfm/jknappen/ec/ecbx1440.tfm
-INPUT ./imm/GPIO_pinout.png
-INPUT ./imm/GPIO_pinout.png
-INPUT ./imm/GPIO_pinout.png
-INPUT ./imm/GPIO_pinout.png
-INPUT ./imm/GPIO_pinout.png
 INPUT c:/texlive/2026/texmf-dist/fonts/tfm/jknappen/ec/ectt1200.tfm
 INPUT c:/texlive/2026/texmf-dist/fonts/tfm/jknappen/ec/ecrm0800.tfm
 INPUT c:/texlive/2026/texmf-dist/fonts/tfm/jknappen/ec/ecrm1000.tfm

@@ -2,7 +2,7 @@
 
 Riproducono l'interfaccia di OtiiController e PiSSH usata da BenchmarkRunner,
 generando dati sintetici plausibili. Utile per validare la pipeline e l'analisi
-prima di collegare l'Otii Arc e il Raspberry Pi.
+prima di collegare l'Otii Ace Pro e il Raspberry Pi.
 """
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ class FakeOtii:
         self.cfg = cfg_otii
         self.idle_power_w = 2.6
         self._t0 = time.monotonic()
-        self.id = "SIM-ARC"
+        self.id = "SIM-ACE"
 
     def connect(self): pass
     def configure_power(self): pass

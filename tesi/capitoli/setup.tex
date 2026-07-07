@@ -11,44 +11,33 @@ l'esecuzione dei benchmark vengono descritte nel capitolo successivo a questo.
 Oltre al Raspberry Pi 5 e al computer host per le misurazioni, vediamo gli accessori
 hardware fondamentali da tenere conto.
 
-\subsection{Qoitech Otii Arc}
+\subsection{Qoitech Otii Ace Pro}
 Per effettuare il monitoraggio del consumo energetico del sistema, è stato
-utilizzato il power monitor \textit{Otii Arc}, prodotto da \textit{Qoitech}.
+utilizzato il power monitor \textit{Otii Ace Pro}, prodotto da \textit{Qoitech}.
 Questo strumento consente di monitorare e registrare il consumo energetico di
 dispositivi elettronici, fornendo informazioni dettagliate sull'andamento
 nel tempo di tensione, corrente e potenza assorbita.
 
-Il monitoraggio di Otii Arc avviene tramite computer host collegato con
+Il monitoraggio di Otii Ace Pro avviene tramite computer host collegato con
 l'interfaccia USB, utilizzando il software \textit{Otii 3 Desktop App}
 che consente la visualizzazione in tempo reale delle grandezze elettriche
 misurate. Inoltre, il software permette di esportare i dati acquisiti per
 successive analisi energetiche.
 
-Per alimentare il Raspberry Pi 5, l'Otii Arc viene collegato tramite i
-connettori a banana (+) e (-) ai pin dell'interfaccia \textit{GPIO}
-(\textit{General Purpose Input/Output}). La scheda è quella mostrata in
-Figura~\ref{fig:GPIO}. I piedini \textit{pin 2} e \textit{pin 6} dell'interfaccia
-GPIO vengono utilizzati rispettivamente per fornire la tensione di alimentazione
-(5 V) e il riferimento di massa (GND). Il connettore positivo (+) dell'Otii Arc
-deve quindi essere collegato al \textit{pin 2} del GPIO, mentre il connettore
-negativo (-) deve essere collegato al \textit{pin 6}.
+Per alimentare il Raspberry Pi 5, l'Otii Ace Pro viene collegato direttamente
+alla porta di alimentazione \textit{USB-C} del dispositivo tramite l'apposito
+cavo, erogando una tensione di 5,1 V (in linea con l'alimentatore ufficiale del Raspberry Pi 5), che compensa la caduta lungo il cavo e porta ai capi della scheda i 5 V richiesti. In questo modo
+l'intera alimentazione del Raspberry Pi 5 transita attraverso lo strumento, che
+ne misura in tempo reale tensione, corrente e potenza assorbita, sfruttando al
+contempo le protezioni integrate sull'ingresso di alimentazione della scheda.
 
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=1.0\textwidth]{imm/GPIO_pinout.png}
-    \caption{Piedini GPIO del Raspberry Pi 5.}
-    \label{fig:GPIO}
-\end{figure}
-
-Dal momento che il Raspberry Pi 5 richiede una tensione di alimentazione pari a 5 V
-e può richiedere, in condizioni di carico elevato, correnti superiori alla corrente
-massima erogabile dall'Otii Arc, è necessario utilizzare un'alimentazione esterna.
-Infatti, l'Otii Arc è in grado di erogare una corrente continua massima di 2,4 A;\@
-per supportare assorbimenti superiori, il dispositivo deve essere alimentato mediante
-un alimentatore esterno in corrente continua (DC), collegato all'apposito ingresso di
-alimentazione. Questa configurazione consente di mantenere il monitoraggio delle
-grandezze elettriche del Raspberry Pi 5 durante le misurazioni, evitando interruzioni
-o spegnimenti dovuti a un'alimentazione insufficiente.
+L'Otii Ace Pro è in grado di erogare una corrente continua fino a 5 A, valore
+sufficiente a sostenere anche i picchi di assorbimento del Raspberry Pi 5 in
+condizioni di carico computazionale intenso. Non è quindi necessaria alcuna
+alimentazione esterna aggiuntiva: lo strumento alimenta direttamente il
+dispositivo e ne mantiene al contempo il monitoraggio continuo delle grandezze
+elettriche, senza interruzioni o spegnimenti dovuti a un'alimentazione
+insufficiente.
 
 \subsection{Ventola di raffreddamento}
 Il Raspberry Pi 5 è dotato di una \textit{ventola di raffreddamento attiva},
@@ -122,13 +111,13 @@ stesso computer.
 
 L'automazione delle misurazioni avviene tramite le API messe a disposizione da Otii Server
 (\textit{Otii TCP Server API}), che consentono il controllo programmabile del dispositivo
-Otii Arc e la sua integrazione con script sviluppati in diversi linguaggi di programmazione,
+Otii Ace Pro e la sua integrazione con script sviluppati in diversi linguaggi di programmazione,
 tra cui Python.
 
 Nel contesto di questa tesi è stato sviluppato uno script in linguaggio Python per automatizzare
 l'intera procedura sperimentale. In particolare, lo script esegue le seguenti operazioni:
 \begin{itemize}
-    \item configurazione iniziale dello strumento Otii Arc;
+    \item configurazione iniziale dello strumento Otii Ace Pro;
     \item impostazione dei parametri di acquisizione;
     \item avvio e arresto automatico delle misurazioni;
     \item esecuzione automatica dell'inferenza dei modelli quantizzati;

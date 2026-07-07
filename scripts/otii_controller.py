@@ -1,4 +1,4 @@
-"""Controllo dell'Otii Arc tramite l'API TCP (otii_tcp_client).
+"""Controllo dell'Otii Ace Pro tramite l'API TCP (otii_tcp_client).
 
 Gestisce: connessione al TCP server, configurazione dell'alimentazione
 (5 V, limite di corrente), abilitazione dei canali di misura, accensione del
@@ -23,9 +23,10 @@ log = logging.getLogger("otii")
 class OtiiConfig:
     host: str = "127.0.0.1"
     port: int = 1905
-    main_voltage: float = 5.0
+    main_voltage: float = 5.1
     supply_current: float = 2.4
     max_current: float = 5.0
+    current_range: str = "high"   # "high" = high range fissa; "low" = auto-range
     channels: tuple = ("mc", "mv", "mp")
     power_channel: str = "mp"
     samplerate: int = 4000
@@ -42,7 +43,7 @@ class OtiiConfig:
 
 
 class OtiiController:
-    """Wrapper di alto livello sull'Otii Arc."""
+    """Wrapper di alto livello sull'Otii Ace Pro."""
 
     def __init__(self, cfg: OtiiConfig):
         self.cfg = cfg
@@ -61,7 +62,7 @@ class OtiiController:
         self.otii = self._client.connect(host=self.cfg.host, port=self.cfg.port)
         devices = self.otii.get_devices()
         if not devices:
-            raise RuntimeError("Nessun dispositivo Otii Arc trovato dal TCP server.")
+            raise RuntimeError("Nessun dispositivo Otii Ace Pro trovato dal TCP server.")
         self.device = devices[0]
         log.info("Dispositivo Otii selezionato: %s", getattr(self.device, "name", self.device.id))
 
@@ -69,8 +70,8 @@ class OtiiController:
         """Imposta 5 V, limite di corrente e abilita i canali di misura.
 
         Il Pi 5 può avere picchi fino a ~5 A in carico: il limite (max_current)
-        viene quindi alzato a 5 A per non interrompere l'alimentazione, mentre il
-        valore nominale di corrente del generatore resta a 2.4 A.
+        viene quindi impostato a 5 A, valore che l'Otii Ace Pro è in grado di
+        erogare direttamente senza alimentazione esterna.
         """
         dev = self.device
         dev.set_main_voltage(self.cfg.main_voltage)
@@ -81,6 +82,12 @@ class OtiiController:
         except Exception:  # non tutte le firmware espongono il comando in CV
             log.debug("set_main_current non applicabile in questa modalità")
         dev.set_max_current(self.cfg.max_current)
+        # Forza la portata di misura: "high" = high range (nessuna commutazione
+        # di shunt, alimentazione stabile per il boot del Pi 5); "low" = auto-range.
+        try:
+            dev.set_range(self.cfg.current_range)
+        except Exception:
+            log.debug("set_range non applicabile in questa firmware")
         for ch in self.cfg.channels:
             dev.enable_channel(ch, True)
             try:

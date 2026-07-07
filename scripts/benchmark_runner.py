@@ -1,7 +1,7 @@
 """Orchestratore del benchmark energetico LLM su Raspberry Pi 5.
 
 Flusso completo:
-  1. configura e accende l'Otii Arc (5 V, limite di corrente);
+  1. configura e accende l'Otii Ace Pro (5 V, limite di corrente);
   2. alimenta il Pi e attende il boot, poi apre SSH (Paramiko);
   3. misura il consumo idle (bias);
   4. per ogni modello × thread × ripetizione:

@@ -4,7 +4,7 @@ In questo capitolo vengono descritte nel dettaglio le metriche adottate per la
 valutazione e la procedura sperimentale impiegata per la loro acquisizione.
 Successivamente viene illustrata la struttura dello script Python sviluppato per
 automatizzare l'intero processo di misura, dalla configurazione dello strumento
-Otii Arc fino alla generazione dei grafici comparativi.
+Otii Ace Pro fino alla generazione dei grafici comparativi.
 
 L'esperimento valuta i sei modelli quantizzati descritti nel Capitolo~1
 (Tabella~\ref{tab:llm}) lungo tre dimensioni: l'\textit{efficienza energetica},
@@ -29,7 +29,7 @@ L'efficienza energetica viene espressa in \textit{Joule per token generato}
 produrre un singolo token in uscita. Tale grandezza consente un confronto equo
 tra modelli e configurazioni che generano un numero diverso di token.
 
-L'Otii Arc campiona nel tempo la potenza assorbita sul canale di potenza
+L'Otii Ace Pro campiona nel tempo la potenza assorbita sul canale di potenza
 principale (\textit{Main Power}). L'energia complessivamente misurata durante una
 singola inferenza, delimitata dall'intervallo temporale $[t_0, t_1]$, corrisponde
 all'integrale della potenza istantanea $p(t)$:
@@ -177,16 +177,16 @@ esecuzione deterministico, ripetuto in modo identico per ogni configurazione di
 modello e di thread. Nelle sottosezioni seguenti vengono descritte le fasi
 principali.
 
-\subsection{Configurazione dello strumento Otii Arc}
+\subsection{Configurazione dello strumento Otii Ace Pro}
 
 All'avvio dell'esperimento, lo script si connette a \textit{Otii Server} tramite
-la \textit{Otii TCP Server API} e configura lo strumento Otii Arc. La tensione di
-alimentazione viene impostata a 5~V, valore richiesto dal Raspberry Pi 5. Il
+la \textit{Otii TCP Server API} e configura lo strumento Otii Ace Pro. La tensione di
+alimentazione viene impostata a 5,1~V: tale valore, in linea con l'alimentatore ufficiale del Raspberry Pi 5, compensa la caduta di tensione lungo il cavo e l'adattatore USB-C, portando ai capi della scheda i 5~V richiesti ed evitando condizioni di \textit{undervoltage}; rientra comunque nella tolleranza di alimentazione del dispositivo (5~V $\pm$ 5\%). Il
 limite di corrente di protezione viene fissato a 5~A, valore sufficiente a
 sostenere i picchi di assorbimento del dispositivo in condizioni di carico
-computazionale intenso, che possono superare la corrente continua massima
-erogabile dall'Otii Arc, pari a 2,4~A; tale margine è reso possibile
-dall'alimentazione esterna in corrente continua descritta nel capitolo precedente.
+computazionale intenso e compatibile con la corrente massima erogabile
+dall'Otii Ace Pro, pari a 5~A; non è quindi necessaria alcuna alimentazione
+esterna aggiuntiva.
 
 Vengono inoltre abilitati i canali di misura relativi a corrente, tensione e
 potenza principale, necessari per il calcolo dell'energia. Completata la
@@ -261,7 +261,7 @@ rispetto a quella delle inferenze, in modo che il consumo di inizializzazione no
 influisca sul calcolo dell'efficienza energetica per token. Per ogni singola
 inferenza, gli istanti di invio del prompt e di completamento della risposta
 delimitano la finestra temporale $[t_0, t_1]$ utilizzata per estrarre l'energia
-misurata dalla registrazione dell'Otii Arc, secondo
+misurata dalla registrazione dell'Otii Ace Pro, secondo
 l'Equazione~\ref{eq:energia_misurata}.
 
 \subsection{Ripetizioni e media delle misure}
@@ -315,7 +315,7 @@ test e l'elaborazione dei dati. Tale organizzazione riflette l'architettura
 software del sistema di acquisizione illustrata in
 Figura~\ref{fig:sw_architecture}. I componenti principali sono:
 \begin{itemize}
-    \item modulo di controllo dell'\textbf{Otii Arc}: gestisce la connessione
+    \item modulo di controllo dell'\textbf{Otii Ace Pro}: gestisce la connessione
     tramite l'API TCP, la configurazione dell'alimentazione e dei canali, la
     registrazione delle misure e il calcolo dell'energia su una finestra
     temporale;
@@ -352,7 +352,7 @@ della classe \texttt{BenchmarkRunner}.
 \end{figure}
 
 I parametri dell'esperimento (indirizzo e credenziali del Raspberry Pi 5,
-configurazione dell'Otii Arc, elenco dei modelli, numero di thread, numero di
+configurazione dell'Otii Ace Pro, elenco dei modelli, numero di thread, numero di
 ripetizioni e percorsi dei dataset) sono raccolti in un file di configurazione
 esterno, in modo da poter modificare le condizioni dell'esperimento senza
 intervenire sul codice.

@@ -2,15 +2,15 @@
 
 Misurazione di **efficienza energetica**, **qualità della risposta** e **latenza
 di inferenza** di LLM quantizzati eseguiti localmente con **llama.cpp** su
-**Raspberry Pi 5 (8 GB)**, usando un **Otii Arc** (Qoitech) come strumento di
+**Raspberry Pi 5 (8 GB)**, usando un **Otii Ace Pro** (Qoitech) come strumento di
 misura del consumo, pilotato dal PC host via API TCP.
 
 ## Idea generale
 
 Il PC host orchestra tutto:
 
-1. configura e accende l'**Otii Arc** via API TCP (5 V, limite di corrente a 5 A
-   per gestire i picchi del Pi 5, generatore nominale 2.4 A);
+1. configura e accende l'**Otii Ace Pro** via API TCP (5 V, limite di corrente a
+   5 A, sufficiente per i picchi del Pi 5 senza alimentazione esterna);
 2. alimenta il Raspberry Pi 5 e attende il boot;
 3. apre una connessione **SSH** (Paramiko) verso il Pi (192.168.10.2, utente
    `dario`);
@@ -61,7 +61,7 @@ requirements.txt            dipendenze del venv host (Python 3.13)
 datasets/*.jsonl            i 5 benchmark
 run_benchmark.py            entry point eseguito dal PC host
 scripts/
-  otii_controller.py        controllo Otii Arc (API TCP): alimentazione, canali, energia
+  otii_controller.py        controllo Otii Ace Pro (API TCP): alimentazione, canali, energia
   pi_ssh.py                 SSH Paramiko + shell interattiva llama-cli + vcgencmd
   llama_parser.py           parsing timing (prompt/gen t/s) e testo generato
   datasets_loader.py        caricamento JSONL
@@ -134,7 +134,7 @@ envEnergyBenchmark\Scripts\activate
 python run_benchmark.py --simulate
 
 # esecuzione reale (Otii software con TCP server attivo su :1905,
-# Otii Arc collegato, Pi cablato all'uscita e raggiungibile via Ethernet)
+# Otii Ace Pro collegato, Pi cablato all'uscita e raggiungibile via Ethernet)
 python run_benchmark.py
 
 # opzioni utili

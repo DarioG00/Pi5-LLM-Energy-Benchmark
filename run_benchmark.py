@@ -8,7 +8,7 @@ Esempi:
 
 Prerequisiti reali:
     - Otii software in esecuzione con TCP server attivo (porta 1905);
-    - Otii Arc collegato e Raspberry Pi 5 cablato all'uscita;
+    - Otii Ace Pro collegato e Raspberry Pi 5 cablato all'uscita;
     - Pi raggiungibile via Ethernet all'IP indicato in config.json.
 """
 from __future__ import annotations
