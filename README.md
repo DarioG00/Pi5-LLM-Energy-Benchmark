@@ -2,25 +2,53 @@
 
 Misurazione di **efficienza energetica**, **qualità della risposta** e **latenza
 di inferenza** di LLM quantizzati eseguiti localmente con **llama.cpp** su
-**Raspberry Pi 5 (8 GB)**, usando un **Otii Ace Pro** (Qoitech) come strumento di
-misura del consumo, pilotato dal PC host via API TCP.
+**Raspberry Pi 5 (8 GB)**. Il consumo è misurato **direttamente dal PMIC del
+Raspberry Pi 5** (nessuno strumento esterno): il PC host orchestra l'intero
+esperimento via **SSH**.
 
 ## Idea generale
 
-Il PC host orchestra tutto:
+Il PC host coordina tutto:
 
-1. configura e accende l'**Otii Ace Pro** via API TCP (5 V, limite di corrente a
-   5 A, sufficiente per i picchi del Pi 5 senza alimentazione esterna);
-2. alimenta il Raspberry Pi 5 e attende il boot;
-3. apre una connessione **SSH** (Paramiko) verso il Pi (192.168.10.2, utente
-   `dario`);
-4. registra il consumo **idle** del Pi e lo usa come **bias** da sottrarre;
-5. per ogni **modello × numero di thread (1, 2, 4) × ripetizione (×3)** avvia
+1. si collega via **SSH** (Paramiko) al Raspberry Pi 5, alimentato dal suo
+   **alimentatore ufficiale** (USB-C, 5,1 V / 3 A, 15 W) e sempre acceso;
+2. campiona il **PMIC** del Pi (`vcgencmd pmic_read_adc`) a ~10 Hz: la potenza è
+   la somma dei prodotti corrente×tensione sui 12 rami della scheda;
+3. registra il consumo **idle** del Pi e lo usa come **bias** da sottrarre;
+4. per ogni **modello × numero di thread (1, 2, 4) × ripetizione (×3)** avvia
    `llama-cli` (il modello resta caricato in memoria per l'intera sessione),
-   invia i prompt dei **5 benchmark** attendendo ogni volta il prompt `>`, e
-   misura energia, latenza, token/s e qualità;
-6. salva tutto in **CSV** e genera i **grafici** di confronto con pandas,
+   **azzera la cronologia (`/clear`) prima di ogni prompt**, invia i prompt dei
+   **5 benchmark** e misura energia, latenza, token/s e qualità;
+5. salva tutto in **CSV** e genera i **grafici** di confronto con pandas,
    seaborn e scikit-learn.
+
+Non è richiesto alcun hardware di misura esterno né alimentazione via GPIO
+(che esporrebbe il PMIC a rischio di danneggiamento).
+
+## Misura del consumo tramite il PMIC
+
+Il Raspberry Pi 5 integra un **PMIC** (Power Management IC) con un ADC che espone
+tensione e corrente di **12 rami** di alimentazione. Il comando
+`vcgencmd pmic_read_adc` restituisce queste grandezze; la potenza istantanea è:
+
+```
+P_pmic = Σ (I_k · V_k)   con k = 1..12
+```
+
+Il metodo riprende il progetto open source **jfikar/RPi5-power**
+(vedi `scripts/rpi5_power.sh`, incluso come riferimento).
+
+- **Nessuna correzione per impostazione predefinita** (`corr_slope = 1.0`,
+  `corr_offset = 0.0`): si registra la somma grezza del PMIC, misura coerente e
+  ripetibile del consumo interno della scheda, adeguata al **confronto** tra
+  modelli e quantizzazioni.
+- La correzione lineare proposta da jfikar (`1.1451·P + 0.5879`) per stimare il
+  consumo reale alla presa è **specifica di una singola scheda+alimentatore** e
+  non è trasferibile: va usata solo se ricalibrata sul proprio setup
+  (parametri `corr_slope`/`corr_offset` in `config.json`).
+- Il campionamento avviene in un **thread in background** su una connessione SSH
+  **dedicata**, con timestamp sul clock dell'host (lo stesso usato per delimitare
+  le finestre di inferenza): non serve sincronizzare gli orologi di host e Pi.
 
 ## Modelli (6)
 
@@ -38,12 +66,12 @@ Tre famiglie, ciascuna in due livelli di quantizzazione (Q4_K_M e Q8_0):
 Comando di lancio (per configurazione):
 
 ```
-~/llama.cpp/build/bin/llama-cli -m <modello>.gguf -t N -c 512 -n 128
+~/llama.cpp/build/bin/llama-cli -m <modello>.gguf -t N -c 2048 -n 128
 ```
 
 dove `N` è il numero di thread (1, 2 o 4). `llama-cli` si avvia in modalità
-interattiva di default, quindi non serve il flag `-i`; eventuali argomenti
-aggiuntivi si possono comunque impostare in `config.json` (`llama.extra_args`).
+interattiva di default; eventuali argomenti aggiuntivi si impostano in
+`config.json` (`llama.extra_args`).
 
 ## Benchmark (5)
 
@@ -51,80 +79,114 @@ CommonSenseQA, BIG-Bench Hard, TruthfulQA, GSM8K, HumanEval — campioni curati 
 `datasets/*.jsonl` (rispettivamente 15, 15, 15, 15 e 13 item, **73 prompt** in
 totale). Per aumentarne il numero basta aggiungere righe ai JSONL: il loader li
 conta automaticamente. Considerando 6 modelli × 3 configurazioni di thread × 3
-ripetizioni, la campagna completa esegue $18 \times 73 \times 3 = 3942$ inferenze.
+ripetizioni, la campagna completa esegue 18 × 73 × 3 = **3942 inferenze**.
 
 ## Struttura
 
 ```
-config.json                 parametri (Pi, Otii, llama, thermal, modelli, benchmark)
-requirements.txt            dipendenze del venv host (Python 3.13)
+config.json                 parametri (Pi, PMIC, llama, thermal, modelli, benchmark)
+requirements.txt            dipendenze del venv host
 datasets/*.jsonl            i 5 benchmark
 run_benchmark.py            entry point eseguito dal PC host
+inspect_models.py           ispezione rapida: prompt / risposta / punteggio per modello
 scripts/
-  otii_controller.py        controllo Otii Ace Pro (API TCP): alimentazione, canali, energia
+  pmic.py                   backend PMIC: lettura vcgencmd, somma I·V, energia su finestra
+  rpi5_power.sh             script di riferimento di jfikar/RPi5-power
   pi_ssh.py                 SSH Paramiko + shell interattiva llama-cli + vcgencmd
-  llama_parser.py           parsing timing (prompt/gen t/s) e testo generato
+  llama_parser.py           parsing riga timing e testo generato
   datasets_loader.py        caricamento JSONL
-  scoring.py                scoring per-benchmark (semplice, con flag revisione)
+  scoring.py                scoring per-benchmark (con flag di revisione)
   thermal.py                monitoraggio termico + decode throttling + cooldown
   benchmark_runner.py       orchestrazione del flusso completo + CSV
   analysis.py               aggregazione e grafici (pandas/seaborn/scikit-learn)
   simulation.py             backend simulati per il dry-run (--simulate)
-recordings/                 progetti Otii, CSV risultati, raw, plots
-imm/                        schemi (hardware, software) e diagrammi UML
+recordings/                 CSV risultati, dati aggregati, grafici
+tesi/                       tesi LaTeX, schemi hardware/software e diagrammi UML
 ```
 
 ## Metriche
 
-- **Efficienza energetica**: energia_netta (J) / token_generati → **J/token**,
-  dove energia_netta = energia_misurata − energia_idle sulla finestra di
-  inferenza (canale Main Power `mp` dell'Otii). Il numero di token generati non
-  è riportato dal formato di output compatto di llama.cpp, quindi viene
-  **approssimato con `n_predict`** (il massimo impostato da `-n`, cioè 128).
-- **Latenza**: tempo wall-clock dell'inferenza misurato dall'host (misura
-  end-to-end: include anche il modesto overhead di comunicazione SSH/Ethernet),
-  più le statistiche `prompt processing` e `generation` (token/s). Il parser riconosce
-  il formato compatto realmente emesso dal build in uso
-  (`Prompt: <x> t/s | Generation: <y> t/s`, con virgola o punto decimale) e, in
-  subordine, il formato classico di llama.cpp.
-- **Qualità**: punteggio per-benchmark (match della lettera, corrispondenza
-  esatta, estrazione del valore numerico, esecuzione dei test per HumanEval).
-  Le voci a bassa confidenza (TruthfulQA, codice) sono marcate `needs_review`
-  per la rifinitura manuale successiva.
+- **Efficienza energetica**: **energia netta per inferenza (J)**, dove
+  energia_netta = energia_misurata − energia_idle sulla finestra di inferenza.
+  L'energia è l'integrale (regola dei trapezi) della potenza campionata dal PMIC.
+  *Non* si normalizza per token: il formato di output di llama.cpp non riporta il
+  conteggio esatto dei token e una stima introdurrebbe un'approssimazione inutile.
+- **Latenza**: tempo wall-clock dell'inferenza misurato dall'host (end-to-end:
+  include il modesto overhead di comunicazione SSH/Ethernet), più le statistiche
+  `prompt processing` e `generation` in token/s.
+- **Qualità**: punteggio per-benchmark (match della lettera per la scelta
+  multipla, corrispondenza esatta, estrazione del valore numerico, esecuzione
+  dei test per HumanEval). Le voci a bassa confidenza (TruthfulQA, codice) sono
+  marcate `needs_review` per la rifinitura manuale.
+
+## Esecuzione delle inferenze e parsing
+
+- Il modello è avviato una sola volta in **modalità interattiva** e resta
+  caricato per l'intera sessione (nessun ricaricamento a ogni prompt).
+- Prima di ogni prompt si invia `/clear`: ogni inferenza è così **indipendente**
+  dalle precedenti e il contesto non si accumula fino a saturare la finestra
+  `-c` (con `ctx_size = 2048` i singoli prompt + risposta stanno comodamente
+  nel contesto).
+- Ogni prompt è caricato con il comando `/read` di llama-cli da un file scritto
+  sul Pi, così da **preservarne gli a-capo** (indispensabile per i task di
+  codice). Impostabile con `llama.prompt_mode` in `config.json`: `"read"`
+  (default) oppure `"inline"` (prompt su una riga, a-capo → spazi) come fallback.
+- La **fine di ogni generazione** è rilevata dalla riga di statistiche che
+  llama.cpp stampa a fine risposta:
+
+  ```
+  [ Prompt: 16,4 t/s | Generation: 15,8 t/s ]
+  ```
+
+  Questo delimitatore è univoco e **non risente dei caratteri `>`** presenti nel
+  prompt o nella risposta (es. le annotazioni `->` o i doctest `>>>`), che
+  altrimenti potrebbero essere scambiati per il prompt di fine risposta. Il
+  simbolo `>` viene usato solo per rilevare che il modello è pronto **dopo il
+  caricamento**. Il parser gestisce sia il punto sia la virgola come separatore
+  decimale.
 
 ## Gestione termica e throttling
 
-Il Pi 5 si scalda tra un'inferenza e l'altra: oltre ~80-85 °C entra in
-**throttling termico** e cala le prestazioni, falsando latenza e t/s. Il
-comportamento è configurabile nella sezione `thermal` di `config.json`:
+Il Pi 5 si scalda durante l'esecuzione: oltre ~80-85 °C entra in **throttling
+termico** e cala le prestazioni, falsando latenza e t/s. Comportamento
+configurabile nella sezione `thermal` di `config.json`:
 
 - **Monitoraggio per inferenza** (`enabled`, `log_per_inference`): dopo ogni
   risposta vengono letti `vcgencmd measure_temp` e `vcgencmd get_throttled`;
   temperatura e stato di throttling finiscono nel CSV (`temp_c`, `throttled_hex`,
-  `throttle_active`). `get_throttled` è decodificato bit a bit (under-voltage,
-  ARM frequency capped, throttling, soft temp limit, sia "attivo ora" sia
-  "avvenuto").
+  `throttle_active`). `get_throttled` è decodificato bit a bit.
 - **Rilevazione e ripetizione**: se durante una ripetizione si rileva throttling
   e `abort_on_throttle` è `true`, la registrazione viene **scartata e ripetuta**
-  (fino a `max_retries`); le righe conservano comunque `throttle_event` per
-  tracciabilità.
+  (fino a `max_retries`); le righe conservano `throttle_event` per tracciabilità.
 - **Cooldown** (`cooldown_enabled`): opzionalmente si attende che la SoC scenda
-  sotto `cooldown_target_c` prima di ogni configurazione, con pausa minima e
-  tetto massimo di attesa. L'attesa è **fuori dalla finestra di misura**, quindi
-  non inquina l'energia.
+  sotto `cooldown_target_c` prima di ogni configurazione. L'attesa è **fuori
+  dalla finestra di misura**, quindi non inquina l'energia.
 
-Poiché il case del Raspberry Pi 5 monta una **ventola di raffreddamento attiva**,
-nella configurazione di default il cooldown è **disattivato**
-(`cooldown_enabled: false`) per massimizzare la velocità, mentre il monitoraggio
-resta attivo come rete di sicurezza e per documentare l'assenza di throttling.
-Il grafico `recordings/plots/thermal.png` mostra la distribuzione delle
-temperature per modello/thread e l'analisi stampa un riepilogo termico con il
-numero di misure eventualmente acquisite sotto throttling.
+Poiché il case monta una **ventola di raffreddamento attiva**, nella
+configurazione di default il cooldown è **disattivato**
+(`cooldown_enabled: false`) e resta attivo il solo monitoraggio, come rete di
+sicurezza e per documentare l'assenza di throttling.
+
+## Ispezione rapida delle risposte
+
+Per vedere cosa risponde davvero un modello (utile a diagnosticare punteggi
+bassi) senza avviare l'intera campagna:
+
+```bash
+python inspect_models.py                                   # 1 campione/benchmark
+python inspect_models.py --samples 2 --threads 4
+python inspect_models.py --models qwen2.5-1.5b-instruct-q4_k_m.gguf
+python inspect_models.py --benchmarks gsm8k humaneval --out ispezione.txt
+```
+
+Per ogni modello e benchmark stampa il prompt, la risposta del modello, il
+punteggio e i token/s, usando la stessa shell interattiva del benchmark.
 
 ## Uso
 
-Ambiente virtuale già presente: `envEnergyBenchmark` (Python 3.13). Se serve
-ricrearlo, installare le dipendenze con `pip install -r requirements.txt`.
+Ambiente virtuale già presente: `envEnergyBenchmark`. Per ricrearlo, installare
+le dipendenze con `pip install -r requirements.txt` (principali: `paramiko` per
+SSH; `numpy`, `pandas`, `matplotlib`, `seaborn`, `scikit-learn` per l'analisi).
 
 ```bash
 # attiva il venv (Windows)
@@ -133,24 +195,24 @@ envEnergyBenchmark\Scripts\activate
 # prova della pipeline SENZA hardware (genera CSV + grafici simulati)
 python run_benchmark.py --simulate
 
-# esecuzione reale (Otii software con TCP server attivo su :1905,
-# Otii Ace Pro collegato, Pi cablato all'uscita e raggiungibile via Ethernet)
+# esecuzione reale: Pi acceso e raggiungibile via Ethernet all'IP di config.json,
+# SSH abilitato e `vcgencmd pmic_read_adc` disponibile sul Pi
 python run_benchmark.py
 
 # opzioni utili
-python run_benchmark.py --no-analysis   # salta la generazione dei grafici
+python run_benchmark.py --no-analysis    # salta la generazione dei grafici
 python run_benchmark.py --verbose        # log dettagliato
 ```
 
 Output principali:
 
 - `recordings/results.csv` — una riga per ogni (modello, thread, ripetizione,
-  benchmark, campione) con energia netta, latenza, token, J/token, prompt/gen
-  t/s, score, temperatura e stato di throttling;
+  benchmark, campione) con energia netta, energia totale/idle, potenza media,
+  latenza, prompt/gen t/s, score, temperatura e stato di throttling;
 - `recordings/raw/aggregated_by_benchmark.csv`, `recordings/raw/ranking_composite.csv`;
-- `recordings/plots/*.png` — efficienza (J/token), latenza, potenza, throughput
-  (prompt processing e generation, t/s), qualità (heatmap), trade-off
-  efficienza/qualità, classifica composita e termico.
+- `recordings/plots/*.png` — efficienza (energia netta per inferenza), latenza,
+  potenza, throughput (prompt processing e generation), qualità (heatmap),
+  trade-off efficienza/qualità, classifica composita e termico.
 
 ## Note operative
 
@@ -158,6 +220,6 @@ Output principali:
   (riga `__load__`), così l'energia di inferenza non lo include.
 - Il **bias idle** va rimisurato se cambiano le condizioni (temperatura,
   periferiche collegate).
-- Tutti i parametri (Pi, Otii, llama, thermal, modelli, thread, ripetizioni,
+- Tutti i parametri (Pi, PMIC, llama, thermal, modelli, thread, ripetizioni,
   benchmark) sono in `config.json`, modificabili senza toccare il codice.
 - `config.json` contiene le credenziali SSH: trattalo come file riservato.

@@ -11,33 +11,41 @@ l'esecuzione dei benchmark vengono descritte nel capitolo successivo a questo.
 Oltre al Raspberry Pi 5 e al computer host per le misurazioni, vediamo gli accessori
 hardware fondamentali da tenere conto.
 
-\subsection{Qoitech Otii Ace Pro}
-Per effettuare il monitoraggio del consumo energetico del sistema, è stato
-utilizzato il power monitor \textit{Otii Ace Pro}, prodotto da \textit{Qoitech}.
-Questo strumento consente di monitorare e registrare il consumo energetico di
-dispositivi elettronici, fornendo informazioni dettagliate sull'andamento
-nel tempo di tensione, corrente e potenza assorbita.
+\subsection{Alimentazione e misura del consumo tramite il PMIC}
+\label{sec:pmic}
+Il monitoraggio del consumo energetico del sistema è stato effettuato sfruttando
+direttamente il \textit{PMIC} (\textit{Power Management Integrated Circuit}) di
+cui è dotato il Raspberry Pi 5. Il PMIC è il circuito integrato che genera e
+regola le diverse tensioni di alimentazione della scheda (per il SoC, la memoria,
+i sottosistemi di I/O e così via) a partire dai 5~V forniti in ingresso. Oltre a
+questa funzione, il PMIC del Pi 5 integra un convertitore analogico-digitale
+(\textit{ADC}) che misura tensione e corrente su dodici distinti rami di
+alimentazione della scheda.
 
-Il monitoraggio di Otii Ace Pro avviene tramite computer host collegato con
-l'interfaccia USB, utilizzando il software \textit{Otii 3 Desktop App}
-che consente la visualizzazione in tempo reale delle grandezze elettriche
-misurate. Inoltre, il software permette di esportare i dati acquisiti per
-successive analisi energetiche.
+Tali grandezze sono accessibili via software attraverso l'utility di sistema
+\texttt{vcgencmd}: il comando \texttt{vcgencmd pmic\_read\_adc} restituisce, per
+ciascun ramo, la corrente e la tensione istantanee. La potenza istantanea
+assorbita dalla scheda viene stimata sommando i contributi dei dodici rami, come
+descritto nel dettaglio nel capitolo successivo. Questo approccio consente di
+misurare il consumo del Raspberry Pi 5 \emph{senza alcun hardware di misura
+esterno}, utilizzando i sensori già integrati sulla scheda; la metodologia
+adottata riprende quella del progetto open source
+\textit{RPi5-power}~\cite{jfikar_rpi5power}. Tale progetto propone anche una
+correzione empirica per stimare il consumo reale alla presa, che però è tarata su
+una singola scheda e non trasferibile ad altre unità; in questo lavoro si registra
+quindi direttamente la somma non corretta delle potenze dei rami, misura coerente
+e adeguata al confronto tra modelli (v.\ Capitolo successivo).
 
-Per alimentare il Raspberry Pi 5, l'Otii Ace Pro viene collegato direttamente
-alla porta di alimentazione \textit{USB-C} del dispositivo tramite l'apposito
-cavo, erogando una tensione di 5,1 V (in linea con l'alimentatore ufficiale del Raspberry Pi 5), che compensa la caduta lungo il cavo e porta ai capi della scheda i 5 V richiesti. In questo modo
-l'intera alimentazione del Raspberry Pi 5 transita attraverso lo strumento, che
-ne misura in tempo reale tensione, corrente e potenza assorbita, sfruttando al
-contempo le protezioni integrate sull'ingresso di alimentazione della scheda.
-
-L'Otii Ace Pro è in grado di erogare una corrente continua fino a 5 A, valore
-sufficiente a sostenere anche i picchi di assorbimento del Raspberry Pi 5 in
-condizioni di carico computazionale intenso. Non è quindi necessaria alcuna
-alimentazione esterna aggiuntiva: lo strumento alimenta direttamente il
-dispositivo e ne mantiene al contempo il monitoraggio continuo delle grandezze
-elettriche, senza interruzioni o spegnimenti dovuti a un'alimentazione
-insufficiente.
+Per l'alimentazione è stato impiegato l'\textbf{alimentatore ufficiale del
+Raspberry Pi 5} (USB-C, 5,1~V, fino a 3~A, 15~W), collegato alla porta di
+alimentazione \textit{USB-C} della scheda. L'impiego dell'alimentatore ufficiale,
+progettato per il Pi 5, garantisce una tensione stabile ed evita condizioni di
+sottoalimentazione (\textit{undervoltage}) durante i picchi di assorbimento in
+carico. Si è scelto deliberatamente di \emph{non} alimentare il dispositivo
+tramite i pin GPIO: tale modalità bypassa le protezioni dell'ingresso USB-C ed
+espone il PMIC al rischio di danneggiamento~\cite{raspberrypi_gpio}. Misurando il
+consumo direttamente dal PMIC, non è inoltre necessario interporre alcuno
+strumento sulla linea di alimentazione.
 
 \subsection{Ventola di raffreddamento}
 Il Raspberry Pi 5 è dotato di una \textit{ventola di raffreddamento attiva},
@@ -96,30 +104,23 @@ quantizzati supportati.
 
 \subsection{Software del computer host}
 
-Sul computer host, con sistema operativo Windows 11 (64-bit, Intel), oltre all'applicazione desktop
-\textit{Otii 3 Desktop App}, utilizzata per la visualizzazione tramite interfaccia grafica dei
-parametri energetici, è stato impiegato anche \textit{Otii Automation Toolbox}. Questa licenza
-software estende le funzionalità dell'ambiente Otii introducendo meccanismi di automazione basati
-su script.
+Sul computer host, con sistema operativo Windows 11 (64-bit, Intel), è stato
+sviluppato uno script in linguaggio \textbf{Python} che automatizza l'intera
+procedura sperimentale. Poiché il consumo viene misurato direttamente dal PMIC
+del Raspberry Pi 5, non è richiesto alcun software di controllo di strumenti di
+misura esterni: il computer host coordina l'esperimento comunicando con il Pi
+esclusivamente via \textit{SSH} sul collegamento Ethernet.
 
-In particolare, la licenza rende disponibile \textit{Otii Server}, un servizio che consente
-di integrare il sistema di acquisizione all'interno di procedure di test automatizzate.
-Otii Server può essere eseguito sia come componente integrato in Otii 3 Desktop App sia come
-applicazione server dedicata. Ai fini dell'esperimento è sufficiente utilizzare una sola delle
-due modalità, poiché le due istanze non possono essere eseguite contemporaneamente sullo
-stesso computer.
-
-L'automazione delle misurazioni avviene tramite le API messe a disposizione da Otii Server
-(\textit{Otii TCP Server API}), che consentono il controllo programmabile del dispositivo
-Otii Ace Pro e la sua integrazione con script sviluppati in diversi linguaggi di programmazione,
-tra cui Python.
-
-Nel contesto di questa tesi è stato sviluppato uno script in linguaggio Python per automatizzare
-l'intera procedura sperimentale. In particolare, lo script esegue le seguenti operazioni:
+La comunicazione con il Raspberry Pi 5 avviene tramite la libreria Python
+\texttt{Paramiko}, che consente sia di pilotare l'inferenza dei modelli
+(avvio di \texttt{llama.cpp}, invio dei prompt) sia di leggere periodicamente il
+PMIC eseguendo da remoto il comando \texttt{vcgencmd pmic\_read\_adc}. In
+particolare, lo script esegue le seguenti operazioni:
 \begin{itemize}
-    \item configurazione iniziale dello strumento Otii Ace Pro;
-    \item impostazione dei parametri di acquisizione;
-    \item avvio e arresto automatico delle misurazioni;
+    \item connessione via SSH al Raspberry Pi 5 e impostazione dei parametri di
+        acquisizione (cadenza di campionamento del PMIC);
+    \item campionamento del consumo dal PMIC e delimitazione delle finestre di
+        misura relative a ciascuna inferenza;
     \item esecuzione automatica dell'inferenza dei modelli quantizzati;
     \item acquisizione e memorizzazione dei dati sperimentali;
     \item elaborazione delle misure raccolte per il calcolo delle metriche relative

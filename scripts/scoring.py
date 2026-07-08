@@ -1,9 +1,9 @@
-"""Scoring semplice e per-benchmark della qualità delle risposte.
+"""Scoring semplice e per-benchmark della qualita' delle risposte.
 
 Filosofia: scoring di base automatico + revisione manuale
 successiva. Ogni funzione restituisce un dizionario con:
   - score       : 0.0/1.0 (o frazione) confronto con l'atteso
-  - confidence  : "high" se il match è affidabile, "low" se euristico
+  - confidence  : "high" se il match e' affidabile, "low" se euristico
   - needs_review: True se conviene rivedere a mano / con un LLM giudice
 """
 from __future__ import annotations
@@ -18,7 +18,23 @@ def _norm(s: str) -> str:
 
 
 def _first_choice_letter(text: str) -> Optional[str]:
-    m = re.search(r"\b([A-E])\b", text.upper())
+    """Estrae la lettera dell'opzione scelta (A-E), con euristiche robuste.
+
+    Cerca prima formulazioni esplicite ("Answer: B", "the answer is B",
+    "(B)", "B)"); se non le trova, ripiega sulla prima lettera A-E isolata.
+    """
+    up = text.upper()
+    patterns = [
+        r"ANSWER\s*(?:IS|:)?\s*\(?([A-E])\)?",
+        r"\b(?:OPTION|RISPOSTA)\s*\(?([A-E])\)?",
+        r"\(([A-E])\)",
+        r"\b([A-E])[.)]",
+    ]
+    for pat in patterns:
+        m = re.search(pat, up)
+        if m:
+            return m.group(1)
+    m = re.search(r"\b([A-E])\b", up)
     return m.group(1) if m else None
 
 
@@ -89,6 +105,20 @@ def score_open_ended(response: str, expected: str, incorrect: Optional[list] = N
             "needs_review": True, "parsed": round(overlap, 2)}
 
 
+def _code_prefix(prompt: str) -> str:
+    """Parte di codice del prompt: dalla prima riga import/from/def in poi.
+
+    Scarta le eventuali righe di istruzioni in linguaggio naturale che precedono
+    il codice (es. "Complete the Python function..."), che altrimenti renderebbero
+    non valido il programma ricostruito.
+    """
+    lines = prompt.splitlines()
+    for i, l in enumerate(lines):
+        if re.match(r"^\s*(from\s|import\s|def\s)", l):
+            return "\n".join(lines[i:])
+    return prompt
+
+
 def score_code(response: str, sample_meta: dict) -> dict:
     """Esegue il test HumanEval in un sandbox locale (best-effort, pass@1).
 
@@ -102,17 +132,29 @@ def score_code(response: str, sample_meta: dict) -> dict:
         return {"score": 0.0, "confidence": "low",
                 "needs_review": True, "parsed": "no-test"}
 
+    code_prompt = _code_prefix(prompt)          # import + firma + docstring
+    imports = "\n".join(l for l in code_prompt.splitlines()
+                        if re.match(r"^\s*(from\s|import\s)", l))
     body = _extract_code(response, entry)
-    # se il modello ha già incluso la firma def, la usiamo intera; altrimenti la
-    # ricostruiamo dal prompt (firma + docstring) normalizzando l'indentazione
-    # del corpo a 4 spazi (il modello può restituirlo già indentato o meno).
-    if f"def {entry}" in body:
-        program = body
-    else:
-        body = textwrap.indent(textwrap.dedent(body), "    ")
-        program = prompt + body
-    full = program + "\n\n" + test + "\n"
-    ok = _run_sandbox(full)
+    indented = textwrap.indent(textwrap.dedent(body), "    ")
+    sep = "" if code_prompt.endswith("\n") else "\n"
+    # Il modello puo' rispondere in modi diversi: con la funzione completa, col
+    # solo corpo (indentato o meno). Proviamo piu' ricostruzioni e consideriamo
+    # superato il test (pass@1) se almeno una compila ed esegue correttamente.
+    candidates = []
+    if re.search(rf"(?m)^\s*def\s+{re.escape(entry)}\b", body):
+        candidates.append((imports + "\n" + body) if imports else body)
+    candidates.append(code_prompt + sep + indented)   # firma+docstring + corpo indentato
+    candidates.append(code_prompt + sep + body)        # corpo gia' indentato dal modello
+    # Se la risposta rieccheggia firma+docstring (magari su una sola riga, perche'
+    # il prompt e' stato inviato senza a-capo), il completamento vero e' cio' che
+    # segue l'ultima docstring: lo si combina col prompt originale ben formattato.
+    if '\"\"\"' in body:
+        completion = body.rsplit('\"\"\"', 1)[-1].strip("\n")
+        if completion.strip():
+            candidates.append(code_prompt + sep +
+                              textwrap.indent(textwrap.dedent(completion), "    "))
+    ok = any(_run_sandbox(prog + "\n\n" + test + "\n") for prog in candidates)
     return {"score": 1.0 if ok else 0.0,
             "confidence": "high" if ok else "low",
             "needs_review": not ok,
@@ -120,10 +162,24 @@ def score_code(response: str, sample_meta: dict) -> dict:
 
 
 def _extract_code(response: str, entry: str) -> str:
-    """Estrae il codice da una risposta, gestendo i blocchi markdown ```."""
+    """Estrae il codice da una risposta, gestendo i blocchi markdown ```.
+
+    Se non c'e' un blocco markdown, prova a partire dalla riga della firma
+    ``def <entry>`` (scartando l'eventuale testo introdotto dal modello); in
+    ultima istanza restituisce la risposta cosi' com'e'.
+    """
+    # consuma solo la riga della fence (```python), preservando l'indentazione
+    # della prima riga di codice.
+    m = re.search(r"```(?:python)?[^\n]*\n(.*?)```", response, re.DOTALL)
+    if m:
+        return m.group(1).strip("\n")
     m = re.search(r"```(?:python)?\s*(.*?)```", response, re.DOTALL)
     if m:
         return m.group(1).strip("\n")
+    if entry:
+        m = re.search(rf"(?ms)^\s*def\s+{re.escape(entry)}\b.*", response)
+        if m:
+            return m.group(0).strip("\n")
     return response
 
 

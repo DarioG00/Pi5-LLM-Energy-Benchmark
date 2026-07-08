@@ -3,8 +3,8 @@
 In questo capitolo vengono descritte nel dettaglio le metriche adottate per la
 valutazione e la procedura sperimentale impiegata per la loro acquisizione.
 Successivamente viene illustrata la struttura dello script Python sviluppato per
-automatizzare l'intero processo di misura, dalla configurazione dello strumento
-Otii Ace Pro fino alla generazione dei grafici comparativi.
+automatizzare l'intero processo di misura, dal campionamento del PMIC del
+Raspberry Pi 5 fino alla generazione dei grafici comparativi.
 
 L'esperimento valuta i sei modelli quantizzati descritti nel Capitolo~1
 (Tabella~\ref{tab:llm}) lungo tre dimensioni: l'\textit{efficienza energetica},
@@ -24,15 +24,36 @@ inferenze.
 
 \subsection{Efficienza energetica}
 
-L'efficienza energetica viene espressa in \textit{Joule per token generato}
-(J/token) e rappresenta l'energia che il dispositivo consuma mediamente per
-produrre un singolo token in uscita. Tale grandezza consente un confronto equo
-tra modelli e configurazioni che generano un numero diverso di token.
+L'efficienza energetica viene espressa come \textit{energia netta consumata per
+inferenza} (in Joule), ossia l'energia che il dispositivo spende per elaborare un
+prompt e generarne la risposta. Tale grandezza consente un confronto diretto del
+costo energetico tra modelli e configurazioni.
 
-L'Otii Ace Pro campiona nel tempo la potenza assorbita sul canale di potenza
-principale (\textit{Main Power}). L'energia complessivamente misurata durante una
-singola inferenza, delimitata dall'intervallo temporale $[t_0, t_1]$, corrisponde
-all'integrale della potenza istantanea $p(t)$:
+La potenza assorbita viene stimata a partire dalle letture del PMIC del Raspberry
+Pi 5 (Sezione~\ref{sec:pmic}). Ogni lettura del comando
+\texttt{vcgencmd pmic\_read\_adc} fornisce la corrente $I_k$ e la tensione $V_k$
+di ciascuno dei dodici rami di alimentazione: la potenza istantanea grezza è la
+somma dei contributi dei rami,
+\begin{equation}
+    P_{\text{pmic}} = \sum_{k=1}^{12} I_k \, V_k .
+    \label{eq:pmic_somma}
+\end{equation}
+Il valore così ottenuto è la potenza misurata direttamente dal PMIC. Il progetto
+\textit{RPi5-power} propone una correzione lineare
+$p = 1{,}1451\,P_{\text{pmic}} + 0{,}5879$ per stimare il consumo reale alla
+presa, ricavata però confrontando le letture del PMIC con un misuratore USB-C su
+una specifica scheda e uno specifico alimentatore~\cite{jfikar_rpi5power}: poiché
+tali coefficienti non sono trasferibili ad altre unità, in questo lavoro si
+registra direttamente la somma non corretta $p(t) = P_{\text{pmic}}(t)$.
+Trattandosi di una misura coerente e ripetibile del consumo interno della scheda,
+essa è pienamente adeguata al confronto tra modelli e configurazioni, che
+costituisce l'obiettivo dell'analisi.
+
+Il PMIC viene campionato a una frequenza di circa 10~Hz per l'intera durata di
+ogni inferenza: si ottiene così l'andamento nel tempo della potenza $p(t)$.
+L'energia complessivamente misurata durante una singola inferenza, delimitata
+dall'intervallo temporale $[t_0, t_1]$, corrisponde all'integrale della potenza
+istantanea, calcolato numericamente (regola dei trapezi) sui campioni acquisiti:
 \begin{equation}
     E_{\text{mis}} = \int_{t_0}^{t_1} p(t)\, dt .
     \label{eq:energia_misurata}
@@ -49,19 +70,16 @@ inferenza, l'energia netta dell'inferenza è:
     \label{eq:energia_netta}
 \end{equation}
 
-L'efficienza energetica $\eta$ si ottiene infine normalizzando l'energia netta
-rispetto al numero di token generati $N_{\text{tok}}$:
-\begin{equation}
-    \eta = \frac{E_{\text{inf}}}{N_{\text{tok}}} \qquad [\text{J/token}] .
-    \label{eq:efficienza}
-\end{equation}
+L'efficienza energetica di una configurazione su un dato prompt coincide quindi
+con l'energia netta $E_{\text{inf}}$ dell'Equazione~\ref{eq:energia_netta}: a
+valori inferiori corrisponde una maggiore efficienza, poiché il dispositivo
+produce la risposta con un dispendio energetico minore. I valori riportati nei
+risultati sono ottenuti mediando $E_{\text{inf}}$ sulle ripetizioni.
 
-Il numero di token generati $N_{\text{tok}}$ viene approssimato con il valore
-massimo impostato dal parametro \texttt{-n} (pari a 128 token), che costituisce
-il limite superiore dei token prodotti per ciascuna risposta.
-
-A valori inferiori di $\eta$ corrisponde una maggiore efficienza energetica, in
-quanto il dispositivo produce ciascun token con un dispendio energetico minore.
+Si è scelto di non normalizzare l'energia rispetto al numero di token generati:
+il formato dei timing prodotto da \texttt{llama.cpp} non riporta il conteggio
+esatto dei token e una sua stima introdurrebbe un'approssimazione non necessaria,
+mentre l'energia per inferenza è una grandezza misurata direttamente.
 
 \subsection{Latenza di inferenza}
 
@@ -177,21 +195,20 @@ esecuzione deterministico, ripetuto in modo identico per ogni configurazione di
 modello e di thread. Nelle sottosezioni seguenti vengono descritte le fasi
 principali.
 
-\subsection{Configurazione dello strumento Otii Ace Pro}
+\subsection{Alimentazione e lettura del PMIC}
 
-All'avvio dell'esperimento, lo script si connette a \textit{Otii Server} tramite
-la \textit{Otii TCP Server API} e configura lo strumento Otii Ace Pro. La tensione di
-alimentazione viene impostata a 5,1~V: tale valore, in linea con l'alimentatore ufficiale del Raspberry Pi 5, compensa la caduta di tensione lungo il cavo e l'adattatore USB-C, portando ai capi della scheda i 5~V richiesti ed evitando condizioni di \textit{undervoltage}; rientra comunque nella tolleranza di alimentazione del dispositivo (5~V $\pm$ 5\%). Il
-limite di corrente di protezione viene fissato a 5~A, valore sufficiente a
-sostenere i picchi di assorbimento del dispositivo in condizioni di carico
-computazionale intenso e compatibile con la corrente massima erogabile
-dall'Otii Ace Pro, pari a 5~A; non è quindi necessaria alcuna alimentazione
-esterna aggiuntiva.
+Il Raspberry Pi 5 è alimentato dall'alimentatore ufficiale (USB-C, 5,1~V, fino a
+3~A, 15~W) e resta acceso per l'intera campagna di misura: non è quindi presente alcuno
+strumento esterno da configurare né alcuna sequenza di accensione da pilotare. Il
+valore di 5,1~V erogato dall'alimentatore ufficiale rientra nella tolleranza di
+alimentazione del dispositivo (5~V $\pm$ 5\%) e previene condizioni di
+\textit{undervoltage} durante i picchi di assorbimento in carico.
 
-Vengono inoltre abilitati i canali di misura relativi a corrente, tensione e
-potenza principale, necessari per il calcolo dell'energia. Completata la
-configurazione, lo script attiva l'uscita di alimentazione, avviando il processo
-di \textit{boot} del Raspberry Pi 5.
+All'avvio dell'esperimento lo script apre una connessione SSH dedicata verso il
+Pi e verifica che il comando \texttt{vcgencmd pmic\_read\_adc} risponda
+correttamente, impostando la cadenza di campionamento del PMIC (circa 10~Hz). Il
+campionamento del PMIC viene poi avviato e arrestato in modo da delimitare le
+finestre temporali associate a ciascuna inferenza, come descritto nel seguito.
 
 \subsection{Connessione al Raspberry Pi 5}
 
@@ -220,7 +237,7 @@ Per ciascuna configurazione, il modello viene avviato sul Raspberry Pi 5 mediant
 l'interfaccia a riga di comando di \texttt{llama.cpp}. Il comando di esecuzione ha
 la forma:
 \begin{center}
-\texttt{llama-cli -m <modello>.gguf -t N -c 512 -n 128}
+\texttt{llama-cli -m <modello>.gguf -t N -c 2048 -n 128}
 \end{center}
 dove ciascun parametro assolve una funzione specifica:
 \begin{itemize}
@@ -232,36 +249,48 @@ dove ciascun parametro assolve una funzione specifica:
     l'effetto del parallelismo sull'architettura quad-core del Raspberry Pi 5,
     analizzandone la ricaduta su latenza e consumo energetico;
 
-    \item \texttt{-c 512}: definisce la dimensione della finestra di contesto, ossia
+    \item \texttt{-c 2048}: definisce la dimensione della finestra di contesto, ossia
     il numero massimo di token che il modello può mantenere in memoria considerando
-    sia il prompt sia la risposta generata. Il valore 512 rappresenta un compromesso:
-    è sufficiente a contenere i prompt dei benchmark adottati e le relative risposte,
-    ma resta contenuto al fine di limitare l'occupazione di memoria e il costo
-    computazionale ed energetico, particolarmente critici su un dispositivo con
-    risorse limitate come il Raspberry Pi 5;
+    sia il prompt sia la risposta generata. Il valore 2048 è ampiamente sufficiente a
+    contenere ogni singolo prompt dei benchmark adottati e la relativa risposta,
+    mantenendo al contempo un'occupazione di memoria trascurabile per un dispositivo
+    con 8~GB di RAM come il Raspberry Pi 5;
 
     \item \texttt{-n 128}: fissa il numero massimo di token generati per ciascuna
     risposta. Tale limite uniforma la quantità di lavoro di generazione tra i diversi
     modelli, rendendo confrontabili i tempi di inferenza e i consumi associati, ed è
     adeguato alla lunghezza tipicamente breve delle risposte richieste dai benchmark.
-    Inoltre, come anticipato, questo valore viene impiegato come stima del numero di
-    token generati nel calcolo dell'efficienza energetica.
 \end{itemize}
 
 Il framework \texttt{llama.cpp} avvia \texttt{llama-cli} in modalità interattiva,
 consentendo di mantenere il modello caricato in memoria per l'intera sessione di
-benchmark ed evitando di ripeterne il caricamento a ogni prompt. Lo script attende
-la comparsa del simbolo di prompt \texttt{>} di \texttt{llama.cpp} per verificare
-che il modello sia pronto a ricevere l'input; analogamente, al termine di ogni
-generazione, la nuova comparsa del prompt \texttt{>} segnala il completamento della
-risposta.
+benchmark ed evitando di ripeterne il caricamento a ogni prompt. Dopo il caricamento, lo script
+attende la comparsa del simbolo di prompt \texttt{>} di \texttt{llama.cpp}, che
+segnala che il modello è pronto a ricevere l'input. Il completamento di ciascuna
+generazione viene invece rilevato dalla riga di statistiche che \texttt{llama.cpp}
+stampa al termine di ogni risposta, nella forma
+\texttt{[ Prompt: <x> t/s | Generation: <y> t/s ]}: tale riga costituisce un
+delimitatore univoco della fine della risposta, non influenzato dagli eventuali
+caratteri \texttt{>} presenti nel prompt o nel testo generato (ad esempio le
+annotazioni di tipo \texttt{->} o i doctest \texttt{>>>}), che altrimenti
+potrebbero essere scambiati per il prompt di fine risposta. Prima di inviare
+ciascun prompt lo script azzera la cronologia della
+sessione con il comando \texttt{/clear} di \texttt{llama.cpp}: in questo modo ogni
+inferenza viene valutata in modo indipendente dalle precedenti e il contesto non si
+accumula progressivamente fino a saturare la finestra impostata con \texttt{-c}.
+
+Ogni prompt viene inoltre caricato tramite il comando \texttt{/read} di
+\texttt{llama.cpp}, a partire da un file temporaneo scritto sul Raspberry Pi: in
+questo modo se ne preservano gli a-capo. Ciò è essenziale per i task di
+generazione di codice, in cui l'indentazione e la struttura su più righe del
+prompt devono essere mantenute affinché il modello produca codice valido.
 
 L'energia associata al caricamento del modello viene misurata separatamente
 rispetto a quella delle inferenze, in modo che il consumo di inizializzazione non
-influisca sul calcolo dell'efficienza energetica per token. Per ogni singola
+influisca sul calcolo dell'efficienza energetica. Per ogni singola
 inferenza, gli istanti di invio del prompt e di completamento della risposta
-delimitano la finestra temporale $[t_0, t_1]$ utilizzata per estrarre l'energia
-misurata dalla registrazione dell'Otii Ace Pro, secondo
+delimitano la finestra temporale $[t_0, t_1]$ utilizzata per integrare i campioni
+di potenza acquisiti dal PMIC in tale intervallo, secondo
 l'Equazione~\ref{eq:energia_misurata}.
 
 \subsection{Ripetizioni e media delle misure}
@@ -310,22 +339,23 @@ misura.
 \section{Struttura dello script di automazione}
 
 Lo script Python è organizzato in moduli con responsabilità distinte, in modo da
-separare il controllo dello strumento di misura, la gestione del dispositivo sotto
+separare la misura del consumo, la gestione del dispositivo sotto
 test e l'elaborazione dei dati. Tale organizzazione riflette l'architettura
 software del sistema di acquisizione illustrata in
 Figura~\ref{fig:sw_architecture}. I componenti principali sono:
 \begin{itemize}
-    \item modulo di controllo dell'\textbf{Otii Ace Pro}: gestisce la connessione
-    tramite l'API TCP, la configurazione dell'alimentazione e dei canali, la
-    registrazione delle misure e il calcolo dell'energia su una finestra
-    temporale;
+    \item modulo di \textbf{misura del consumo (PMIC)}: campiona il PMIC del
+    Raspberry Pi 5 via SSH, converte le letture in potenza applicando la somma sui
+    rami (Equazione~\ref{eq:pmic_somma}) e calcola l'energia su una finestra temporale;
 
     \item modulo di \textbf{comunicazione SSH}: stabilisce la connessione con il
     Raspberry Pi 5 tramite \texttt{Paramiko}, avvia \texttt{llama.cpp} in modalità
     interattiva, invia i prompt e attende il completamento delle risposte;
 
-    \item modulo di \textbf{parsing} dell'output di \texttt{llama.cpp}: estrae le
-    statistiche di velocità (prompt processing e generation) e il testo generato;
+    \item modulo di \textbf{parsing} dell'output di \texttt{llama.cpp}: dalla riga
+    finale \texttt{[ Prompt: <x> t/s | Generation: <y> t/s ]} estrae le statistiche
+    di velocità (prompt processing e generation) e isola il testo generato,
+    ripulendolo dall'eco del prompt e dalle righe di log;
 
     \item modulo di \textbf{valutazione della qualità}: applica a ciascuna risposta
     il criterio di correttezza specifico del benchmark;
@@ -352,7 +382,7 @@ della classe \texttt{BenchmarkRunner}.
 \end{figure}
 
 I parametri dell'esperimento (indirizzo e credenziali del Raspberry Pi 5,
-configurazione dell'Otii Ace Pro, elenco dei modelli, numero di thread, numero di
+parametri di campionamento del PMIC, elenco dei modelli, numero di thread, numero di
 ripetizioni e percorsi dei dataset) sono raccolti in un file di configurazione
 esterno, in modo da poter modificare le condizioni dell'esperimento senza
 intervenire sul codice.
@@ -362,19 +392,4 @@ intervenire sul codice.
 Al termine dell'esecuzione, tutte le misure acquisite vengono salvate in un file
 in formato \texttt{CSV}, in cui ogni riga corrisponde a una singola inferenza e
 riporta il modello, il livello di quantizzazione, il numero di thread, la
-ripetizione, il benchmark, l'energia netta, la latenza, il numero di token
-generati, l'efficienza in J/token, il punteggio di qualità e le informazioni
-termiche associate.
-
-L'elaborazione dei dati e la produzione dei grafici comparativi vengono effettuate
-mediante le librerie \texttt{pandas} (per l'aggregazione e la media sulle
-ripetizioni), \texttt{seaborn} e \texttt{matplotlib} (per la visualizzazione) e
-\texttt{scikit-learn} (per la normalizzazione delle metriche). A partire dal file
-CSV vengono generati i grafici relativi all'efficienza energetica, alla latenza,
-alla potenza media assorbita, alla velocità di elaborazione (prompt processing e
-generation, in token/s) e alla qualità delle risposte, per ciascun modello e
-configurazione di thread, oltre a un grafico riassuntivo del compromesso tra
-efficienza energetica e qualità.
-
-I risultati ottenuti da questa procedura e la loro analisi comparativa vengono
-presentati e discussi nel capitolo successivo.
+ripetizione, il benchmark

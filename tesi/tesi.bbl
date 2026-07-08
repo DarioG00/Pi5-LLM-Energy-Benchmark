@@ -12,6 +12,12 @@
 \newblock \url{https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF}.
 \newblock Consultato il 3 luglio 2026.
 
+\bibitem{jfikar_rpi5power}
+Jan Fikar.
+\newblock {RPi5-power}: Simple script measuring the consumption of {Raspberry} {Pi} 5 in watts.
+\newblock \url{https://github.com/jfikar/RPi5-power}, 2024.
+\newblock Progetto open source. Consultato l'8 luglio 2026.
+
 \bibitem{husom2025sustainable}
 Erik~Johannes Husom, Arda Goknil, Merve Astekin, Lwin~Khin Shar, Andre K{\aa}sen, Sagar Sen, Benedikt~Andreas Mithassel, and Ahmet Soylu.
 \newblock Sustainable {LLM} inference for edge {AI}: Evaluating quantized {LLMs} for energy efficiency, output accuracy, and inference latency.
@@ -21,18 +27,6 @@ Erik~Johannes Husom, Arda Goknil, Merve Astekin, Lwin~Khin Shar, Andre K{\aa}sen
 Yuyi Mao, Xianghao Yu, Kaibin Huang, Ying-Jun~Angela Zhang, and Jun Zhang.
 \newblock Green edge {AI}: A contemporary survey.
 \newblock {\em Proceedings of the IEEE}, 112(7):880--911, 2024.
-
-\bibitem{otii_docs}
-{Qoitech}.
-\newblock Otii products --- user manual.
-\newblock \url{https://docs.qoitech.com/en/user-manual/otii-products}.
-\newblock Consultato il 3 luglio 2026.
-
-\bibitem{otii_tcp_api}
-{Qoitech}.
-\newblock Otii {TCP} server {API}.
-\newblock \url{https://www.qoitech.com/help/tcpserver/index.html}.
-\newblock Consultato il 3 luglio 2026.
 
 \bibitem{qwen25_gguf}
 {Qwen Team}.

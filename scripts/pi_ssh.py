@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import re
 import time
+import base64
 import logging
 from dataclasses import dataclass
 from typing import Optional
@@ -18,6 +19,8 @@ import paramiko
 log = logging.getLogger("ssh")
 
 ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]")
+# Riga dei timing di fine generazione: "[ Prompt: X t/s | Generation: Y t/s ]"
+_PERF_RE = re.compile(r"Prompt:\s*[\d.,]+\s*t/s\s*\|\s*Generation:\s*[\d.,]+\s*t/s", re.IGNORECASE)
 
 
 def strip_ansi(text: str) -> str:
@@ -40,11 +43,20 @@ class PiConfig:
 
 
 class PiSSH:
-    def __init__(self, cfg: PiConfig, ready_prompt: str = "> "):
+    def __init__(self, cfg: PiConfig, ready_prompt: str = "> ",
+                 prompt_mode: str = "read",
+                 prompt_file: str = "/tmp/bench_prompt.txt"):
         self.cfg = cfg
         self.ready_prompt = ready_prompt
+        # "read":  invia ogni prompt via il comando /read di llama-cli leggendo un
+        #          file sul Pi -> gli a-capo del prompt sono preservati (necessario
+        #          per il codice). "inline": invia il prompt su una riga (a-capo
+        #          sostituiti da spazi) come fallback.
+        self.prompt_mode = prompt_mode
+        self.prompt_file = prompt_file
         self.client: Optional[paramiko.SSHClient] = None
         self.shell: Optional[paramiko.Channel] = None
+        self._staged: Optional[str] = None
 
     # ------------------------------------------------------------- connessione
     def wait_for_boot_and_connect(self) -> None:
@@ -99,8 +111,16 @@ class PiSSH:
             pass
         return out
 
-    def _read_until_ready(self, timeout: float) -> str:
-        """Accumula output finché ricompare il prompt `>` o scade il timeout."""
+    def _read_until_ready(self, timeout: float, expect_perf: bool = False) -> str:
+        """Accumula output fino al segnale di completamento o allo scadere del timeout.
+
+        Con ``expect_perf=True`` (invio di un prompt) il completamento e' segnalato
+        dalla riga dei timing ``[ Prompt: X t/s | Generation: Y t/s ]``, che e'
+        inequivocabile e non risente dei caratteri ``>`` presenti nel testo del
+        prompt o della risposta (es. ``->`` o ``>>>``). Con ``expect_perf=False``
+        (attesa dopo il caricamento del modello) si attende invece la riga di prompt
+        pronta, costituita dal solo carattere ``>``.
+        """
         assert self.shell is not None
         buf = ""
         deadline = time.time() + timeout
@@ -110,12 +130,17 @@ class PiSSH:
                 if chunk:
                     buf += chunk
                     clean = strip_ansi(buf)
-                    # il prompt di llama.cpp compare a inizio riga in attesa di input
-                    tail = clean.rstrip("\n ").splitlines()
-                    if tail and tail[-1].strip().endswith(">"):
-                        return clean
-                    if clean.rstrip().endswith(">"):
-                        return clean
+                    if expect_perf:
+                        # fine generazione: attende SOLO la riga dei timing, cosi'
+                        # l'eco iniziale "> " e i caratteri '>' del testo non
+                        # interrompono la lettura in anticipo.
+                        if _PERF_RE.search(clean):
+                            return clean
+                    else:
+                        # attesa del prompt pronto dopo il caricamento del modello
+                        tail = clean.rstrip("\n ").splitlines()
+                        if tail and tail[-1].strip() == ">":
+                            return clean
                 else:
                     time.sleep(0.05)
             except paramiko.ssh_exception.SSHException:
@@ -156,6 +181,23 @@ class PiSSH:
             return ""
 
     # ------------------------------------------------------------ llama-cli
+    def clear_history(self) -> None:
+        """Ripulisce la cronologia della chat di llama-cli (comando \texttt{/clear}).
+
+        Va chiamato prima di ogni prompt: cosi' ogni inferenza e' valutata in modo
+        indipendente e il contesto non si accumula fino a saturare la finestra
+        impostata con ``-c`` (evita l'errore "exceeds the available context size").
+        """
+        if self.shell is None:
+            return
+        try:
+            self._drain()
+            self.shell.send("/clear\n")
+            self._read_until_ready(15)
+            self._drain()
+        except Exception as exc:  # noqa: BLE001
+            log.warning("clear_history fallita: %s", exc)
+
     def launch_model(self, command: str, load_timeout: float) -> str:
         """Avvia llama-cli in modalità interattiva e attende che sia pronto."""
         assert self.shell is not None, "shell non aperta"
@@ -165,16 +207,41 @@ class PiSSH:
         out = self._read_until_ready(load_timeout)
         return out
 
-    def send_prompt(self, prompt: str, infer_timeout: float) -> str:
-        """Invia un prompt e ritorna il testo generato fino al prompt `>`."""
+    def stage_prompt(self, prompt: str) -> None:
+        """Prepara il prompt SENZA avviare la generazione.
+
+        Va chiamato PRIMA di aprire la finestra di misura, cosi' l'overhead di
+        preparazione (scrittura file + \texttt{/read}) non finisce nell'energia e
+        nella latenza dell'inferenza. In modalita' "read" scrive il prompt in un
+        file sul Pi (a-capo preservati) e lo carica nel buffer con \texttt{/read};
+        in modalita' "inline" memorizza il prompt collassato su una riga.
+        """
         assert self.shell is not None
         self._drain()
-        # i prompt possono essere multi-riga: sostituiamo i newline interni con
-        # spazi per evitare invii prematuri, mantenendo la struttura leggibile.
-        single = prompt.replace("\n", " ").strip()
-        self.shell.send(single + "\n")
-        out = self._read_until_ready(infer_timeout)
-        return out
+        if self.prompt_mode == "read":
+            b64 = base64.b64encode(prompt.encode("utf-8")).decode("ascii")
+            self.run_command(f"echo {b64} | base64 -d > {self.prompt_file}")
+            self.shell.send(f"/read {self.prompt_file}\n")
+            time.sleep(0.4)          # attende il caricamento del file nel buffer
+            self._drain()            # scarta la conferma/eco del comando /read
+            self._staged = None
+        else:
+            self._staged = prompt.replace("\n", " ").strip()
+
+    def submit_prompt(self, infer_timeout: float) -> str:
+        """Avvia la generazione del prompt gia' preparato e attende il completamento
+        (rilevato dalla riga dei timing). Ritorna l'output grezzo."""
+        assert self.shell is not None
+        if self.prompt_mode == "read":
+            self.shell.send("\n")               # invia il contenuto caricato
+        else:
+            self.shell.send((self._staged or "") + "\n")
+        return self._read_until_ready(infer_timeout, expect_perf=True)
+
+    def send_prompt(self, prompt: str, infer_timeout: float) -> str:
+        """Prepara e invia un prompt in un solo passo (staging + submit)."""
+        self.stage_prompt(prompt)
+        return self.submit_prompt(infer_timeout)
 
     def stop_model(self) -> str:
         """Esce da llama-cli (Ctrl-C) e raccoglie il riepilogo finale dei timing."""

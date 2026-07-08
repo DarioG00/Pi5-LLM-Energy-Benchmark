@@ -5,7 +5,7 @@ import re
 from typing import Optional
 
 # Formato compatto effettivamente prodotto dal build di llama.cpp in uso, es.:
-#   "Prompt: 200.00 t/s | Generation: 80.00 t/s"
+#   "[ Prompt: 16,4 t/s | Generation: 15,8 t/s ]"  (build recente, b8989)
 # (gestisce anche la virgola come separatore decimale).
 _COMPACT_RE = re.compile(
     r"Prompt:\s*([\d.,]+)\s*t/s\s*\|\s*Generation:\s*([\d.,]+)\s*t/s",
@@ -83,26 +83,36 @@ def extract_response(raw: str, prompt: str) -> str:
     Rimuove l'eco del prompt, le righe di log di llama.cpp e il prompt `>`.
     """
     text = raw
-    single = prompt.replace("\n", " ").strip()
-    idx = text.find(single)
-    if idx != -1:
-        text = text[idx + len(single):]
+    # 1) rimuove il blocco del prompt rieccheggiato (multi-riga o collassato)
+    for p in (prompt.strip(), prompt.replace("\n", " ").strip()):
+        if p:
+            idx = text.find(p)
+            if idx != -1:
+                text = text[idx + len(p):]
+                break
+    # 2) insieme delle righe del prompt: se rieccheggiate singolarmente vanno
+    #    scartate (lo scoring del codice ricostruisce comunque firma+docstring dal
+    #    prompt originale; il completamento non coincide con righe del prompt).
+    prompt_lines = {l.strip() for l in prompt.splitlines() if l.strip()}
     lines = []
     for line in text.splitlines():
         s = line.strip()
         if not s:
             continue
-        if s == ">" or s.endswith("> ") and len(s) <= 2:
+        if s == ">" or (s.endswith(">") and len(s) <= 2):
+            continue
+        if s.startswith("/read"):                # eco del comando /read
+            continue
+        if s in prompt_lines:                    # riga del prompt rieccheggiata
             continue
         # scarta le righe di log/diagnostica di llama.cpp
-        if re.match(r"^(llama_|llm_|ggml_|main:|system_info|sampler|generate:|build:)", s):
+        if re.match(r"^(llama_|llm_|ggml_|main:|system_info|sampler|generate:|build:|srv |print_info|load[_:]|register_|common_)", s):
             continue
-        # scarta la riga compatta delle statistiche di velocità
+        # scarta la riga dei timing [ Prompt: ... | Generation: ... t/s ]
         if _COMPACT_RE.search(s):
             continue
         lines.append(line.rstrip())
     out = "\n".join(lines).strip()
-    # rimuove un eventuale '>' finale residuo
     out = re.sub(r"\n?>\s*$", "", out).strip()
     return out
 

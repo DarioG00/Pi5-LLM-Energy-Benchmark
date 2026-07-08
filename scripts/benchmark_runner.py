@@ -1,15 +1,14 @@
 """Orchestratore del benchmark energetico LLM su Raspberry Pi 5.
 
 Flusso completo:
-  1. configura e accende l'Otii Ace Pro (5 V, limite di corrente);
-  2. alimenta il Pi e attende il boot, poi apre SSH (Paramiko);
-  3. misura il consumo idle (bias);
-  4. per ogni modello × thread × ripetizione:
-       - avvia llama-cli interattivo (energia di caricamento misurata a parte),
-       - invia i prompt dei 5 benchmark attendendo il prompt `>`,
-       - misura energia/latenza per ciascuna inferenza,
-       - calcola J/token e punteggio qualità;
-  5. salva tutto in CSV (media sulle ripetizioni in fase di analisi).
+  1. apre la connessione al Pi (PMIC via SSH) e misura il consumo idle (bias);
+  2. avvia llama-cli interattivo (energia di caricamento misurata a parte);
+  3. per ogni modello × thread × ripetizione, per ogni prompt:
+       - azzera la cronologia (/clear) così ogni inferenza e' indipendente,
+       - invia il prompt attendendo il prompt `>`,
+       - misura energia netta (PMIC) e latenza wall-clock per l'inferenza,
+       - valuta la qualita' della risposta;
+  4. salva tutto in CSV (media sulle ripetizioni in fase di analisi).
 """
 from __future__ import annotations
 
@@ -32,7 +31,7 @@ CSV_FIELDS = [
     "model_file", "family", "quant", "threads", "repetition",
     "benchmark", "sample_id", "prompt", "expected", "response",
     "latency_s", "energy_total_j", "energy_idle_j", "energy_net_j",
-    "avg_power_w", "gen_tokens", "j_per_token",
+    "avg_power_w",
     "prompt_tps", "gen_tps", "score", "confidence", "needs_review", "parsed",
     "temp_c", "throttled_hex", "throttle_active", "throttle_event",
 ]
@@ -51,10 +50,10 @@ def build_command(llama_cfg: dict, model_file: str, threads: int) -> str:
 
 class BenchmarkRunner:
     def __init__(self, config: dict, base_dir: str = ".",
-                 otii=None, ssh=None):
+                 power=None, ssh=None):
         self.cfg = config
         self.base_dir = base_dir
-        self.otii = otii          # OtiiController (o simulato)
+        self.power = power        # PmicMonitor (o simulato)
         self.ssh = ssh            # PiSSH (o simulato)
         self.samples: List[Sample] = []
         self.rows: List[dict] = []
@@ -66,15 +65,15 @@ class BenchmarkRunner:
         log.info("Totale campioni: %d", len(self.samples))
 
     def setup_hardware(self) -> None:
-        # Otii
-        self.otii.connect()
-        self.otii.configure_power()
-        self.otii.power_on()
-        # Pi
+        # misura consumo (PMIC): apre la connessione SSH dedicata al Pi
+        self.power.connect()
+        self.power.configure_power()
+        self.power.power_on()
+        # Pi (shell interattiva per llama-cli)
         self.ssh.wait_for_boot_and_connect()
         self.ssh.open_shell()
         # bias idle
-        self.otii.measure_idle_bias()
+        self.power.measure_idle_bias()
 
     # ----------------------------------------------------------------- run
     def run(self) -> None:
@@ -116,24 +115,29 @@ class BenchmarkRunner:
         base = thermal.read_state(self.ssh) if tcfg.enabled else {}
         base_occurred = bool(base.get("throttled_value", 0) & 0xF0000)
 
-        self.otii.new_project()
-        self.otii.start_recording()
-        time.sleep(self.cfg["otii"].get("settle_seconds", 3))
+        self.power.new_project()
+        self.power.start_recording()
+        time.sleep(getattr(self.power, "settle_seconds", 3))
 
         # --- caricamento del modello ---
-        t_load0 = self.otii.mark()
+        t_load0 = self.power.mark()
         load_out = self.ssh.launch_model(command, llama_cfg.get("load_timeout", 180))
-        t_load1 = self.otii.mark()
+        t_load1 = self.power.mark()
 
         # --- inferenze sui benchmark ---
         per_sample = []
         throttled_during = False
         for s in self.samples:
-            t0 = self.otii.mark()
+            # azzera la cronologia: ogni prompt e' indipendente e non satura il contesto
+            self.ssh.clear_history()
+            # prepara il prompt PRIMA di aprire la finestra (lo staging /read non
+            # deve entrare nell'energia/latenza dell'inferenza)
+            self.ssh.stage_prompt(s.prompt)
+            t0 = self.power.mark()
             wall0 = time.monotonic()
-            raw = self.ssh.send_prompt(s.prompt, llama_cfg.get("infer_timeout", 240))
+            raw = self.ssh.submit_prompt(llama_cfg.get("infer_timeout", 240))
             latency = time.monotonic() - wall0
-            t1 = self.otii.mark()
+            t1 = self.power.mark()
             # lettura termica DOPO la chiusura della finestra di misura
             tstate = {}
             if tcfg.enabled and tcfg.log_per_inference:
@@ -150,26 +154,23 @@ class BenchmarkRunner:
         summary = self.ssh.stop_model()
         sess_tim = parse_timings(load_out + "\n" + "\n".join(p[4] for p in per_sample) + "\n" + summary)
 
-        rec = self.otii.stop_recording()
+        rec = self.power.stop_recording()
 
         # --- riga di caricamento ---
-        load_e = self.otii.window_energy(rec, t_load0, t_load1)
+        load_e = self.power.window_energy(rec, t_load0, t_load1)
         local_rows.append(self._mk_row(
             model, threads, rep, LOAD_TAG, "load", "", "", "",
             latency=load_e["duration_s"], energy=load_e,
-            tokens=0, timings=sess_tim,
+            timings=sess_tim,
             score={"score": "", "confidence": "", "needs_review": "", "parsed": ""},
             tstate=base, throttle_event=throttled_during,
         ))
 
         # --- righe per ogni inferenza ---
         for (s, t0, t1, latency, raw, tstate) in per_sample:
-            energy = self.otii.window_energy(rec, t0, t1)
+            energy = self.power.window_energy(rec, t0, t1)
             response = extract_response(raw, s.prompt)
             ptim = parse_timings(raw)
-            # Il formato compatto dei t/s non riporta il numero di token: si
-            # approssima con n_predict (-n), ossia il massimo di token generati.
-            gen_tokens = ptim.get("gen_tokens") or llama_cfg.get("n_predict", 128)
             meta = dict(s.meta)
             meta.setdefault("prompt", s.prompt)
             sc = scoring.score(s.btype, response, s.expected, meta)
@@ -180,17 +181,16 @@ class BenchmarkRunner:
             local_rows.append(self._mk_row(
                 model, threads, rep, s.benchmark, s.id, s.prompt,
                 s.expected, response,
-                latency=latency, energy=energy, tokens=gen_tokens,
+                latency=latency, energy=energy,
                 timings=timings, score=sc,
                 tstate=tstate, throttle_event=throttled_during,
             ))
         return local_rows, throttled_during
 
     def _mk_row(self, model, threads, rep, benchmark, sample_id, prompt,
-                expected, response, latency, energy, tokens, timings, score,
+                expected, response, latency, energy, timings, score,
                 tstate=None, throttle_event=False) -> dict:
         net = energy.get("energy_net_j", 0.0)
-        jpt = (net / tokens) if tokens else ""
         tstate = tstate or {}
         temp = tstate.get("temp_c", "")
         return {
@@ -209,8 +209,6 @@ class BenchmarkRunner:
             "energy_idle_j": round(energy.get("energy_idle_j", 0.0), 6),
             "energy_net_j": round(net, 6),
             "avg_power_w": round(energy.get("avg_power_w", 0.0), 4),
-            "gen_tokens": tokens,
-            "j_per_token": round(jpt, 6) if jpt != "" else "",
             "prompt_tps": timings.get("prompt_tps"),
             "gen_tps": timings.get("gen_tps"),
             "score": score.get("score", ""),
@@ -246,7 +244,7 @@ class BenchmarkRunner:
         except Exception:
             pass
         try:
-            self.otii.power_off()
-            self.otii.disconnect()
+            self.power.power_off()
+            self.power.disconnect()
         except Exception:
             pass

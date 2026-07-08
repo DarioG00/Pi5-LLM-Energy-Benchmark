@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.5.31)  7 JUL 2026 16:44
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.5.31)  8 JUL 2026 18:25
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -393,22 +393,22 @@ Capitolo 2.
 
 ] [6]
 LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <12> not available
-(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 89.
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 97.
  [7]
-Underfull \hbox (badness 6526) in paragraph at lines 133--133
+Underfull \hbox (badness 6526) in paragraph at lines 134--134
 [][][]\T1/cmr/m/n/10 Le di-pen-den-ze pos-so-no es-se-re in-stal-la-te con il co-man-do \T1/cmtt/m/n/10 pip install -r
  []
 
-<./imm/hw_architecture.png, id=178, 4215.75pt x 2198.2125pt>
+<./imm/hw_architecture.png, id=182, 2195.20125pt x 1207.51125pt>
 File: ./imm/hw_architecture.png Graphic file (type png)
 <use ./imm/hw_architecture.png>
-Package pdftex.def Info: ./imm/hw_architecture.png  used on input line 145.
-(pdftex.def)             Requested size: 390.0pt x 203.33147pt.
-<./imm/sw_architecture.png, id=181, 4577.1pt x 2137.9875pt>
+Package pdftex.def Info: ./imm/hw_architecture.png  used on input line 146.
+(pdftex.def)             Requested size: 390.0pt x 214.5236pt.
+<./imm/sw_architecture.png, id=185, 2383.90625pt x 1144.275pt>
 File: ./imm/sw_architecture.png Graphic file (type png)
 <use ./imm/sw_architecture.png>
-Package pdftex.def Info: ./imm/sw_architecture.png  used on input line 155.
-(pdftex.def)             Requested size: 390.0pt x 182.16695pt.
+Package pdftex.def Info: ./imm/sw_architecture.png  used on input line 156.
+(pdftex.def)             Requested size: 390.0pt x 187.19089pt.
 ) [8] [9 <./imm/hw_architecture.png> <./imm/sw_architecture.png>]
 \openout2 = `capitoli/esperimento.aux'.
 
@@ -419,31 +419,35 @@ Capitolo 3.
 
 
 
-] [11]
-Underfull \hbox (badness 3029) in paragraph at lines 129--129
+] [11] [12]
+Underfull \hbox (badness 3029) in paragraph at lines 147--147
 []|\T1/cmr/m/n/12 Criterio di cor-ret-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 129--129
+Underfull \hbox (badness 10000) in paragraph at lines 147--147
 []|\T1/cmr/m/n/12 Corrispondenza
  []
 
 
-Overfull \hbox (11.71854pt too wide) in paragraph at lines 168--168
+Overfull \hbox (11.71854pt too wide) in paragraph at lines 186--186
 \T1/cmtt/m/n/10.95 has_close_elements(numbers, 
  []
 
-[12] [13] [14]
-Overfull \hbox (10.58391pt too wide) in paragraph at lines 227--229
+[13] [14]
+Overfull \hbox (10.58391pt too wide) in paragraph at lines 244--246
 []\T1/cmtt/m/n/12 -m <modello>.gguf\T1/cmr/m/n/12 : se-le-zio-na il mo-del-lo quan-tiz-za-to, in for-ma-to GGUF,
  []
 
 [15] [16] [17]
-<imm/uml_classi.png, id=260, 3146.75626pt x 5236.56375pt>
+Overfull \hbox (7.96103pt too wide) in paragraph at lines 349--353
+[]\T1/cmr/m/n/12 modulo di \T1/cmr/bx/n/12 par-sing \T1/cmr/m/n/12 del-l'out-put di \T1/cmtt/m/n/12 llama.cpp\T1/cmr/m/n/12 : dal-la ri-ga fi-na-le \T1/cmtt/m/n/12 [ Prompt:
+ []
+
+<imm/uml_classi.png, id=268, 3146.75626pt x 5236.56375pt>
 File: imm/uml_classi.png Graphic file (type png)
 <use imm/uml_classi.png>
-Package pdftex.def Info: imm/uml_classi.png  used on input line 349.
+Package pdftex.def Info: imm/uml_classi.png  used on input line 373.
 (pdftex.def)             Requested size: 302.35406pt x 503.15187pt.
 ) [18] [19 <./imm/uml_classi.png>] (./tesi.bbl
 Underfull \hbox (badness 7814) in paragraph at lines 4--8
@@ -451,17 +455,17 @@ Underfull \hbox (badness 7814) in paragraph at lines 4--8
  []
 
 
-Underfull \hbox (badness 1590) in paragraph at lines 44--48
+Underfull \hbox (badness 1590) in paragraph at lines 38--42
 []\T1/cmr/m/n/12 Raspberry Pi Ltd.  Ra-sp-ber-ry pi hard-ware --- GPIO.  []$\T1/cmtt/m/n/12 https :
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 44--48
+Underfull \hbox (badness 10000) in paragraph at lines 38--42
 \T1/cmtt/m/n/12 / / www . raspberrypi . com / documentation / computers / raspberry-[]pi .
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 50--54
+Underfull \hbox (badness 10000) in paragraph at lines 44--48
 \T1/cmtt/m/n/12 raspberrypi . com / news / heating-[]and-[]cooling-[]raspberry-[]pi-[]5/$[]\T1/cmr/m/n/12 ,
  []
 
@@ -475,21 +479,21 @@ LaTeX2e <2025-11-01>
 L3 programming layer <2026-05-26>
  ***********
 Package rerunfilecheck Info: File `tesi.out' has not changed.
-(rerunfilecheck)             Checksum: BBE0C243529BB05B0F97B067E6A6F7B4;4618.
+(rerunfilecheck)             Checksum: 9414B58B67C1101A7887E9CD2B91FF2E;4722.
  ) 
 Here is how much of TeX's memory you used:
- 12844 strings out of 467337
- 196823 string characters out of 5419514
- 631361 words of memory out of 5000000
+ 12843 strings out of 467337
+ 196816 string characters out of 5419514
+ 628418 words of memory out of 5000000
  41685 multiletter control sequences out of 15000+600000
  649050 words of font info for 92 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,10n,79p,496b,537s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,10n,79p,429b,535s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfbx1095.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfbx1728.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfbx2488.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfrm0700.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfrm0800.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfrm1095.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfrm1728.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfti1095.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfti1200.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sftt1000.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sftt1095.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sftt1200.pfb>
-Output written on tesi.pdf (21 pages, 1530275 bytes).
+Output written on tesi.pdf (21 pages, 1514168 bytes).
 PDF statistics:
- 422 PDF objects out of 1000 (max. 8388607)
- 339 compressed objects within 4 object streams
- 68 named destinations out of 1000 (max. 500000)
+ 424 PDF objects out of 1000 (max. 8388607)
+ 341 compressed objects within 4 object streams
+ 67 named destinations out of 1000 (max. 500000)
  221 words of extra memory for PDF output out of 10000 (max. 10000000)
 

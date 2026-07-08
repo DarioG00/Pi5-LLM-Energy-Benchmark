@@ -1,8 +1,8 @@
 """Backend simulati per provare il flusso senza hardware (--simulate).
 
-Riproducono l'interfaccia di OtiiController e PiSSH usata da BenchmarkRunner,
+Riproducono l'interfaccia di PmicMonitor e PiSSH usata da BenchmarkRunner,
 generando dati sintetici plausibili. Utile per validare la pipeline e l'analisi
-prima di collegare l'Otii Ace Pro e il Raspberry Pi.
+prima di collegare il Raspberry Pi.
 """
 from __future__ import annotations
 
@@ -10,36 +10,41 @@ import time
 import random
 
 
-class FakeOtii:
-    def __init__(self, cfg_otii: dict):
-        self.cfg = cfg_otii
-        self.idle_power_w = 2.6
+class FakePmic:
+    """Backend PMIC simulato: stessa interfaccia di PmicMonitor.
+
+    Genera potenze (W) plausibili come somma grezza del PMIC
+    (idle ~3-4 W, carico ~8-12 W).
+    """
+    def __init__(self, cfg_pmic: dict):
+        self.cfg = cfg_pmic or {}
+        self.settle_seconds = self.cfg.get("settle_seconds", 3)
+        self.idle_power_w = 3.5
         self._t0 = time.monotonic()
-        self.id = "SIM-ACE"
 
     def connect(self): pass
     def configure_power(self): pass
     def power_on(self): pass
     def power_off(self): pass
     def disconnect(self): pass
-    def new_project(self): self._t0 = time.monotonic(); return object()
+    def new_project(self): return None
 
     def start_recording(self):
         self._t0 = time.monotonic()
 
     def stop_recording(self):
-        return object()
+        return []          # i campioni non servono al backend simulato
 
     def mark(self) -> float:
         return time.monotonic() - self._t0
 
     def measure_idle_bias(self) -> float:
-        self.idle_power_w = round(random.uniform(2.3, 2.9), 3)
+        self.idle_power_w = round(random.uniform(3.0, 4.0), 3)
         return self.idle_power_w
 
     def window_energy(self, rec, t_from: float, t_to: float) -> dict:
         duration = max(1e-3, t_to - t_from)
-        avg_power = round(random.uniform(4.5, 7.5), 3)  # W in carico
+        avg_power = round(random.uniform(7.5, 12.0), 3)   # W (somma PMIC)
         energy_total = avg_power * duration
         energy_idle = self.idle_power_w * duration
         return {
@@ -51,8 +56,8 @@ class FakeOtii:
         }
 
 
-# Formato compatto come quello emesso dal build di llama.cpp in uso.
-_PERF = "Prompt: 200.00 t/s | Generation: 80.00 t/s\n"
+# Riga dei timing emessa dal build recente di llama.cpp (parentesi, virgola).
+_PERF = "[ Prompt: 16,4 t/s | Generation: 15,8 t/s ]\n"
 
 
 class FakeSSH:
@@ -64,6 +69,9 @@ class FakeSSH:
 
     def wait_for_boot_and_connect(self): time.sleep(0.05)
     def open_shell(self): pass
+    def clear_history(self): pass
+    def stage_prompt(self, prompt): self._staged = prompt
+    def submit_prompt(self, infer_timeout): return self.send_prompt(getattr(self, '_staged', ''), infer_timeout)
 
     # --- comandi paralleli (vcgencmd) simulati ---
     def run_command(self, cmd: str, timeout: float = 15.0) -> str:
@@ -71,6 +79,12 @@ class FakeSSH:
             return f"temp={self._temp:.1f}'C"
         if "get_throttled" in cmd:
             return f"throttled=0x{self._throttled:x}"
+        if "pmic_read_adc" in cmd:
+            i = random.uniform(0.3, 1.1)   # corrente VDD_CORE simulata
+            return (
+                "   VDD_CORE_A current(7)=%.6fA\n"
+                "   VDD_CORE_V volt(15)=0.900000V\n" % i
+            )
         return ""
 
     def measure_temp(self) -> float:

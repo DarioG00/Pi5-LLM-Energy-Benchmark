@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
 """Entry point eseguito dal PC host per il benchmark energetico LLM su Pi 5.
 
+Il backend di misura è scelto in config.json col campo "backend":
+    - "pmic": misura via PMIC del Pi 5 (vcgencmd pmic_read_adc), metodo
+      jfikar/RPi5-power. Nessun hardware esterno: il Pi è alimentato dal suo
+      alimentatore ufficiale (opzione consigliata dal relatore).
+    - "otii": misura con Otii Ace Pro via TCP server (porta 1905).
+
 Esempi:
-    python run_benchmark.py                 # esecuzione reale (Otii + Pi via SSH)
+    python run_benchmark.py                 # esecuzione reale (backend da config)
     python run_benchmark.py --simulate      # prova della pipeline senza hardware
     python run_benchmark.py --no-analysis   # salta i grafici finali
 
-Prerequisiti reali:
-    - Otii software in esecuzione con TCP server attivo (porta 1905);
-    - Otii Ace Pro collegato e Raspberry Pi 5 cablato all'uscita;
-    - Pi raggiungibile via Ethernet all'IP indicato in config.json.
+Prerequisiti reali (backend "pmic"):
+    - Raspberry Pi 5 acceso e raggiungibile via Ethernet all'IP di config.json;
+    - accesso SSH abilitato; `vcgencmd pmic_read_adc` disponibile sul Pi.
 """
 from __future__ import annotations
 
@@ -28,18 +33,19 @@ def load_config(path: str) -> dict:
 
 
 def make_real_backends(cfg: dict):
-    from scripts.otii_controller import OtiiController, OtiiConfig
     from scripts.pi_ssh import PiSSH, PiConfig
-    otii = OtiiController(OtiiConfig.from_dict(cfg["otii"]))
-    ssh = PiSSH(PiConfig.from_dict(cfg["pi"]),
-                ready_prompt=cfg["llama"].get("ready_prompt", "> "))
-    return otii, ssh
+    from scripts.pmic import PmicMonitor, PmicConfig
+    pi_cfg = PiConfig.from_dict(cfg["pi"])
+    ssh = PiSSH(pi_cfg, ready_prompt=cfg["llama"].get("ready_prompt", "> "),
+                prompt_mode=cfg["llama"].get("prompt_mode", "read"))
+    monitor = PmicMonitor(pi_cfg, PmicConfig.from_dict(cfg.get("pmic", {})))
+    return monitor, ssh
 
 
 def make_sim_backends(cfg: dict):
-    from scripts.simulation import FakeOtii, FakeSSH
-    return FakeOtii(cfg["otii"]), FakeSSH(cfg["pi"],
-                                          cfg["llama"].get("ready_prompt", "> "))
+    from scripts.simulation import FakePmic, FakeSSH
+    ssh = FakeSSH(cfg["pi"], cfg["llama"].get("ready_prompt", "> "))
+    return FakePmic(cfg.get("pmic", {})), ssh
 
 
 def main() -> int:
@@ -62,8 +68,8 @@ def main() -> int:
     base_dir = os.path.dirname(os.path.abspath(args.config)) or "."
     cfg = load_config(args.config)
 
-    otii, ssh = make_sim_backends(cfg) if args.simulate else make_real_backends(cfg)
-    runner = BenchmarkRunner(cfg, base_dir=base_dir, otii=otii, ssh=ssh)
+    power, ssh = make_sim_backends(cfg) if args.simulate else make_real_backends(cfg)
+    runner = BenchmarkRunner(cfg, base_dir=base_dir, power=power, ssh=ssh)
 
     csv_path = None
     try:

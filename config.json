@@ -7,33 +7,23 @@
     "boot_wait_seconds": 90,
     "boot_retry_seconds": 5
   },
-  "otii": {
-    "host": "127.0.0.1",
-    "port": 1905,
-    "main_voltage": 5.1,
-    "supply_current": 2.4,
-    "max_current": 5.0,
-    "channels": [
-      "mc",
-      "mv",
-      "mp"
-    ],
-    "power_channel": "mp",
-    "samplerate": 4000,
-    "project_dir": "./recordings",
+  "pmic": {
+    "sample_hz": 10.0,
     "idle_seconds": 20,
     "settle_seconds": 3,
-    "current_range": "high"
+    "corr_slope": 1.0,
+    "corr_offset": 0.0
   },
   "llama": {
-    "bin": "./llama.cpp/build/bin/llama-cli",
+    "bin": "~/llama.cpp/build/bin/llama-cli",
     "models_dir": "~/LLMs",
-    "ctx_size": 512,
+    "ctx_size": 2048,
     "n_predict": 128,
     "extra_args": [],
     "ready_prompt": "> ",
     "load_timeout": 180,
-    "infer_timeout": 240
+    "infer_timeout": 240,
+    "prompt_mode": "read"
   },
   "thermal": {
     "enabled": true,

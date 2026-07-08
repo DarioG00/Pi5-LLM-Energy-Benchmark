@@ -29,8 +29,8 @@ def _model_label(row) -> str:
 
 def load_results(csv_path: str) -> pd.DataFrame:
     df = pd.read_csv(csv_path)
-    for col in ["latency_s", "energy_net_j", "j_per_token", "avg_power_w",
-                "gen_tokens", "score", "prompt_tps", "gen_tps", "temp_c"]:
+    for col in ["latency_s", "energy_net_j", "avg_power_w",
+                "score", "prompt_tps", "gen_tps", "temp_c"]:
         if col in df:
             df[col] = pd.to_numeric(df[col], errors="coerce")
     if "throttle_event" in df:
@@ -47,9 +47,7 @@ def aggregate(df: pd.DataFrame) -> pd.DataFrame:
     grp = (infer.groupby(["model", "family", "quant", "threads", "benchmark"])
            .agg(latency_s=("latency_s", "mean"),
                 energy_net_j=("energy_net_j", "mean"),
-                j_per_token=("j_per_token", "mean"),
                 avg_power_w=("avg_power_w", "mean"),
-                gen_tokens=("gen_tokens", "mean"),
                 gen_tps=("gen_tps", "mean"),
                 score=("score", "mean"))
            .reset_index())
@@ -62,7 +60,6 @@ def per_config(df: pd.DataFrame) -> pd.DataFrame:
     grp = (infer.groupby(["model", "family", "quant", "threads"])
            .agg(latency_s=("latency_s", "mean"),
                 energy_net_j=("energy_net_j", "mean"),
-                j_per_token=("j_per_token", "mean"),
                 avg_power_w=("avg_power_w", "mean"),
                 prompt_tps=("prompt_tps", "mean"),
                 gen_tps=("gen_tps", "mean"),
@@ -74,11 +71,11 @@ def per_config(df: pd.DataFrame) -> pd.DataFrame:
 def composite_score(cfg_df: pd.DataFrame) -> pd.DataFrame:
     """Score composito normalizzato (sklearn): alta qualità, bassa energia/latenza."""
     d = cfg_df.copy()
-    feats = d[["j_per_token", "latency_s", "score"]].fillna(d[["j_per_token", "latency_s", "score"]].mean())
+    feats = d[["energy_net_j", "latency_s", "score"]].fillna(d[["energy_net_j", "latency_s", "score"]].mean())
     norm = MinMaxScaler().fit_transform(feats)
-    d["n_jpt"], d["n_lat"], d["n_score"] = norm[:, 0], norm[:, 1], norm[:, 2]
-    # peso: 40% efficienza, 20% latenza, 40% qualità (efficienza/latenza invertite)
-    d["composite"] = (0.4 * (1 - d["n_jpt"]) + 0.2 * (1 - d["n_lat"]) + 0.4 * d["n_score"])
+    d["n_energy"], d["n_lat"], d["n_score"] = norm[:, 0], norm[:, 1], norm[:, 2]
+    # peso: 40% efficienza (energia), 20% latenza, 40% qualità (energia/latenza invertite)
+    d["composite"] = (0.4 * (1 - d["n_energy"]) + 0.2 * (1 - d["n_lat"]) + 0.4 * d["n_score"])
     return d.sort_values("composite", ascending=False)
 
 
@@ -92,9 +89,9 @@ def _save(fig, path):
 
 def plot_efficiency(cfg_df, out):
     fig, ax = plt.subplots(figsize=(11, 6))
-    sns.barplot(data=cfg_df, x="model", y="j_per_token", hue="threads", ax=ax)
-    ax.set_title("Efficienza energetica media (J/token) per modello e thread")
-    ax.set_xlabel(""); ax.set_ylabel("J/token (minore = meglio)")
+    sns.barplot(data=cfg_df, x="model", y="energy_net_j", hue="threads", ax=ax)
+    ax.set_title("Energia netta media per inferenza (J) per modello e thread")
+    ax.set_xlabel(""); ax.set_ylabel("Energia netta (J) (minore = meglio)")
     ax.tick_params(axis="x", rotation=20)
     _save(fig, out)
 
@@ -142,10 +139,10 @@ def plot_throughput(cfg_df, out):
 
 def plot_tradeoff(cfg_df, out):
     fig, ax = plt.subplots(figsize=(10, 7))
-    sns.scatterplot(data=cfg_df, x="j_per_token", y="score",
+    sns.scatterplot(data=cfg_df, x="energy_net_j", y="score",
                     hue="model", style="threads", s=140, ax=ax)
     ax.set_title("Trade-off efficienza vs qualità")
-    ax.set_xlabel("J/token (minore = meglio)")
+    ax.set_xlabel("Energia netta per inferenza (J) (minore = meglio)")
     ax.set_ylabel("Score qualità (maggiore = meglio)")
     ax.legend(bbox_to_anchor=(1.02, 1), loc="upper left", fontsize=8)
     _save(fig, out)
