@@ -66,7 +66,7 @@ Tre famiglie, ciascuna in due livelli di quantizzazione (Q4_K_M e Q8_0):
 Comando di lancio (per configurazione):
 
 ```
-~/llama.cpp/build/bin/llama-cli -m <modello>.gguf -t N -c 2048 -n 128
+~/llama.cpp/build/bin/llama-cli -m <modello>.gguf -t N -c 512 -n 128
 ```
 
 dove `N` è il numero di thread (1, 2 o 4). `llama-cli` si avvia in modalità
@@ -96,7 +96,7 @@ scripts/
   llama_parser.py           parsing riga timing e testo generato
   datasets_loader.py        caricamento JSONL
   scoring.py                scoring per-benchmark (con flag di revisione)
-  thermal.py                monitoraggio termico + decode throttling + cooldown
+  thermal.py                monitoraggio termico + decodifica throttling
   benchmark_runner.py       orchestrazione del flusso completo + CSV
   analysis.py               aggregazione e grafici (pandas/seaborn/scikit-learn)
   simulation.py             backend simulati per il dry-run (--simulate)
@@ -116,8 +116,12 @@ tesi/                       tesi LaTeX, schemi hardware/software e diagrammi UML
   `prompt processing` e `generation` in token/s.
 - **Qualità**: punteggio per-benchmark (match della lettera per la scelta
   multipla, corrispondenza esatta, estrazione del valore numerico, esecuzione
-  dei test per HumanEval). Le voci a bassa confidenza (TruthfulQA, codice) sono
-  marcate `needs_review` per la rifinitura manuale.
+  dei test per HumanEval). Anche **TruthfulQA** è usato in forma a **scelta
+  multipla** (variante MC1): 4 opzioni per domanda (l'affermazione veritiera + 3
+  errate), valutate per corrispondenza dell'opzione scelta — automatico,
+  deterministico e confrontabile, senza LLM-giudice (baseline casuale 25%). Le
+  voci del codice restano marcate `needs_review` per un'eventuale rifinitura
+  manuale.
 
 ## Esecuzione delle inferenze e parsing
 
@@ -125,12 +129,14 @@ tesi/                       tesi LaTeX, schemi hardware/software e diagrammi UML
   caricato per l'intera sessione (nessun ricaricamento a ogni prompt).
 - Prima di ogni prompt si invia `/clear`: ogni inferenza è così **indipendente**
   dalle precedenti e il contesto non si accumula fino a saturare la finestra
-  `-c` (con `ctx_size = 2048` i singoli prompt + risposta stanno comodamente
-  nel contesto).
-- Ogni prompt è caricato con il comando `/read` di llama-cli da un file scritto
-  sul Pi, così da **preservarne gli a-capo** (indispensabile per i task di
-  codice). Impostabile con `llama.prompt_mode` in `config.json`: `"read"`
-  (default) oppure `"inline"` (prompt su una riga, a-capo → spazi) come fallback.
+  `-c` (con `ctx_size = 512`, valore contenuto per limitare la memoria sul Pi, i
+  singoli prompt + risposta stanno comunque nel contesto).
+- Ogni prompt è inviato come **una sola riga** (gli a-capo interni diventano
+  spazi): modalità compatibile con tutte le versioni di llama-cli. Impostabile con
+  `llama.prompt_mode` in `config.json`: `"inline"` (default). Esiste anche una
+  modalità sperimentale `"read"` (comando `/read`, per preservare gli a-capo), ma
+  su alcuni build `/read` allega il file come contesto invece di inviarlo come
+  messaggio: usarla solo se verificata sul proprio Pi.
 - La **fine di ogni generazione** è rilevata dalla riga di statistiche che
   llama.cpp stampa a fine risposta:
 
@@ -158,14 +164,10 @@ configurabile nella sezione `thermal` di `config.json`:
 - **Rilevazione e ripetizione**: se durante una ripetizione si rileva throttling
   e `abort_on_throttle` è `true`, la registrazione viene **scartata e ripetuta**
   (fino a `max_retries`); le righe conservano `throttle_event` per tracciabilità.
-- **Cooldown** (`cooldown_enabled`): opzionalmente si attende che la SoC scenda
-  sotto `cooldown_target_c` prima di ogni configurazione. L'attesa è **fuori
-  dalla finestra di misura**, quindi non inquina l'energia.
 
-Poiché il case monta una **ventola di raffreddamento attiva**, nella
-configurazione di default il cooldown è **disattivato**
-(`cooldown_enabled: false`) e resta attivo il solo monitoraggio, come rete di
-sicurezza e per documentare l'assenza di throttling.
+Il case monta una **ventola di raffreddamento attiva** che tiene la temperatura
+ampiamente sotto le soglie di throttling: il modulo si limita quindi a
+**monitorare** (nessun cool-down tra le configurazioni, mai risultato necessario).
 
 ## Ispezione rapida delle risposte
 
@@ -221,5 +223,4 @@ Output principali:
 - Il **bias idle** va rimisurato se cambiano le condizioni (temperatura,
   periferiche collegate).
 - Tutti i parametri (Pi, PMIC, llama, thermal, modelli, thread, ripetizioni,
-  benchmark) sono in `config.json`, modificabili senza toccare il codice.
-- `config.json` contiene le credenziali SSH: trattalo come file riservato.
+  benchmar

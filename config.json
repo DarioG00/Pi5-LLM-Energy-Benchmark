@@ -17,22 +17,16 @@
   "llama": {
     "bin": "~/llama.cpp/build/bin/llama-cli",
     "models_dir": "~/LLMs",
-    "ctx_size": 2048,
+    "ctx_size": 512,
     "n_predict": 128,
     "extra_args": [],
     "ready_prompt": "> ",
     "load_timeout": 180,
     "infer_timeout": 240,
-    "prompt_mode": "read"
+    "prompt_mode": "inline"
   },
   "thermal": {
     "enabled": true,
-    "cooldown_enabled": false,
-    "max_temp_c": 78.0,
-    "cooldown_target_c": 65.0,
-    "cooldown_min_s": 0,
-    "cooldown_max_wait_s": 120,
-    "poll_s": 5,
     "log_per_inference": true,
     "abort_on_throttle": true,
     "max_retries": 2
@@ -89,7 +83,7 @@
     {
       "name": "truthfulqa",
       "file": "datasets/truthfulqa.jsonl",
-      "type": "open_ended"
+      "type": "multiple_choice"
     },
     {
       "name": "gsm8k",
@@ -106,5 +100,9 @@
     "results_csv": "recordings/results.csv",
     "raw_dir": "recordings/raw",
     "plots_dir": "recordings/plots"
+  },
+  "between_models": {
+    "pause_s": 3,
+    "drop_caches": true
   }
 }

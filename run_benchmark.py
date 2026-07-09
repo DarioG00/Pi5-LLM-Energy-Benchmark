@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
 """Entry point eseguito dal PC host per il benchmark energetico LLM su Pi 5.
 
-Il backend di misura è scelto in config.json col campo "backend":
-    - "pmic": misura via PMIC del Pi 5 (vcgencmd pmic_read_adc), metodo
-      jfikar/RPi5-power. Nessun hardware esterno: il Pi è alimentato dal suo
-      alimentatore ufficiale (opzione consigliata dal relatore).
-    - "otii": misura con Otii Ace Pro via TCP server (porta 1905).
+Il consumo è misurato direttamente dal PMIC del Raspberry Pi 5
+(`vcgencmd pmic_read_adc`, metodo jfikar/RPi5-power): nessun hardware di misura
+esterno, il Pi è alimentato dal suo alimentatore ufficiale.
 
 Esempi:
-    python run_benchmark.py                 # esecuzione reale (backend da config)
+    python run_benchmark.py                 # esecuzione reale
     python run_benchmark.py --simulate      # prova della pipeline senza hardware
     python run_benchmark.py --no-analysis   # salta i grafici finali
 
-Prerequisiti reali (backend "pmic"):
+Prerequisiti reali:
     - Raspberry Pi 5 acceso e raggiungibile via Ethernet all'IP di config.json;
     - accesso SSH abilitato; `vcgencmd pmic_read_adc` disponibile sul Pi.
 """
@@ -37,7 +35,7 @@ def make_real_backends(cfg: dict):
     from scripts.pmic import PmicMonitor, PmicConfig
     pi_cfg = PiConfig.from_dict(cfg["pi"])
     ssh = PiSSH(pi_cfg, ready_prompt=cfg["llama"].get("ready_prompt", "> "),
-                prompt_mode=cfg["llama"].get("prompt_mode", "read"))
+                prompt_mode=cfg["llama"].get("prompt_mode", "inline"))
     monitor = PmicMonitor(pi_cfg, PmicConfig.from_dict(cfg.get("pmic", {})))
     return monitor, ssh
 

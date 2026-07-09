@@ -1,0 +1,138 @@
+<svg viewBox="0 0 1560 1180" xmlns="http://www.w3.org/2000/svg" font-family="Arial, Helvetica, sans-serif">
+<rect x="0" y="0" width="1560" height="1180" fill="#ffffff"/>
+<rect x="600" y="40" width="360" height="276" rx="4" fill="#d7f0d7" stroke="#2e8b57" stroke-width="2"/>
+<text x="780.0" y="62" text-anchor="middle" font-size="15" font-weight="bold">BenchmarkRunner</text>
+<line x1="600" y1="75" x2="960" y2="75" stroke="#2e8b57" stroke-width="1.2"/>
+<text x="610" y="96" font-size="12.5" font-family="Consolas,monospace">cfg: dict</text>
+<text x="610" y="115" font-size="12.5" font-family="Consolas,monospace">power: PmicMonitor</text>
+<text x="610" y="134" font-size="12.5" font-family="Consolas,monospace">ssh: PiSSH</text>
+<text x="610" y="153" font-size="12.5" font-family="Consolas,monospace">samples: List[Sample]</text>
+<text x="610" y="172" font-size="12.5" font-family="Consolas,monospace">rows: List[dict]</text>
+<text x="610" y="191" font-size="12.5" font-family="Consolas,monospace">thermal_cfg: ThermalConfig</text>
+<line x1="600" y1="205" x2="960" y2="205" stroke="#2e8b57" stroke-width="1.2"/>
+<text x="610" y="226" font-size="12.5" font-family="Consolas,monospace">load_samples()</text>
+<text x="610" y="245" font-size="12.5" font-family="Consolas,monospace">setup_hardware()</text>
+<text x="610" y="264" font-size="12.5" font-family="Consolas,monospace">run()</text>
+<text x="610" y="283" font-size="12.5" font-family="Consolas,monospace">save_csv()</text>
+<text x="610" y="302" font-size="12.5" font-family="Consolas,monospace">teardown()</text>
+<rect x="60" y="360" width="360" height="257" rx="4" fill="#ffe8cc" stroke="#e65100" stroke-width="2"/>
+<text x="240.0" y="382" text-anchor="middle" font-size="15" font-weight="bold">PmicMonitor</text>
+<line x1="60" y1="395" x2="420" y2="395" stroke="#e65100" stroke-width="1.2"/>
+<text x="70" y="416" font-size="12.5" font-family="Consolas,monospace">pi_cfg: PiConfig</text>
+<text x="70" y="435" font-size="12.5" font-family="Consolas,monospace">cfg: PmicConfig</text>
+<text x="70" y="454" font-size="12.5" font-family="Consolas,monospace">idle_power_w: float</text>
+<line x1="60" y1="468" x2="420" y2="468" stroke="#e65100" stroke-width="1.2"/>
+<text x="70" y="489" font-size="12.5" font-family="Consolas,monospace">connect()</text>
+<text x="70" y="508" font-size="12.5" font-family="Consolas,monospace">measure_idle_bias()</text>
+<text x="70" y="527" font-size="12.5" font-family="Consolas,monospace">start_recording()</text>
+<text x="70" y="546" font-size="12.5" font-family="Consolas,monospace">stop_recording()</text>
+<text x="70" y="565" font-size="12.5" font-family="Consolas,monospace">mark()</text>
+<text x="70" y="584" font-size="12.5" font-family="Consolas,monospace">window_energy()</text>
+<text x="70" y="603" font-size="12.5" font-family="Consolas,monospace">disconnect()</text>
+<rect x="1140" y="360" width="380" height="257" rx="4" fill="#dbeafe" stroke="#2d6cc0" stroke-width="2"/>
+<text x="1330.0" y="382" text-anchor="middle" font-size="15" font-weight="bold">PiSSH</text>
+<line x1="1140" y1="395" x2="1520" y2="395" stroke="#2d6cc0" stroke-width="1.2"/>
+<text x="1150" y="416" font-size="12.5" font-family="Consolas,monospace">cfg: PiConfig</text>
+<text x="1150" y="435" font-size="12.5" font-family="Consolas,monospace">prompt_mode: str</text>
+<line x1="1140" y1="449" x2="1520" y2="449" stroke="#2d6cc0" stroke-width="1.2"/>
+<text x="1150" y="470" font-size="12.5" font-family="Consolas,monospace">wait_for_boot_and_connect()</text>
+<text x="1150" y="489" font-size="12.5" font-family="Consolas,monospace">open_shell()</text>
+<text x="1150" y="508" font-size="12.5" font-family="Consolas,monospace">launch_model()</text>
+<text x="1150" y="527" font-size="12.5" font-family="Consolas,monospace">clear_history()</text>
+<text x="1150" y="546" font-size="12.5" font-family="Consolas,monospace">stage_prompt()</text>
+<text x="1150" y="565" font-size="12.5" font-family="Consolas,monospace">submit_prompt()</text>
+<text x="1150" y="584" font-size="12.5" font-family="Consolas,monospace">run_command()</text>
+<text x="1150" y="603" font-size="12.5" font-family="Consolas,monospace">stop_model() / close()</text>
+<rect x="640" y="360" width="300" height="162" rx="4" fill="#f3e8ff" stroke="#7c3aed" stroke-width="2"/>
+<text x="790.0" y="382" text-anchor="middle" font-size="12" font-style="italic" fill="#444">&#171;dataclass&#187;</text>
+<text x="790.0" y="401" text-anchor="middle" font-size="15" font-weight="bold">Sample</text>
+<line x1="640" y1="414" x2="940" y2="414" stroke="#7c3aed" stroke-width="1.2"/>
+<text x="650" y="435" font-size="12.5" font-family="Consolas,monospace">benchmark, btype, id</text>
+<text x="650" y="454" font-size="12.5" font-family="Consolas,monospace">prompt, expected</text>
+<text x="650" y="473" font-size="12.5" font-family="Consolas,monospace">meta: dict</text>
+<line x1="640" y1="487" x2="940" y2="487" stroke="#7c3aed" stroke-width="1.2"/>
+<text x="650" y="508" font-size="12.5" font-family="Consolas,monospace"> </text>
+<rect x="60" y="720" width="300" height="162" rx="4" fill="#fff3e0" stroke="#e65100" stroke-width="2"/>
+<text x="210.0" y="742" text-anchor="middle" font-size="12" font-style="italic" fill="#444">&#171;dataclass&#187;</text>
+<text x="210.0" y="761" text-anchor="middle" font-size="15" font-weight="bold">PmicConfig</text>
+<line x1="60" y1="774" x2="360" y2="774" stroke="#e65100" stroke-width="1.2"/>
+<text x="70" y="795" font-size="12.5" font-family="Consolas,monospace">sample_hz: float</text>
+<text x="70" y="814" font-size="12.5" font-family="Consolas,monospace">idle_seconds, settle_seconds</text>
+<text x="70" y="833" font-size="12.5" font-family="Consolas,monospace">corr_slope, corr_offset</text>
+<line x1="60" y1="847" x2="360" y2="847" stroke="#e65100" stroke-width="1.2"/>
+<text x="70" y="868" font-size="12.5" font-family="Consolas,monospace"> </text>
+<rect x="1220" y="720" width="300" height="143" rx="4" fill="#eaf2fb" stroke="#2d6cc0" stroke-width="2"/>
+<text x="1370.0" y="742" text-anchor="middle" font-size="12" font-style="italic" fill="#444">&#171;dataclass&#187;</text>
+<text x="1370.0" y="761" text-anchor="middle" font-size="15" font-weight="bold">PiConfig</text>
+<line x1="1220" y1="774" x2="1520" y2="774" stroke="#2d6cc0" stroke-width="1.2"/>
+<text x="1230" y="795" font-size="12.5" font-family="Consolas,monospace">host, username, password</text>
+<text x="1230" y="814" font-size="12.5" font-family="Consolas,monospace">ssh_port</text>
+<line x1="1220" y1="828" x2="1520" y2="828" stroke="#2d6cc0" stroke-width="1.2"/>
+<text x="1230" y="849" font-size="12.5" font-family="Consolas,monospace"> </text>
+<rect x="640" y="720" width="300" height="162" rx="4" fill="#eef7e9" stroke="#5a9216" stroke-width="2"/>
+<text x="790.0" y="742" text-anchor="middle" font-size="12" font-style="italic" fill="#444">&#171;dataclass&#187;</text>
+<text x="790.0" y="761" text-anchor="middle" font-size="15" font-weight="bold">ThermalConfig</text>
+<line x1="640" y1="774" x2="940" y2="774" stroke="#5a9216" stroke-width="1.2"/>
+<text x="650" y="795" font-size="12.5" font-family="Consolas,monospace">enabled: bool</text>
+<text x="650" y="814" font-size="12.5" font-family="Consolas,monospace">log_per_inference: bool</text>
+<text x="650" y="833" font-size="12.5" font-family="Consolas,monospace">abort_on_throttle, max_retries</text>
+<line x1="640" y1="847" x2="940" y2="847" stroke="#5a9216" stroke-width="1.2"/>
+<text x="650" y="868" font-size="12.5" font-family="Consolas,monospace"> </text>
+<rect x="60" y="980" width="280" height="124" rx="4" fill="#f0f0f0" stroke="#777" stroke-width="2"/>
+<text x="200.0" y="1002" text-anchor="middle" font-size="12" font-style="italic" fill="#444">&#171;module&#187;</text>
+<text x="200.0" y="1021" text-anchor="middle" font-size="15" font-weight="bold">datasets_loader</text>
+<line x1="60" y1="1034" x2="340" y2="1034" stroke="#777" stroke-width="1.2"/>
+<text x="70" y="1055" font-size="12.5" font-family="Consolas,monospace"> </text>
+<line x1="60" y1="1069" x2="340" y2="1069" stroke="#777" stroke-width="1.2"/>
+<text x="70" y="1090" font-size="12.5" font-family="Consolas,monospace">load_all()</text>
+<rect x="360" y="980" width="280" height="143" rx="4" fill="#f0f0f0" stroke="#777" stroke-width="2"/>
+<text x="500.0" y="1002" text-anchor="middle" font-size="12" font-style="italic" fill="#444">&#171;module&#187;</text>
+<text x="500.0" y="1021" text-anchor="middle" font-size="15" font-weight="bold">llama_parser</text>
+<line x1="360" y1="1034" x2="640" y2="1034" stroke="#777" stroke-width="1.2"/>
+<text x="370" y="1055" font-size="12.5" font-family="Consolas,monospace"> </text>
+<line x1="360" y1="1069" x2="640" y2="1069" stroke="#777" stroke-width="1.2"/>
+<text x="370" y="1090" font-size="12.5" font-family="Consolas,monospace">parse_timings()</text>
+<text x="370" y="1109" font-size="12.5" font-family="Consolas,monospace">extract_response()</text>
+<rect x="660" y="980" width="280" height="124" rx="4" fill="#f0f0f0" stroke="#777" stroke-width="2"/>
+<text x="800.0" y="1002" text-anchor="middle" font-size="12" font-style="italic" fill="#444">&#171;module&#187;</text>
+<text x="800.0" y="1021" text-anchor="middle" font-size="15" font-weight="bold">scoring</text>
+<line x1="660" y1="1034" x2="940" y2="1034" stroke="#777" stroke-width="1.2"/>
+<text x="670" y="1055" font-size="12.5" font-family="Consolas,monospace"> </text>
+<line x1="660" y1="1069" x2="940" y2="1069" stroke="#777" stroke-width="1.2"/>
+<text x="670" y="1090" font-size="12.5" font-family="Consolas,monospace">score()</text>
+<rect x="960" y="980" width="280" height="143" rx="4" fill="#f0f0f0" stroke="#777" stroke-width="2"/>
+<text x="1100.0" y="1002" text-anchor="middle" font-size="12" font-style="italic" fill="#444">&#171;module&#187;</text>
+<text x="1100.0" y="1021" text-anchor="middle" font-size="15" font-weight="bold">thermal</text>
+<line x1="960" y1="1034" x2="1240" y2="1034" stroke="#777" stroke-width="1.2"/>
+<text x="970" y="1055" font-size="12.5" font-family="Consolas,monospace"> </text>
+<line x1="960" y1="1069" x2="1240" y2="1069" stroke="#777" stroke-width="1.2"/>
+<text x="970" y="1090" font-size="12.5" font-family="Consolas,monospace">parse_throttled()</text>
+<text x="970" y="1109" font-size="12.5" font-family="Consolas,monospace">read_state()</text>
+<rect x="1260" y="980" width="280" height="124" rx="4" fill="#f0f0f0" stroke="#777" stroke-width="2"/>
+<text x="1400.0" y="1002" text-anchor="middle" font-size="12" font-style="italic" fill="#444">&#171;module&#187;</text>
+<text x="1400.0" y="1021" text-anchor="middle" font-size="15" font-weight="bold">analysis</text>
+<line x1="1260" y1="1034" x2="1540" y2="1034" stroke="#777" stroke-width="1.2"/>
+<text x="1270" y="1055" font-size="12.5" font-family="Consolas,monospace"> </text>
+<line x1="1260" y1="1069" x2="1540" y2="1069" stroke="#777" stroke-width="1.2"/>
+<text x="1270" y="1090" font-size="12.5" font-family="Consolas,monospace">run_analysis()</text>
+<polyline points="600,178.0 600,269.0 240.0,269.0 240.0,360" fill="none" stroke="#555" stroke-width="1.8"/>
+<text x="420.0" y="265.0" text-anchor="middle" font-size="12" fill="#333" font-weight="bold">power</text>
+<polyline points="960,178.0 960,269.0 1330.0,269.0 1330.0,360" fill="none" stroke="#555" stroke-width="1.8"/>
+<text x="1145.0" y="265.0" text-anchor="middle" font-size="12" fill="#333" font-weight="bold">ssh</text>
+<polyline points="780.0,316 780.0,338.0 790.0,338.0 790.0,360" fill="none" stroke="#555" stroke-width="1.8"/>
+<text x="785.0" y="334.0" text-anchor="middle" font-size="12" fill="#333" font-weight="bold">samples *</text>
+<polyline points="240.0,617 240.0,668.5 210.0,668.5 210.0,720" fill="none" stroke="#555" stroke-width="1.8"/>
+<text x="225.0" y="664.5" text-anchor="middle" font-size="12" fill="#333" font-weight="bold">cfg</text>
+<polyline points="240.0,617 240.0,668.5 1370.0,668.5 1370.0,720" fill="none" stroke="#555" stroke-width="1.8" stroke-dasharray="6,5"/>
+<text x="805.0" y="664.5" text-anchor="middle" font-size="12" fill="#333" font-weight="bold">pi_cfg</text>
+<polyline points="1330.0,617 1330.0,668.5 1370.0,668.5 1370.0,720" fill="none" stroke="#555" stroke-width="1.8"/>
+<text x="1350.0" y="664.5" text-anchor="middle" font-size="12" fill="#333" font-weight="bold">cfg</text>
+<polyline points="780.0,316 780.0,518.0 790.0,518.0 790.0,720" fill="none" stroke="#555" stroke-width="1.8" stroke-dasharray="6,5"/>
+<text x="785.0" y="514.0" text-anchor="middle" font-size="12" fill="#333" font-weight="bold">thermal_cfg</text>
+<polyline points="780.0,316 780.0,648.0 200.0,648.0 200.0,980" fill="none" stroke="#555" stroke-width="1.8" stroke-dasharray="6,5"/>
+<polyline points="780.0,316 780.0,648.0 500.0,648.0 500.0,980" fill="none" stroke="#555" stroke-width="1.8" stroke-dasharray="6,5"/>
+<polyline points="780.0,316 780.0,648.0 800.0,648.0 800.0,980" fill="none" stroke="#555" stroke-width="1.8" stroke-dasharray="6,5"/>
+<polyline points="780.0,316 780.0,648.0 1100.0,648.0 1100.0,980" fill="none" stroke="#555" stroke-width="1.8" stroke-dasharray="6,5"/>
+<polyline points="780.0,316 780.0,648.0 1400.0,648.0 1400.0,980" fill="none" stroke="#555" stroke-width="1.8" stroke-dasharray="6,5"/>
+<text x="780.0" y="1170" text-anchor="middle" font-size="12" fill="#666">Linee continue: associazione/composizione &#8212; tratteggiate: uso (&#171;use&#187;). I moduli sono insiemi di funzioni.</text>
+</svg>

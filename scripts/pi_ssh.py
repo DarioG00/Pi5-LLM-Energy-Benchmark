@@ -48,10 +48,12 @@ class PiSSH:
                  prompt_file: str = "/tmp/bench_prompt.txt"):
         self.cfg = cfg
         self.ready_prompt = ready_prompt
-        # "read":  invia ogni prompt via il comando /read di llama-cli leggendo un
-        #          file sul Pi -> gli a-capo del prompt sono preservati (necessario
-        #          per il codice). "inline": invia il prompt su una riga (a-capo
-        #          sostituiti da spazi) come fallback.
+        # "inline" (default consigliato): invia il prompt come UNA riga (a-capo
+        #          sostituiti da spazi). Affidabile su tutti i build di llama-cli.
+        # "read":  SPERIMENTALE. Usa il comando /read di llama-cli per leggere il
+        #          prompt da file preservando gli a-capo, ma su alcuni build /read
+        #          allega il file come contesto invece di inviarlo come messaggio:
+        #          in quel caso la generazione non parte. Usare solo se verificato.
         self.prompt_mode = prompt_mode
         self.prompt_file = prompt_file
         self.client: Optional[paramiko.SSHClient] = None

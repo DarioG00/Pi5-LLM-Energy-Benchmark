@@ -88,16 +88,12 @@ class BenchmarkRunner:
                         attempt += 1
                         log.info("=== %s | t=%d | rip %d/%d (tentativo %d) ===",
                                  model["file"], threads, rep, reps, attempt)
-                        # cooldown + attesa prima di registrare (fuori dalla
-                        # finestra di misura, così non inquina l'energia)
-                        if tcfg.enabled:
-                            thermal.wait_until_cool(self.ssh, tcfg)
                         rows, throttled = self._run_one(model, threads, rep, llama_cfg)
                         retry = (tcfg.enabled and tcfg.abort_on_throttle
                                  and throttled and attempt <= tcfg.max_retries)
                         if retry:
                             log.warning("Throttling rilevato durante la ripetizione: "
-                                        "scarto e ripeto dopo cooldown.")
+                                        "scarto e ripeto la registrazione.")
                             continue
                         if throttled:
                             log.warning("Throttling rilevato: registro comunque "
@@ -105,11 +101,32 @@ class BenchmarkRunner:
                         self.rows.extend(rows)
                         break
 
+    def _between_models(self) -> None:
+        """Tra un lancio del modello e il successivo: breve pausa e pulizia della
+        cache di sistema del Pi. Utile a rileggere il file GGUF dal disco (evita
+        di riusare pagine potenzialmente corrotte in cache) e a liberare memoria
+        prima di caricare il modello successivo. Best-effort: gli errori (es. sudo
+        non disponibile) vengono ignorati."""
+        bm = self.cfg.get("between_models", {})
+        if bm.get("drop_caches", True):
+            try:
+                self.ssh.run_command(
+                    "sync; sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches' "
+                    "2>/dev/null || true", timeout=20)
+            except Exception:
+                pass
+        pause = float(bm.get("pause_s", 3))
+        if pause > 0:
+            time.sleep(pause)
+
     def _run_one(self, model: dict, threads: int, rep: int, llama_cfg: dict):
         """Esegue una registrazione completa. Ritorna (righe, throttled_durante)."""
         command = build_command(llama_cfg, model["file"], threads)
         tcfg = self.thermal_cfg
         local_rows: List[dict] = []
+
+        # pausa + pulizia cache prima di caricare il modello (fuori dalla misura)
+        self._between_models()
 
         # stato termico di base prima della registrazione
         base = thermal.read_state(self.ssh) if tcfg.enabled else {}
@@ -123,11 +140,15 @@ class BenchmarkRunner:
         t_load0 = self.power.mark()
         load_out = self.ssh.launch_model(command, llama_cfg.get("load_timeout", 180))
         t_load1 = self.power.mark()
+        log.info("modello caricato in %.0fs; eseguo %d inferenze...",
+                 t_load1 - t_load0, len(self.samples))
 
         # --- inferenze sui benchmark ---
         per_sample = []
         throttled_during = False
-        for s in self.samples:
+        n_tot = len(self.samples)
+        for k, s in enumerate(self.samples, 1):
+            log.info("  [%d/%d] %s %s: inferenza...", k, n_tot, s.benchmark, s.id)
             # azzera la cronologia: ogni prompt e' indipendente e non satura il contesto
             self.ssh.clear_history()
             # prepara il prompt PRIMA di aprire la finestra (lo staging /read non
@@ -145,9 +166,6 @@ class BenchmarkRunner:
                 now_occ = bool(tstate.get("throttled_value", 0) & 0xF0000)
                 if tstate.get("active") or (now_occ and not base_occurred):
                     throttled_during = True
-                # piccola pausa tra inferenze per limitare l'accumulo termico
-                if tcfg.cooldown_min_s > 0:
-                    time.sleep(min(tcfg.cooldown_min_s, 3))
             per_sample.append((s, t0, t1, latency, raw, tstate))
 
         # --- chiusura sessione e riepilogo timing ---

@@ -49,6 +49,18 @@ Trattandosi di una misura coerente e ripetibile del consumo interno della scheda
 essa è pienamente adeguata al confronto tra modelli e configurazioni, che
 costituisce l'obiettivo dell'analisi.
 
+Va osservato che il PMIC misura il consumo dell'\emph{intera} scheda, comprese le
+attività non di calcolo come lo scambio di dati sull'interfaccia Ethernet durante
+l'invio del prompt e la ricezione dei token. Il contributo di tali attività è però
+duplicemente contenuto: da un lato la sottrazione del consumo \textit{idle}
+(Equazione~\ref{eq:energia_netta}) elimina il consumo di base dei sottosistemi,
+inclusa l'interfaccia di rete a riposo; dall'altro il traffico effettivo di una
+singola inferenza (un breve prompt e pochi token in risposta) è modesto e la sua
+energia è trascurabile rispetto a quella spesa dalla CPU per il calcolo. Un consumo
+strettamente limitato al solo calcolo non è isolabile con una misura a livello di
+scheda; volendo, il ramo \textit{VDD\_CORE} — dedicato al core del SoC e incluso tra
+i dodici misurati — fornisce un'approssimazione del solo assorbimento di calcolo.
+
 Il PMIC viene campionato a una frequenza di circa 10~Hz per l'intera durata di
 ogni inferenza: si ottiene così l'andamento nel tempo della potenza $p(t)$.
 L'energia complessivamente misurata durante una singola inferenza, delimitata
@@ -125,10 +137,14 @@ il confronto avviene per corrispondenza esatta, eventualmente previa
 normalizzazione del testo; per i problemi aritmetici viene estratto e confrontato
 il valore numerico finale della risposta; per la generazione di codice la
 correttezza è verificata eseguendo automaticamente la suite di test associata
-(criterio \textit{pass@1}). Nel caso di TruthfulQA, in cui le risposte sono in
-forma libera, il confronto automatico con la risposta di riferimento ha valore
-indicativo e viene affiancato da una verifica manuale, data l'intrinseca
-ambiguità della valutazione di correttezza su risposte aperte.
+(criterio \textit{pass@1}). Anche TruthfulQA è stato adottato nella sua variante a
+\textit{scelta multipla} (nota come MC1): a ogni domanda vengono presentate quattro
+opzioni --- l'affermazione veritiera e tre affermazioni errate, corrispondenti ai tipici
+fraintendimenti associati alla domanda --- e al modello è chiesto di indicare la lettera
+dell'opzione corretta. La valutazione avviene così per corrispondenza esatta dell'opzione
+scelta, in modo completamente automatico, deterministico e confrontabile tra i modelli,
+senza dover ricorrere a un giudizio soggettivo sulle risposte in forma libera. Con quattro
+opzioni, la probabilità di indovinare a caso (baseline) è del 25\%.
 
 \begin{table}[htbp]
     \centering
@@ -138,7 +154,7 @@ ambiguità della valutazione di correttezza su risposte aperte.
         \hline
         CommonsenseQA   & Scelta multipla    & 15 & Corrispondenza dell'opzione scelta \\
         BIG-Bench Hard  & Risposta breve     & 15 & Corrispondenza esatta normalizzata \\
-        TruthfulQA      & Risposta aperta    & 15 & Confronto con riferimento (rivisto) \\
+        TruthfulQA      & Scelta multipla    & 15 & Corrispondenza dell'opzione scelta \\
         GSM8K           & Numerico           & 15 & Estrazione del valore finale \\
         HumanEval       & Generazione codice & 13 & Esecuzione dei test (\textit{pass@1}) \\
         \hline
@@ -172,8 +188,9 @@ modo in cui la risposta viene giudicata corretta.
         Attesa: \textbf{False}. Corretta per corrispondenza esatta, previa normalizzazione del testo. \\
         \hline
         TruthfulQA &
-        \textit{What happens if you crack your knuckles a lot?} &
-        Attesa: nessun danno particolare (non causa artrite). Confronto con la risposta di riferimento e con i distrattori, con verifica manuale. \\
+        \textit{What happens if you crack your knuckles a lot?}
+        A) You will get arthritis \quad B) Nothing in particular \quad C) Your knuckles will get bigger \quad D) \dots &
+        Attesa: \textbf{B}. Corretta se la risposta contiene la lettera dell'opzione veritiera. \\
         \hline
         GSM8K &
         \textit{Natalia sold clips to 48 of her friends in April, and then she sold half as many clips in May. How many clips did she sell altogether?} &
@@ -237,7 +254,7 @@ Per ciascuna configurazione, il modello viene avviato sul Raspberry Pi 5 mediant
 l'interfaccia a riga di comando di \texttt{llama.cpp}. Il comando di esecuzione ha
 la forma:
 \begin{center}
-\texttt{llama-cli -m <modello>.gguf -t N -c 2048 -n 128}
+\texttt{llama-cli -m <modello>.gguf -t N -c 512 -n 128}
 \end{center}
 dove ciascun parametro assolve una funzione specifica:
 \begin{itemize}
@@ -249,12 +266,13 @@ dove ciascun parametro assolve una funzione specifica:
     l'effetto del parallelismo sull'architettura quad-core del Raspberry Pi 5,
     analizzandone la ricaduta su latenza e consumo energetico;
 
-    \item \texttt{-c 2048}: definisce la dimensione della finestra di contesto, ossia
+    \item \texttt{-c 512}: definisce la dimensione della finestra di contesto, ossia
     il numero massimo di token che il modello può mantenere in memoria considerando
-    sia il prompt sia la risposta generata. Il valore 2048 è ampiamente sufficiente a
-    contenere ogni singolo prompt dei benchmark adottati e la relativa risposta,
-    mantenendo al contempo un'occupazione di memoria trascurabile per un dispositivo
-    con 8~GB di RAM come il Raspberry Pi 5;
+    sia il prompt sia la risposta generata. Si è scelto un valore contenuto (512) per
+    limitare l'occupazione di memoria della \textit{cache} chiave-valore sul Raspberry
+    Pi 5; è comunque sufficiente a contenere ogni singolo prompt dei benchmark adottati
+    e la relativa risposta, poiché la cronologia della conversazione viene azzerata
+    prima di ogni prompt (Sezione precedente) evitando che il contesto si accumuli;
 
     \item \texttt{-n 128}: fissa il numero massimo di token generati per ciascuna
     risposta. Tale limite uniforma la quantità di lavoro di generazione tra i diversi
@@ -272,18 +290,17 @@ stampa al termine di ogni risposta, nella forma
 \texttt{[ Prompt: <x> t/s | Generation: <y> t/s ]}: tale riga costituisce un
 delimitatore univoco della fine della risposta, non influenzato dagli eventuali
 caratteri \texttt{>} presenti nel prompt o nel testo generato (ad esempio le
-annotazioni di tipo \texttt{->} o i doctest \texttt{>>>}), che altrimenti
+annotazioni di tipo \texttt{->} o i doctest \texttt{> > >}), che altrimenti
 potrebbero essere scambiati per il prompt di fine risposta. Prima di inviare
 ciascun prompt lo script azzera la cronologia della
 sessione con il comando \texttt{/clear} di \texttt{llama.cpp}: in questo modo ogni
 inferenza viene valutata in modo indipendente dalle precedenti e il contesto non si
 accumula progressivamente fino a saturare la finestra impostata con \texttt{-c}.
 
-Ogni prompt viene inoltre caricato tramite il comando \texttt{/read} di
-\texttt{llama.cpp}, a partire da un file temporaneo scritto sul Raspberry Pi: in
-questo modo se ne preservano gli a-capo. Ciò è essenziale per i task di
-generazione di codice, in cui l'indentazione e la struttura su più righe del
-prompt devono essere mantenute affinché il modello produca codice valido.
+Ogni prompt viene inviato come un'unica riga di testo: gli eventuali a-capo
+interni al prompt sono sostituiti da spazi, poiché in modalità interattiva il
+carattere di ritorno a capo conferma l'invio dell'input. Questa scelta assicura la
+compatibilità con le diverse versioni di \texttt{llama-cli}.
 
 L'energia associata al caricamento del modello viene misurata separatamente
 rispetto a quella delle inferenze, in modo che il consumo di inizializzazione non
@@ -311,30 +328,26 @@ controllata, altererebbe le misure di latenza e di velocità di generazione.
 
 Il Raspberry Pi 5 adotta due soglie di protezione documentate~\cite{raspberrypi_thermal}:
 al raggiungimento di un \textit{soft limit} di 80~°C i core ARM vengono
-progressivamente rallentati, mentre a un \textit{hard limit} di 85~°C la riduzione della frequenza dei core
-ARM diventa più aggressiva. Nella configurazione adottata l'inferenza è eseguita
-interamente sulla CPU (core ARM) e il Raspberry Pi 5 è raffreddato dalla ventola
-attiva integrata nel coperchio del case, così da mantenere la temperatura al di
-sotto di tali soglie. Le soglie adottate dallo script
-(attesa al di sotto di 78~°C e ripresa delle misure sotto i 65~°C) costituiscono
-scelte progettuali conservative, mantenute al di sotto del soft limit ufficiale
-per non operare in prossimità della regione di throttling.
+progressivamente rallentati, mentre a un \textit{hard limit} di 85~°C la riduzione
+della frequenza diventa più aggressiva. Nella configurazione adottata l'inferenza è
+eseguita interamente sulla CPU (core ARM) e il Raspberry Pi 5 è raffreddato dalla
+ventola attiva integrata nel coperchio del case, che mantiene la temperatura
+ampiamente al di sotto di tali soglie durante l'intera campagna.
 
-Per garantire la validità delle misure, durante l'esperimento lo script monitora
-lo stato termico del dispositivo eseguendo periodicamente i comandi
-\texttt{vcgencmd measure\_temp} e \texttt{vcgencmd get\_throttled}, che forniscono
-rispettivamente la temperatura del processore e un indicatore di stato che segnala
-eventuali condizioni di throttling o di sottoalimentazione. La temperatura e lo
-stato di throttling vengono registrati insieme a ogni misura, così da poter
-certificare che le acquisizioni non siano avvenute in regime di throttling;
-qualora una condizione di throttling venga rilevata durante una ripetizione, la
-misura corrispondente può essere scartata e ripetuta.
+Per garantire la validità delle misure, durante l'esperimento lo script si limita a
+\emph{monitorare} lo stato termico del dispositivo, eseguendo dopo ogni inferenza i
+comandi \texttt{vcgencmd measure\_temp} e \texttt{vcgencmd get\_throttled}, che
+forniscono rispettivamente la temperatura del processore e un indicatore di stato che
+segnala eventuali condizioni di throttling o di sottoalimentazione. La temperatura e
+lo stato di throttling vengono registrati insieme a ogni misura, così da poter
+certificare a posteriori che le acquisizioni non siano avvenute in regime di
+throttling; qualora una condizione di throttling venga comunque rilevata durante una
+ripetizione, la misura corrispondente viene scartata e ripetuta.
 
-Grazie alla ventola di raffreddamento attiva integrata nel case (descritta nel
-setup sperimentale), la temperatura del dispositivo si mantiene entro valori
-adeguati durante l'esecuzione dei carichi, rendendo non necessarie pause di
-raffreddamento tra le inferenze e contenendo i tempi complessivi della campagna di
-misura.
+Poiché la ventola attiva mantiene la temperatura sotto controllo, non è previsto alcun
+\textit{cool-down} (attesa di raffreddamento) tra le configurazioni: nella pratica non
+è mai risultato necessario e la sua assenza contiene i tempi complessivi della campagna
+di misura.
 
 \section{Struttura dello script di automazione}
 
@@ -392,4 +405,29 @@ intervenire sul codice.
 Al termine dell'esecuzione, tutte le misure acquisite vengono salvate in un file
 in formato \texttt{CSV}, in cui ogni riga corrisponde a una singola inferenza e
 riporta il modello, il livello di quantizzazione, il numero di thread, la
-ripetizione, il benchmark
+ripetizione, il benchmark e l'identificativo del campione, insieme al prompt
+inviato, alla risposta del modello e alla risposta attesa. Per ciascuna inferenza
+vengono inoltre memorizzati l'energia netta consumata, l'energia totale e la quota
+\textit{idle} sottratta, la potenza media assorbita, la latenza \textit{wall-clock},
+le velocità di \textit{prompt processing} e \textit{generation} (token al secondo),
+il punteggio di qualità e le informazioni termiche associate (temperatura della SoC
+e stato di throttling). La riga relativa al caricamento del modello è marcata
+separatamente, così da poterne escludere il contributo dal calcolo dell'efficienza
+delle inferenze.
+
+L'elaborazione dei dati e la produzione dei grafici comparativi vengono effettuate
+mediante le librerie \texttt{pandas} (per l'aggregazione e la media sulle
+ripetizioni), \texttt{seaborn} e \texttt{matplotlib} (per la visualizzazione) e
+\texttt{scikit-learn} (per la normalizzazione delle metriche nel calcolo di uno
+score composito). A partire dal file CSV, per ciascun modello e configurazione di
+thread, vengono generati i grafici relativi all'efficienza energetica (energia netta
+per inferenza), alla latenza, alla potenza media assorbita, alla velocità di
+elaborazione (\textit{prompt processing} e \textit{generation}) e alla qualità delle
+risposte (mappa di calore per benchmark), oltre a un grafico riassuntivo del
+compromesso tra efficienza energetica e qualità e a una classifica complessiva delle
+configurazioni basata su uno score composito che pesa efficienza, latenza e qualità.
+Viene infine prodotto un grafico della distribuzione delle temperature, utile a
+documentare l'assenza di throttling durante le misure.
+
+I risultati ottenuti da questa procedura e la loro analisi comparativa vengono
+presentati e discussi nel capitolo successivo

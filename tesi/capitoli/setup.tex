@@ -20,7 +20,12 @@ regola le diverse tensioni di alimentazione della scheda (per il SoC, la memoria
 i sottosistemi di I/O e così via) a partire dai 5~V forniti in ingresso. Oltre a
 questa funzione, il PMIC del Pi 5 integra un convertitore analogico-digitale
 (\textit{ADC}) che misura tensione e corrente su dodici distinti rami di
-alimentazione della scheda.
+alimentazione della scheda. I dodici rami comprendono l'alimentazione del core del
+SoC (\textit{VDD\_CORE}), i domini di sistema a diverse tensioni (3,3~V, 1,8~V,
+1,1~V e 0,8~V), le due alimentazioni della memoria LPDDR4X (\textit{DDR\_VDD2} e
+\textit{DDR\_VDDQ}), il dominio \textit{always-on} sempre attivo, i convertitori
+audio (DAC e ADC a 3,3~V), l'uscita HDMI e il modulo Wi-Fi/Bluetooth. Sommando la
+potenza di tutti questi rami si ottiene una stima del consumo interno della scheda.
 
 Tali grandezze sono accessibili via software attraverso l'utility di sistema
 \texttt{vcgencmd}: il comando \texttt{vcgencmd pmic\_read\_adc} restituisce, per

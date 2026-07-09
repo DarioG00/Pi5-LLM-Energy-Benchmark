@@ -1,8 +1,12 @@
-"""Monitoraggio termico e gestione del throttling del Raspberry Pi 5.
+"""Monitoraggio termico e rilevazione del throttling del Raspberry Pi 5.
 
-Decodifica `vcgencmd get_throttled` (bitmask) e implementa una strategia di
-cooldown per evitare che il surriscaldamento o il throttling termico falsino le
-misure di performance ed energia.
+Decodifica `vcgencmd get_throttled` (bitmask) e legge la temperatura della SoC,
+così da registrare lo stato termico di ogni inferenza e riconoscere eventuali
+episodi di throttling (che falserebbero latenza e velocità).
+
+Il Raspberry Pi 5 usato monta una ventola di raffreddamento attiva: la temperatura
+resta ampiamente sotto le soglie di throttling e non è quindi previsto alcun
+cool-down attivo tra le configurazioni. Il modulo si limita a monitorare.
 
 Bit di `get_throttled` (Raspberry Pi):
     0  under-voltage attiva ora
@@ -17,7 +21,6 @@ Bit di `get_throttled` (Raspberry Pi):
 from __future__ import annotations
 
 import re
-import time
 import logging
 from dataclasses import dataclass
 
@@ -39,15 +42,9 @@ _OCC_BITS = {
 
 @dataclass
 class ThermalConfig:
-    enabled: bool = True          # monitoraggio termico (lettura temp/throttle)
-    cooldown_enabled: bool = True # attesa di raffreddamento tra configurazioni
-    max_temp_c: float = 70.0
-    cooldown_target_c: float = 60.0
-    cooldown_min_s: float = 5.0
-    cooldown_max_wait_s: float = 300.0
-    poll_s: float = 5.0
-    log_per_inference: bool = True
-    abort_on_throttle: bool = True
+    enabled: bool = True           # monitoraggio termico (lettura temp/throttle)
+    log_per_inference: bool = True # registra temp/throttle a ogni inferenza
+    abort_on_throttle: bool = True # scarta e ripete la registrazione se throttling
     max_retries: int = 2
 
     @classmethod
@@ -87,35 +84,3 @@ def read_state(ssh) -> dict:
     thr = parse_throttled(ssh.get_throttled_raw())
     thr["temp_c"] = temp
     return thr
-
-
-def wait_until_cool(ssh, cfg: ThermalConfig) -> dict:
-    """Attende che la temperatura scenda sotto `cooldown_target_c`.
-
-    Rispetta una pausa minima (`cooldown_min_s`) e un tetto massimo di attesa
-    (`cooldown_max_wait_s`). Ritorna lo stato termico finale.
-    """
-    if not cfg.enabled or not cfg.cooldown_enabled:
-        return {}
-    # pausa minima sempre applicata tra una configurazione e l'altra
-    if cfg.cooldown_min_s > 0:
-        time.sleep(cfg.cooldown_min_s)
-
-    deadline = time.time() + cfg.cooldown_max_wait_s
-    state = read_state(ssh)
-    temp = state.get("temp_c", float("nan"))
-    if temp != temp:  # NaN: impossibile leggere la temperatura
-        log.warning("Temperatura non leggibile: salto il cooldown attivo.")
-        return state
-
-    while temp > cfg.cooldown_target_c and time.time() < deadline:
-        log.info("Cooldown: %.1f°C > target %.1f°C, attendo %.0fs...",
-                 temp, cfg.cooldown_target_c, cfg.poll_s)
-        time.sleep(cfg.poll_s)
-        state = read_state(ssh)
-        temp = state.get("temp_c", float("nan"))
-        if temp != temp:
-            break
-    log.info("Pronto a registrare a %.1f°C (throttled=%s)",
-             state.get("temp_c", float("nan")), state.get("throttled_hex"))
-    return state

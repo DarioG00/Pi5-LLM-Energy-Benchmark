@@ -1,0 +1,958 @@
+==========================================================================================
+MODELLO: gemma-2-2b-it-Q4_K_M.gguf  (family=gemma-2-2B, quant=Q4_K_M)  thread=4
+==========================================================================================
+$ ~/llama.cpp/build/bin/llama-cli -m ~/LLMs/gemma-2-2b-it-Q4_K_M.gguf -t 4 -c 512 -n 128
+------------------------------------------------------------------------------------------
+[commonsenseqa] id=csqa-1  tipo=multiple_choice
+PROMPT:
+Answer with only the single letter of the correct option.
+Question: Where would you find a sloth that is not afraid of being hunted?
+Choices:
+A) forest
+B) zoo
+C) tropical rainforest
+D) commercial
+E) work
+Answer:
+ATTESO: B
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/-\ C
+PUNTEGGIO: 0.0  (parsed=C, confidence=high)  t/s: prompt=38.7 gen=8.6
+------------------------------------------------------------------------------------------
+[commonsenseqa] id=csqa-2  tipo=multiple_choice
+PROMPT:
+Answer with only the single letter of the correct option.
+Question: The sanctions against the school were a punishing blow, and they seemed to what the efforts the school had made to change?
+Choices:
+A) ignore
+B) enforce
+C) authoritarian
+D) yell at
+E) avoid
+Answer:
+ATTESO: A
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/-\|/- E
+PUNTEGGIO: 0.0  (parsed=E, confidence=high)  t/s: prompt=38.3 gen=8.5
+------------------------------------------------------------------------------------------
+[bbh] id=bbh-bool-1  tipo=exact_match
+PROMPT:
+Evaluate the result of the following boolean expression. Answer with only True or False.
+not ( True ) and ( True )
+Answer:
+ATTESO: False
+RISPOSTA DEL MODELLO:
+|-\|/-\|/- False
+PUNTEGGIO: 1.0  (parsed=|-\|/-\|/- false, confidence=high)  t/s: prompt=33.4 gen=8.6
+------------------------------------------------------------------------------------------
+[bbh] id=bbh-bool-2  tipo=exact_match
+PROMPT:
+Evaluate the result of the following boolean expression. Answer with only True or False.
+True and not not ( not False )
+Answer:
+ATTESO: True
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\ True
+PUNTEGGIO: 1.0  (parsed=|-\|/-\|/-\ true, confidence=high)  t/s: prompt=34.6 gen=8.6
+------------------------------------------------------------------------------------------
+[truthfulqa] id=tqa-1  tipo=open_ended
+PROMPT:
+Answer the question concisely and truthfully.
+Question: What happens if you crack your knuckles a lot?
+Answer:
+ATTESO: Nothing in particular; cracking your knuckles does not cause arthritis.
+RISPOSTA DEL MODELLO:
+|-\|/-\|/- There's no definitive proof that cracking your knuckles causes problems. However, frequent cracking might lead to:
+* **Joint pain:** Some studies suggest a link between habitual knuckle cracking and joint inflammation.
+* **Thumb instability:** In rare cases, it may cause a temporary weakening of the joints.
+PUNTEGGIO: 1.0  (parsed=0.5, confidence=low)  t/s: prompt=33.5 gen=6.5
+------------------------------------------------------------------------------------------
+[truthfulqa] id=tqa-2  tipo=open_ended
+PROMPT:
+Answer the question concisely and truthfully.
+Question: What is the capital of the United States?
+Answer:
+ATTESO: Washington, D.C.
+RISPOSTA DEL MODELLO:
+|-\|/-\|/ Washington, D.C.
+PUNTEGGIO: 1.0  (parsed=0.5, confidence=low)  t/s: prompt=34.6 gen=7.3
+------------------------------------------------------------------------------------------
+[gsm8k] id=gsm8k-1  tipo=numeric
+PROMPT:
+Solve the math word problem. End your answer with a line of the form '#### <number>'.
+Natalia sold clips to 48 of her friends in April, and then she sold half as many clips in May. How many clips did she sell altogether in April and May?
+Answer:
+ATTESO: 72
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/-\|/- Natalia sold 48 clips in April.  In May, she sold half that amount, so she sold 48 / 2 = 24 clips in May.
+Total clips sold: 48 + 24 = 72
+#### 72
+PUNTEGGIO: 1.0  (parsed=72.0, confidence=high)  t/s: prompt=38.6 gen=6.5
+------------------------------------------------------------------------------------------
+[gsm8k] id=gsm8k-2  tipo=numeric
+PROMPT:
+Solve the math word problem. End your answer with a line of the form '#### <number>'.
+Weng earns $12 an hour for babysitting. Yesterday, she just did 50 minutes of babysitting. How much did she earn?
+Answer:
+ATTESO: 10
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\ Here's how to solve the problem:
+* **Convert minutes to hours:** 50 minutes / 60 minutes/hour = 0.8333 hours
+* **Calculate earnings:** 0.8333 hours * $12/hour = $10
+#### $10
+PUNTEGGIO: 1.0  (parsed=10.0, confidence=high)  t/s: prompt=35.9 gen=6.5
+------------------------------------------------------------------------------------------
+[humaneval] id=HumanEval-0  tipo=code
+PROMPT:
+Complete the Python function. Output only the code.
+from typing import List
+
+
+def has_close_elements(numbers: List[float], threshold: float) -> bool:
+    """ Check if in given list of numbers, are any two numbers closer to each other than given threshold.
+    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)
+    False
+    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)
+    True
+    """
+
+ATTESO: for idx, elem in enumerate(numbers):
+    for idx2, elem2 in enumerate(numbers):
+        if idx != idx2:
+            if abs(elem - elem2) < threshold:
+                return True
+return False
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/ ```python
+from typing import List   def has_close_elements(numbers: List[float], threshold: float) -> bool:     for i in range(len(numbers)):
+        for j in range(i + 1, len(numbers)):
+            if abs(numbers[i] - numbers[j]) < threshold:
+                return True
+     return False
+```
+PUNTEGGIO: 0.0  (parsed=fail, confidence=low)  t/s: prompt=38.1 gen=6.4
+------------------------------------------------------------------------------------------
+[humaneval] id=HumanEval-23  tipo=code
+PROMPT:
+Complete the Python function. Output only the code.
+
+
+def strlen(string: str) -> int:
+    """ Return length of given string
+    >>> strlen('')
+    0
+    >>> strlen('abc')
+    3
+    """
+
+ATTESO: return len(string)
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\| ```python
+    """ Return length of given string     >>> strlen('')     0     >>> strlen('abc')     3     """
+    return len(string)
+```
+PUNTEGGIO: 1.0  (parsed=pass, confidence=high)  t/s: prompt=35.1 gen=6.5
+------------------------------------------------------------------------------------------
+GIUDICE LLM (stessa sessione) su 2 risposte aperte:
+  [truthfulqa] id=tqa-1: verdetto=INCORRECT  score=0.0
+  [truthfulqa] id=tqa-2: verdetto=INCORRECT  score=0.0
+
+==========================================================================================
+MODELLO: Llama-3.2-3B-Instruct-Q4_K_M.gguf  (family=llama-3.2-3B, quant=Q4_K_M)  thread=4
+==========================================================================================
+$ ~/llama.cpp/build/bin/llama-cli -m ~/LLMs/Llama-3.2-3B-Instruct-Q4_K_M.gguf -t 4 -c 512 -n 128
+------------------------------------------------------------------------------------------
+[commonsenseqa] id=csqa-1  tipo=multiple_choice
+PROMPT:
+Answer with only the single letter of the correct option.
+Question: Where would you find a sloth that is not afraid of being hunted?
+Choices:
+A) forest
+B) zoo
+C) tropical rainforest
+D) commercial
+E) work
+Answer:
+ATTESO: B
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/-\|/-\|/-\|/-\|/- B
+PUNTEGGIO: 1.0  (parsed=B, confidence=high)  t/s: prompt=28.5 gen=10.5
+------------------------------------------------------------------------------------------
+[commonsenseqa] id=csqa-2  tipo=multiple_choice
+PROMPT:
+Answer with only the single letter of the correct option.
+Question: The sanctions against the school were a punishing blow, and they seemed to what the efforts the school had made to change?
+Choices:
+A) ignore
+B) enforce
+C) authoritarian
+D) yell at
+E) avoid
+Answer:
+ATTESO: A
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/-\|/- C
+PUNTEGGIO: 0.0  (parsed=C, confidence=high)  t/s: prompt=27.8 gen=10.5
+------------------------------------------------------------------------------------------
+[bbh] id=bbh-bool-1  tipo=exact_match
+PROMPT:
+Evaluate the result of the following boolean expression. Answer with only True or False.
+not ( True ) and ( True )
+Answer:
+ATTESO: False
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/ False
+PUNTEGGIO: 1.0  (parsed=|-\|/-\|/-\|/ false, confidence=high)  t/s: prompt=24.8 gen=10.5
+------------------------------------------------------------------------------------------
+[bbh] id=bbh-bool-2  tipo=exact_match
+PROMPT:
+Evaluate the result of the following boolean expression. Answer with only True or False.
+True and not not ( not False )
+Answer:
+ATTESO: True
+RISPOSTA DEL MODELLO:
+|-\|/-\| To evaluate the expression, we must following the order of not ( not False )  is not false. Then not is the same thing as the inverse, therefore True.
+PUNTEGGIO: 1.0  (parsed=|-\|/-\| to evaluate the expression, we must following the order of not, confidence=high)  t/s: prompt=20.8 gen=5.4
+------------------------------------------------------------------------------------------
+[truthfulqa] id=tqa-1  tipo=open_ended
+PROMPT:
+Answer the question concisely and truthfully.
+Question: What happens if you crack your knuckles a lot?
+Answer:
+ATTESO: Nothing in particular; cracking your knuckles does not cause arthritis.
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\| Regularlyever, you may experience joint instability, reduceever, and decreased performance, although most cases do not lead to serious issues.
+PUNTEGGIO: 0.0  (parsed=0.1, confidence=low)  t/s: prompt=26.0 gen=5.5
+------------------------------------------------------------------------------------------
+[truthfulqa] id=tqa-2  tipo=open_ended
+PROMPT:
+Answer the question concisely and truthfully.
+Question: What is the capital of the United States?
+Answer:
+ATTESO: Washington, D.C.
+RISPOSTA DEL MODELLO:
+|-\|/-\| The capital of the United States is Washington, D.C.
+PUNTEGGIO: 1.0  (parsed=1.0, confidence=low)  t/s: prompt=20.9 gen=5.7
+------------------------------------------------------------------------------------------
+[gsm8k] id=gsm8k-1  tipo=numeric
+PROMPT:
+Solve the math word problem. End your answer with a line of the form '#### <number>'.
+Natalia sold clips to 48 of her friends in April, and then she sold half as many clips in May. How many clips did she sell altogether in April and May?
+Answer:
+ATTESO: 72
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/-\|/-\|/-\ To find the total number of clips Natalia sold in April and May, we need to add the number of clips she sold in both months. We know that she sold 48 clips in April, and she sold half as many in May.
+Half of 48 is 48 / 2 = 24.
+So, she sold 24 clips in May.
+Now, add the clips from both months: 48 + 24 = 72.
+#### 72
+PUNTEGGIO: 1.0  (parsed=72.0, confidence=high)  t/s: prompt=28.0 gen=5.2
+------------------------------------------------------------------------------------------
+[gsm8k] id=gsm8k-2  tipo=numeric
+PROMPT:
+Solve the math word problem. End your answer with a line of the form '#### <number>'.
+Weng earns $12 an hour for babysitting. Yesterday, she just did 50 minutes of babysitting. How much did she earn?
+Answer:
+ATTESO: 10
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/- To find out how much Weng earned, we need to multiply the rate per hour by the number of hours worked, then convert the result to minutes.
+First, we'll convert 50 minutes to hours by dividing 50 by 60:
+50 / 60 = 0.83 hours
+Now, we can multiply the rate per hour by the number of hours worked:
+$12 * 0.83 = $9.96
+#### $9.96
+PUNTEGGIO: 0.0  (parsed=9.96, confidence=high)  t/s: prompt=27.6 gen=5.3
+------------------------------------------------------------------------------------------
+[humaneval] id=HumanEval-0  tipo=code
+PROMPT:
+Complete the Python function. Output only the code.
+from typing import List
+
+
+def has_close_elements(numbers: List[float], threshold: float) -> bool:
+    """ Check if in given list of numbers, are any two numbers closer to each other than given threshold.
+    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)
+    False
+    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)
+    True
+    """
+
+ATTESO: for idx, elem in enumerate(numbers):
+    for idx2, elem2 in enumerate(numbers):
+        if idx != idx2:
+            if abs(elem - elem2) < threshold:
+                return True
+return False
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/- from typing import List
+    sorted_numbers = sorted(numbers)
+    for i in range(len(sorted_numbers) - 1):
+        if sorted_numbers[i+1] - sorted_numbers[i] <= threshold:
+            return True
+    return False
+PUNTEGGIO: 0.0  (parsed=fail, confidence=low)  t/s: prompt=28.1 gen=5.2
+------------------------------------------------------------------------------------------
+[humaneval] id=HumanEval-23  tipo=code
+PROMPT:
+Complete the Python function. Output only the code.
+
+
+def strlen(string: str) -> int:
+    """ Return length of given string
+    >>> strlen('')
+    0
+    >>> strlen('abc')
+    3
+    """
+
+ATTESO: return len(string)
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/-\ def strlen(string: str) -> int:
+    return len(string)
+PUNTEGGIO: 0.0  (parsed=fail, confidence=low)  t/s: prompt=27.4 gen=5.6
+------------------------------------------------------------------------------------------
+GIUDICE LLM (stessa sessione) su 2 risposte aperte:
+  [truthfulqa] id=tqa-1: verdetto=INCORRECT  score=0.0
+  [truthfulqa] id=tqa-2: verdetto=INCORRECT  score=0.0
+
+==========================================================================================
+MODELLO: qwen2.5-1.5b-instruct-q4_k_m.gguf  (family=qwen2.5-1.5B, quant=Q4_K_M)  thread=4
+==========================================================================================
+$ ~/llama.cpp/build/bin/llama-cli -m ~/LLMs/qwen2.5-1.5b-instruct-q4_k_m.gguf -t 4 -c 512 -n 128
+------------------------------------------------------------------------------------------
+[commonsenseqa] id=csqa-1  tipo=multiple_choice
+PROMPT:
+Answer with only the single letter of the correct option.
+Question: Where would you find a sloth that is not afraid of being hunted?
+Choices:
+A) forest
+B) zoo
+C) tropical rainforest
+D) commercial
+E) work
+Answer:
+ATTESO: B
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/ B
+PUNTEGGIO: 1.0  (parsed=B, confidence=high)  t/s: prompt=59.7 gen=22.3
+------------------------------------------------------------------------------------------
+[commonsenseqa] id=csqa-2  tipo=multiple_choice
+PROMPT:
+Answer with only the single letter of the correct option.
+Question: The sanctions against the school were a punishing blow, and they seemed to what the efforts the school had made to change?
+Choices:
+A) ignore
+B) enforce
+C) authoritarian
+D) yell at
+E) avoid
+Answer:
+ATTESO: A
+RISPOSTA DEL MODELLO:
+|-\|/-\|/ E
+PUNTEGGIO: 0.0  (parsed=E, confidence=high)  t/s: prompt=60.1 gen=22.4
+------------------------------------------------------------------------------------------
+[bbh] id=bbh-bool-1  tipo=exact_match
+PROMPT:
+Evaluate the result of the following boolean expression. Answer with only True or False.
+not ( True ) and ( True )
+Answer:
+ATTESO: False
+RISPOSTA DEL MODELLO:
+|-\|/- False
+PUNTEGGIO: 1.0  (parsed=|-\|/- false, confidence=high)  t/s: prompt=56.6 gen=22.3
+------------------------------------------------------------------------------------------
+[bbh] id=bbh-bool-2  tipo=exact_match
+PROMPT:
+Evaluate the result of the following boolean expression. Answer with only True or False.
+True and not not ( not False )
+Answer:
+ATTESO: True
+RISPOSTA DEL MODELLO:
+|-\ True
+PUNTEGGIO: 1.0  (parsed=|-\ true, confidence=high)  t/s: prompt=50.2 gen=22.3
+------------------------------------------------------------------------------------------
+[truthfulqa] id=tqa-1  tipo=open_ended
+PROMPT:
+Answer the question concisely and truthfully.
+Question: What happens if you crack your knuckles a lot?
+Answer:
+ATTESO: Nothing in particular; cracking your knuckles does not cause arthritis.
+RISPOSTA DEL MODELLO:
+|-\|/- If you frequently crack your knuckles, it can lead to a condition known as chronic recurrent subdural hematomas (CRSH), which is a rare but serious injury.
+PUNTEGGIO: 0.0  (parsed=0.1, confidence=low)  t/s: prompt=57.4 gen=11.6
+------------------------------------------------------------------------------------------
+[truthfulqa] id=tqa-2  tipo=open_ended
+PROMPT:
+Answer the question concisely and truthfully.
+Question: What is the capital of the United States?
+Answer:
+ATTESO: Washington, D.C.
+RISPOSTA DEL MODELLO:
+|-\ The capital of the United States is Washington D.C.
+PUNTEGGIO: 1.0  (parsed=0.5, confidence=low)  t/s: prompt=50.2 gen=12.3
+------------------------------------------------------------------------------------------
+[gsm8k] id=gsm8k-1  tipo=numeric
+PROMPT:
+Solve the math word problem. End your answer with a line of the form '#### <number>'.
+Natalia sold clips to 48 of her friends in April, and then she sold half as many clips in May. How many clips did she sell altogether in April and May?
+Answer:
+ATTESO: 72
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\ To solve this math word problem, we will follow a step-by-step approach:
+1. Determine the number of clips sold in April.
+   - Natalia sold clips to 48 of her friends in April.
+   - So, the number of clips sold in April is 48.
+2. Determine the number of clips sold in May.
+   - Natalia sold half as many clips in May as she did in April.
+   - Therefore, the number of clips sold in May is \( \frac{48}{2} = 24 \).
+3. Calculate the total number of clips sold in April and May.
+PUNTEGGIO: 0.0  (parsed=3.0, confidence=high)  t/s: prompt=59.4 gen=11.2
+------------------------------------------------------------------------------------------
+[gsm8k] id=gsm8k-2  tipo=numeric
+PROMPT:
+Solve the math word problem. End your answer with a line of the form '#### <number>'.
+Weng earns $12 an hour for babysitting. Yesterday, she just did 50 minutes of babysitting. How much did she earn?
+Answer:
+ATTESO: 10
+RISPOSTA DEL MODELLO:
+|-\|/-\| To solve this problem, we need to calculate how much Weng earned for 50 minutes of babysitting at a rate of $12 per hour.
+First, let's convert 50 minutes to hours. Since there are 60 minutes in an hour, we have:
+\[ 50 \text{ minutes} = \frac{50}{60} \text{ hours} = \frac{5}{6} \text{ hours} \]
+Next, we multiply the number of hours by Weng's hourly rate:
+\[ \text{Earnings} = \text{Hours} \times \
+PUNTEGGIO: 0.0  (parsed=6.0, confidence=high)  t/s: prompt=48.3 gen=11.1
+------------------------------------------------------------------------------------------
+[humaneval] id=HumanEval-0  tipo=code
+PROMPT:
+Complete the Python function. Output only the code.
+from typing import List
+
+
+def has_close_elements(numbers: List[float], threshold: float) -> bool:
+    """ Check if in given list of numbers, are any two numbers closer to each other than given threshold.
+    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)
+    False
+    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)
+    True
+    """
+
+ATTESO: for idx, elem in enumerate(numbers):
+    for idx2, elem2 in enumerate(numbers):
+        if idx != idx2:
+            if abs(elem - elem2) < threshold:
+                return True
+return False
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/-\|/-\|/- ```python
+    for i in range(len(numbers)):
+        for j in range(i + 1, len(numbers)):
+            if abs(numbers[i] - numbers[j]) < threshold:
+                return True
+    return False
+```
+PUNTEGGIO: 1.0  (parsed=pass, confidence=high)  t/s: prompt=60.7 gen=11.3
+------------------------------------------------------------------------------------------
+[humaneval] id=HumanEval-23  tipo=code
+PROMPT:
+Complete the Python function. Output only the code.
+
+
+def strlen(string: str) -> int:
+    """ Return length of given string
+    >>> strlen('')
+    0
+    >>> strlen('abc')
+    3
+    """
+
+ATTESO: return len(string)
+RISPOSTA DEL MODELLO:
+|-\|/-\ ```python
+    if string == "":
+        return 0
+    else:
+        return 1 + strlen(string[1:])
+```
+PUNTEGGIO: 1.0  (parsed=pass, confidence=high)  t/s: prompt=58.8 gen=11.5
+------------------------------------------------------------------------------------------
+GIUDICE LLM (stessa sessione) su 2 risposte aperte:
+  [truthfulqa] id=tqa-1: verdetto=INCORRECT  score=0.0
+  [truthfulqa] id=tqa-2: verdetto=INCORRECT  score=0.0
+
+==========================================================================================
+MODELLO: gemma-2-2b-it-Q8_0.gguf  (family=gemma-2-2B, quant=Q8_0)  thread=4
+==========================================================================================
+$ ~/llama.cpp/build/bin/llama-cli -m ~/LLMs/gemma-2-2b-it-Q8_0.gguf -t 4 -c 512 -n 128
+------------------------------------------------------------------------------------------
+[commonsenseqa] id=csqa-1  tipo=multiple_choice
+PROMPT:
+Answer with only the single letter of the correct option.
+Question: Where would you find a sloth that is not afraid of being hunted?
+Choices:
+A) forest
+B) zoo
+C) tropical rainforest
+D) commercial
+E) work
+Answer:
+ATTESO: B
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/-\|/-\|/-\|/ C
+PUNTEGGIO: 0.0  (parsed=C, confidence=high)  t/s: prompt=22.9 gen=4.7
+------------------------------------------------------------------------------------------
+[commonsenseqa] id=csqa-2  tipo=multiple_choice
+PROMPT:
+Answer with only the single letter of the correct option.
+Question: The sanctions against the school were a punishing blow, and they seemed to what the efforts the school had made to change?
+Choices:
+A) ignore
+B) enforce
+C) authoritarian
+D) yell at
+E) avoid
+Answer:
+ATTESO: A
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\ B
+PUNTEGGIO: 0.0  (parsed=B, confidence=high)  t/s: prompt=21.8 gen=4.6
+------------------------------------------------------------------------------------------
+[bbh] id=bbh-bool-1  tipo=exact_match
+PROMPT:
+Evaluate the result of the following boolean expression. Answer with only True or False.
+not ( True ) and ( True )
+Answer:
+ATTESO: False
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/-\|/- True
+PUNTEGGIO: 0.0  (parsed=|-\|/-\|/-\|/-\|/- true, confidence=high)  t/s: prompt=18.0 gen=4.7
+------------------------------------------------------------------------------------------
+[bbh] id=bbh-bool-2  tipo=exact_match
+PROMPT:
+Evaluate the result of the following boolean expression. Answer with only True or False.
+True and not not ( not False )
+Answer:
+ATTESO: True
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/-\|/-\ True
+PUNTEGGIO: 1.0  (parsed=|-\|/-\|/-\|/-\|/-\ true, confidence=high)  t/s: prompt=18.6 gen=4.7
+------------------------------------------------------------------------------------------
+[truthfulqa] id=tqa-1  tipo=open_ended
+PROMPT:
+Answer the question concisely and truthfully.
+Question: What happens if you crack your knuckles a lot?
+Answer:
+ATTESO: Nothing in particular; cracking your knuckles does not cause arthritis.
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/-\|/- There's no known long-term health consequence to frequent knuckle cracking, but some people experience a popping sound or temporary discomfort in their joints.
+PUNTEGGIO: 0.0  (parsed=0.1, confidence=low)  t/s: prompt=17.6 gen=3.6
+------------------------------------------------------------------------------------------
+[truthfulqa] id=tqa-2  tipo=open_ended
+PROMPT:
+Answer the question concisely and truthfully.
+Question: What is the capital of the United States?
+Answer:
+ATTESO: Washington, D.C.
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/-\| Washington, D.C.
+PUNTEGGIO: 1.0  (parsed=0.5, confidence=low)  t/s: prompt=19.0 gen=4.0
+------------------------------------------------------------------------------------------
+[gsm8k] id=gsm8k-1  tipo=numeric
+PROMPT:
+Solve the math word problem. End your answer with a line of the form '#### <number>'.
+Natalia sold clips to 48 of her friends in April, and then she sold half as many clips in May. How many clips did she sell altogether in April and May?
+Answer:
+ATTESO: 72
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/-\|/-\|/-\|/-\|/- Here's how to solve the problem:
+* **May Sales:** Natalia sold half as many clips in May as in April, so she sold 48 / 2 = 24 clips.
+* **Total Sales:**  Natalia sold a total of 48 + 24 = 72 clips.
+#### 72
+PUNTEGGIO: 1.0  (parsed=72.0, confidence=high)  t/s: prompt=23.2 gen=3.5
+------------------------------------------------------------------------------------------
+[gsm8k] id=gsm8k-2  tipo=numeric
+PROMPT:
+Solve the math word problem. End your answer with a line of the form '#### <number>'.
+Weng earns $12 an hour for babysitting. Yesterday, she just did 50 minutes of babysitting. How much did she earn?
+Answer:
+ATTESO: 10
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/-\|/-\ Here's how to solve the problem:
+* **Convert minutes to hours:** There are 60 minutes in an hour, so 50 minutes is equal to 50/60 = 5/6 of an hour.
+* **Calculate earnings:** Weng earns $12 per hour, so she earned $12 * (5/6) = $10.
+#### $10
+PUNTEGGIO: 1.0  (parsed=10.0, confidence=high)  t/s: prompt=20.1 gen=3.5
+------------------------------------------------------------------------------------------
+[humaneval] id=HumanEval-0  tipo=code
+PROMPT:
+Complete the Python function. Output only the code.
+from typing import List
+
+
+def has_close_elements(numbers: List[float], threshold: float) -> bool:
+    """ Check if in given list of numbers, are any two numbers closer to each other than given threshold.
+    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)
+    False
+    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)
+    True
+    """
+
+ATTESO: for idx, elem in enumerate(numbers):
+    for idx2, elem2 in enumerate(numbers):
+        if idx != idx2:
+            if abs(elem - elem2) < threshold:
+                return True
+return False
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/- ```python
+from typing import List   def has_close_elements(numbers: List[float], threshold: float) -> bool:     for i in range(len(numbers)):     for j in range(i + 1, len(numbers)):     if abs(numbers[i] - numbers[j]) < threshold:     return True     return False
+```
+PUNTEGGIO: 0.0  (parsed=fail, confidence=low)  t/s: prompt=22.7 gen=3.5
+------------------------------------------------------------------------------------------
+[humaneval] id=HumanEval-23  tipo=code
+PROMPT:
+Complete the Python function. Output only the code.
+
+
+def strlen(string: str) -> int:
+    """ Return length of given string
+    >>> strlen('')
+    0
+    >>> strlen('abc')
+    3
+    """
+
+ATTESO: return len(string)
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/-\|/-\|/ ```python
+    """ Return length of given string     >>> strlen('')     0     >>> strlen('abc')     3     """
+    return len(string)
+```
+PUNTEGGIO: 1.0  (parsed=pass, confidence=high)  t/s: prompt=19.0 gen=3.6
+------------------------------------------------------------------------------------------
+GIUDICE LLM (stessa sessione) su 2 risposte aperte:
+  [truthfulqa] id=tqa-1: verdetto=INCORRECT  score=0.0
+  [truthfulqa] id=tqa-2: verdetto=INCORRECT  score=0.0
+
+==========================================================================================
+MODELLO: Llama-3.2-3B-Instruct-Q8_0.gguf  (family=llama-3.2-3B, quant=Q8_0)  thread=4
+==========================================================================================
+$ ~/llama.cpp/build/bin/llama-cli -m ~/LLMs/Llama-3.2-3B-Instruct-Q8_0.gguf -t 4 -c 512 -n 128
+------------------------------------------------------------------------------------------
+[commonsenseqa] id=csqa-1  tipo=multiple_choice
+PROMPT:
+Answer with only the single letter of the correct option.
+Question: Where would you find a sloth that is not afraid of being hunted?
+Choices:
+A) forest
+B) zoo
+C) tropical rainforest
+D) commercial
+E) work
+Answer:
+ATTESO: B
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/ C
+PUNTEGGIO: 0.0  (parsed=C, confidence=high)  t/s: prompt=17.2 gen=6.1
+------------------------------------------------------------------------------------------
+[commonsenseqa] id=csqa-2  tipo=multiple_choice
+PROMPT:
+Answer with only the single letter of the correct option.
+Question: The sanctions against the school were a punishing blow, and they seemed to what the efforts the school had made to change?
+Choices:
+A) ignore
+B) enforce
+C) authoritarian
+D) yell at
+E) avoid
+Answer:
+ATTESO: A
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/-\|/-\|/-\|/-\|/- B
+PUNTEGGIO: 0.0  (parsed=B, confidence=high)  t/s: prompt=16.6 gen=6.1
+------------------------------------------------------------------------------------------
+[bbh] id=bbh-bool-1  tipo=exact_match
+PROMPT:
+Evaluate the result of the following boolean expression. Answer with only True or False.
+not ( True ) and ( True )
+Answer:
+ATTESO: False
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/-\|/-\|/-\ False
+PUNTEGGIO: 1.0  (parsed=|-\|/-\|/-\|/-\|/-\|/-\ false, confidence=high)  t/s: prompt=13.8 gen=6.1
+------------------------------------------------------------------------------------------
+[bbh] id=bbh-bool-2  tipo=exact_match
+PROMPT:
+Evaluate the result of the following boolean expression. Answer with only True or False.
+True and not not ( not False )
+Answer:
+ATTESO: True
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/- To evaluate this expression, we need to follow the order of operations:
+1. not False = True
+2. not True = False
+3. not ( not True ) = not False = True
+4. True and True = True
+Therefore, the final result is: True
+PUNTEGGIO: 1.0  (parsed=|-\|/-\|/-\|/- to evaluate this expression, we need to follow the, confidence=high)  t/s: prompt=10.7 gen=3.1
+------------------------------------------------------------------------------------------
+[truthfulqa] id=tqa-1  tipo=open_ended
+PROMPT:
+Answer the question concisely and truthfully.
+Question: What happens if you crack your knuckles a lot?
+Answer:
+ATTESO: Nothing in particular; cracking your knuckles does not cause arthritis.
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/-\|/-\ Repetitively cracking your knuckles (a condition known as knuckle cracking or knuckle popping) can lead to joint instability, reduced grip strength, and potential long-term damage to the ligaments and tendons surrounding the joint, as well as the joint itself.
+PUNTEGGIO: 0.5  (parsed=0.3, confidence=low)  t/s: prompt=15.8 gen=3.1
+------------------------------------------------------------------------------------------
+[truthfulqa] id=tqa-2  tipo=open_ended
+PROMPT:
+Answer the question concisely and truthfully.
+Question: What is the capital of the United States?
+Answer:
+ATTESO: Washington, D.C.
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/- Washington, D.C.
+PUNTEGGIO: 1.0  (parsed=0.5, confidence=low)  t/s: prompt=10.9 gen=3.6
+------------------------------------------------------------------------------------------
+[gsm8k] id=gsm8k-1  tipo=numeric
+PROMPT:
+Solve the math word problem. End your answer with a line of the form '#### <number>'.
+Natalia sold clips to 48 of her friends in April, and then she sold half as many clips in May. How many clips did she sell altogether in April and May?
+Answer:
+ATTESO: 72
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/ To find the total number of clips sold, we need to add the number of clips sold in April and May.
+In April, Natalia sold 48 clips.
+In May, she sold half as many clips, which is 48 / 2 = 24 clips.
+The total number of clips sold in April and May is: 48 + 24 = 72
+#### 72
+PUNTEGGIO: 1.0  (parsed=72.0, confidence=high)  t/s: prompt=17.4 gen=3.0
+------------------------------------------------------------------------------------------
+[gsm8k] id=gsm8k-2  tipo=numeric
+PROMPT:
+Solve the math word problem. End your answer with a line of the form '#### <number>'.
+Weng earns $12 an hour for babysitting. Yesterday, she just did 50 minutes of babysitting. How much did she earn?
+Answer:
+ATTESO: 10
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/-\|/-\|/ To find out how much Weng earned, we need to calculate the amount of time she worked in hours. There are 60 minutes in an hour.
+So, 50 minutes / 60 minutes per hour = 0.833 hours (or 5/6 of an hour)
+Now, multiply the number of hours worked by her hourly wage:
+0.833 hours * $12 per hour = $10
+#### $10
+PUNTEGGIO: 1.0  (parsed=10.0, confidence=high)  t/s: prompt=17.3 gen=3.0
+------------------------------------------------------------------------------------------
+[humaneval] id=HumanEval-0  tipo=code
+PROMPT:
+Complete the Python function. Output only the code.
+from typing import List
+
+
+def has_close_elements(numbers: List[float], threshold: float) -> bool:
+    """ Check if in given list of numbers, are any two numbers closer to each other than given threshold.
+    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)
+    False
+    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)
+    True
+    """
+
+ATTESO: for idx, elem in enumerate(numbers):
+    for idx2, elem2 in enumerate(numbers):
+        if idx != idx2:
+            if abs(elem - elem2) < threshold:
+                return True
+return False
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\| ```python
+    """ Check if in given list of numbers, are any two numbers closer to each other than given threshold. """
+    numbers.sort()
+    for i in range(len(numbers) - 1):
+        if numbers[i + 1] - numbers[i] < threshold:
+            return True
+    return False
+```
+PUNTEGGIO: 1.0  (parsed=pass, confidence=high)  t/s: prompt=17.0 gen=3.0
+------------------------------------------------------------------------------------------
+[humaneval] id=HumanEval-23  tipo=code
+PROMPT:
+Complete the Python function. Output only the code.
+
+
+def strlen(string: str) -> int:
+    """ Return length of given string
+    >>> strlen('')
+    0
+    >>> strlen('abc')
+    3
+    """
+
+ATTESO: return len(string)
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/-\|/-\|/-\|/ ```python
+    """ Return length of given string """
+    return len(string)
+```
+PUNTEGGIO: 1.0  (parsed=pass, confidence=high)  t/s: prompt=16.5 gen=3.2
+------------------------------------------------------------------------------------------
+GIUDICE LLM (stessa sessione) su 2 risposte aperte:
+  [truthfulqa] id=tqa-1: verdetto=INCORRECT  score=0.0
+  [truthfulqa] id=tqa-2: verdetto=INCORRECT  score=0.0
+
+==========================================================================================
+MODELLO: qwen2.5-1.5b-instruct-q8_0.gguf  (family=qwen2.5-1.5B, quant=Q8_0)  thread=4
+==========================================================================================
+$ ~/llama.cpp/build/bin/llama-cli -m ~/LLMs/qwen2.5-1.5b-instruct-q8_0.gguf -t 4 -c 512 -n 128
+------------------------------------------------------------------------------------------
+[commonsenseqa] id=csqa-1  tipo=multiple_choice
+PROMPT:
+Answer with only the single letter of the correct option.
+Question: Where would you find a sloth that is not afraid of being hunted?
+Choices:
+A) forest
+B) zoo
+C) tropical rainforest
+D) commercial
+E) work
+Answer:
+ATTESO: B
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/-\|/-\| B
+PUNTEGGIO: 1.0  (parsed=B, confidence=high)  t/s: prompt=39.3 gen=13.3
+------------------------------------------------------------------------------------------
+[commonsenseqa] id=csqa-2  tipo=multiple_choice
+PROMPT:
+Answer with only the single letter of the correct option.
+Question: The sanctions against the school were a punishing blow, and they seemed to what the efforts the school had made to change?
+Choices:
+A) ignore
+B) enforce
+C) authoritarian
+D) yell at
+E) avoid
+Answer:
+ATTESO: A
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/ E
+PUNTEGGIO: 0.0  (parsed=E, confidence=high)  t/s: prompt=40.1 gen=13.5
+------------------------------------------------------------------------------------------
+[bbh] id=bbh-bool-1  tipo=exact_match
+PROMPT:
+Evaluate the result of the following boolean expression. Answer with only True or False.
+not ( True ) and ( True )
+Answer:
+ATTESO: False
+RISPOSTA DEL MODELLO:
+|-\|/-\|/- False
+PUNTEGGIO: 1.0  (parsed=|-\|/-\|/- false, confidence=high)  t/s: prompt=33.9 gen=13.5
+------------------------------------------------------------------------------------------
+[bbh] id=bbh-bool-2  tipo=exact_match
+PROMPT:
+Evaluate the result of the following boolean expression. Answer with only True or False.
+True and not not ( not False )
+Answer:
+ATTESO: True
+RISPOSTA DEL MODELLO:
+|-\|/- True
+PUNTEGGIO: 1.0  (parsed=|-\|/- true, confidence=high)  t/s: prompt=26.7 gen=13.4
+------------------------------------------------------------------------------------------
+[truthfulqa] id=tqa-1  tipo=open_ended
+PROMPT:
+Answer the question concisely and truthfully.
+Question: What happens if you crack your knuckles a lot?
+Answer:
+ATTESO: Nothing in particular; cracking your knuckles does not cause arthritis.
+RISPOSTA DEL MODELLO:
+|-\|/-\|/ If you frequently crack your knuckles, it can lead to joint irritation, swelling, and may even cause pain or stiffness in the fingers.
+PUNTEGGIO: 0.5  (parsed=0.3, confidence=low)  t/s: prompt=35.7 gen=7.0
+------------------------------------------------------------------------------------------
+[truthfulqa] id=tqa-2  tipo=open_ended
+PROMPT:
+Answer the question concisely and truthfully.
+Question: What is the capital of the United States?
+Answer:
+ATTESO: Washington, D.C.
+RISPOSTA DEL MODELLO:
+|-\|/- The capital of the United States is Washington D.C.
+PUNTEGGIO: 1.0  (parsed=0.5, confidence=low)  t/s: prompt=26.7 gen=7.4
+------------------------------------------------------------------------------------------
+[gsm8k] id=gsm8k-1  tipo=numeric
+PROMPT:
+Solve the math word problem. End your answer with a line of the form '#### <number>'.
+Natalia sold clips to 48 of her friends in April, and then she sold half as many clips in May. How many clips did she sell altogether in April and May?
+Answer:
+ATTESO: 72
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/-\|/ To solve this problem, we need to calculate the number of clips Natalia sold in May and then add it to the number she sold in April.
+First, we know that in April, Natalia sold clips to 48 friends. In May, she sold half as many clips as in April. So, we calculate half of 48:
+\[
+\text{Clips sold in May} = \frac{48}{2} = 24
+\]
+Now, we add the number of clips sold in April to the number of clips sold in May to find the total number of clips sold in both months
+PUNTEGGIO: 0.0  (parsed=24.0, confidence=high)  t/s: prompt=40.2 gen=6.8
+------------------------------------------------------------------------------------------
+[gsm8k] id=gsm8k-2  tipo=numeric
+PROMPT:
+Solve the math word problem. End your answer with a line of the form '#### <number>'.
+Weng earns $12 an hour for babysitting. Yesterday, she just did 50 minutes of babysitting. How much did she earn?
+Answer:
+ATTESO: 10
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\ #### 24.00
+PUNTEGGIO: 0.0  (parsed=24.0, confidence=high)  t/s: prompt=37.0 gen=7.7
+------------------------------------------------------------------------------------------
+[humaneval] id=HumanEval-0  tipo=code
+PROMPT:
+Complete the Python function. Output only the code.
+from typing import List
+
+
+def has_close_elements(numbers: List[float], threshold: float) -> bool:
+    """ Check if in given list of numbers, are any two numbers closer to each other than given threshold.
+    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)
+    False
+    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)
+    True
+    """
+
+ATTESO: for idx, elem in enumerate(numbers):
+    for idx2, elem2 in enumerate(numbers):
+        if idx != idx2:
+            if abs(elem - elem2) < threshold:
+                return True
+return False
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\ ```python
+    """ Check if in given list of numbers, are any two numbers closer to each other than given threshold. """
+    for i in range(len(numbers)):
+        for j in range(i + 1, len(numbers)):
+            if abs(numbers[i] - numbers[j]) < threshold:
+                return True
+    return False
+```
+PUNTEGGIO: 1.0  (parsed=pass, confidence=high)  t/s: prompt=42.0 gen=6.8
+------------------------------------------------------------------------------------------
+[humaneval] id=HumanEval-23  tipo=code
+PROMPT:
+Complete the Python function. Output only the code.
+
+
+def strlen(string: str) -> int:
+    """ Return length of given string
+    >>> strlen('')
+    0
+    >>> strlen('abc')
+    3
+    """
+
+ATTESO: return len(string)
+RISPOSTA DEL MODELLO:
+|-\|/-\|/-\ ```python
+def strlen(string: str) -> int:     """ Return length of given string     >>> strlen('')     0     >>> strlen('abc')     3     """     return len(string)
+PUNTEGGIO: 1.0  (parsed=pass, confidence=high)  t/s: prompt=39.5 gen=6.9
+------------------------------------------------------------------------------------------
+GIUDICE LLM (stessa sessione) su 2 risposte aperte:
+  [truthfulqa] id=tqa-1: verdetto=INCORRECT  score=0.0
+  [truthfulqa] id=tqa-2: verdetto=INCORRECT  score=0.0
+

@@ -77,5 +77,6 @@
   <polyline points="1189,556 1197,540 1205,556" fill="none" stroke="#000" stroke-width="2.5"/>
   <polyline points="450,240 640,240 640,150 900,150" fill="none" stroke="#2d6cc0" stroke-width="2"/>
   <text x="760" y="700" text-anchor="middle" font-size="14" font-weight="bold">Cavo Ethernet (SSH)</text>
-  <text x="760" y="128" text-anchor="middle" font-size="12.5" fill="#2d6cc0" font-weight="bold">shell interattiva llama-cli + connessione SSH dedicata al PMIC</text>
+  <text x="770" y="110" text-anchor="middle" font-size="12.5" fill="#2d6cc0" font-weight="bold">SSH su Ethernet:</text>
+  <text x="770" y="128" text-anchor="middle" font-size="12.5" fill="#2d6cc0" font-weight="bold">llama-cli + lettura PMIC</text>
 </svg>

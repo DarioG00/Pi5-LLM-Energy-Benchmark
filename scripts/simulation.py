@@ -88,7 +88,7 @@ class FakeSSH:
         return ""
 
     def measure_temp(self) -> float:
-        # raffreddamento passivo quando interrogato di seguito (cooldown)
+        # la temperatura simulata cala leggermente a ogni lettura
         self._temp = max(45.0, self._temp - random.uniform(1.5, 3.5))
         return self._temp
 

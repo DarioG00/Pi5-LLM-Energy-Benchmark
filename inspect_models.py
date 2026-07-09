@@ -5,9 +5,10 @@ Per ogni modello e per ogni benchmark stampa: il prompt inviato, la risposta
 effettiva del modello e il punteggio assegnato dallo scoring. Serve a capire
 cosa risponde davvero il modello (utile per diagnosticare punteggi bassi).
 
-Usa la STESSA modalita' interattiva del benchmark (shell + llama-cli tenuto
-caricato), che e' quella supportata dal build in uso: avvia il modello una volta,
-invia i prompt uno per uno attendendo il prompt `>` e ne raccoglie la risposta.
+Usa la stessa modalita' interattiva del benchmark: avvia il modello una volta,
+invia i prompt uno per uno attendendo la riga dei timing e ne raccoglie la
+risposta, azzerando la cronologia tra un prompt e l'altro (/clear). Stampa log
+di avanzamento in tempo reale.
 
 Uso:
     python inspect_models.py                         # 1 campione/benchmark, 1 thread
@@ -48,6 +49,7 @@ def main() -> int:
     logging.basicConfig(level=logging.INFO,
                         format="%(asctime)s [%(name)s] %(levelname)s: %(message)s",
                         datefmt="%H:%M:%S")
+    log = logging.getLogger("inspect")
 
     base = os.path.dirname(os.path.abspath(args.config)) or "."
     with open(args.config, encoding="utf-8") as fh:
@@ -67,6 +69,8 @@ def main() -> int:
     if args.models:
         models = [m for m in models if m["file"] in args.models]
 
+    n_prompts = sum(len(v) for v in by_bench.values())
+
     out = open(args.out, "w", encoding="utf-8") if args.out else None
 
     def emit(txt: str = "") -> None:
@@ -79,11 +83,14 @@ def main() -> int:
 
     ssh = PiSSH(PiConfig.from_dict(cfg["pi"]),
                 ready_prompt=llama.get("ready_prompt", "> "),
-                prompt_mode=llama.get("prompt_mode", "read"))
+                prompt_mode=llama.get("prompt_mode", "inline"))
     ssh.wait_for_boot_and_connect()
     ssh.open_shell()
     try:
-        for m in models:
+        for mi, m in enumerate(models, 1):
+            log.info("[modello %d/%d] carico %s a %d thread "
+                     "(il caricamento richiede alcune decine di secondi)...",
+                     mi, len(models), m["file"], args.threads)
             emit("=" * 90)
             emit(f"MODELLO: {m['file']}  (family={m.get('family')}, "
                  f"quant={m.get('quant')})  thread={args.threads}")
@@ -91,11 +98,15 @@ def main() -> int:
             cmd = build_command(llama, m["file"], args.threads)
             emit(f"$ {cmd}")
             load_out = ssh.launch_model(cmd, load_to)
+            log.info("modello pronto, eseguo %d prompt...", n_prompts)
+            k = 0
             if not load_out.strip():
                 emit("!! nessun output all'avvio del modello: verificare il comando "
                      "o il percorso del binario/modello.")
             for bname, slist in by_bench.items():
                 for s in slist:
+                    k += 1
+                    log.info("  [%d/%d] %s id=%s: invio prompt...", k, n_prompts, bname, s.id)
                     ssh.clear_history()
                     raw = ssh.send_prompt(s.prompt, infer_to)
                     resp = extract_response(raw, s.prompt)

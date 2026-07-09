@@ -56,10 +56,10 @@
   <text x="990" y="644" text-anchor="middle" font-size="12" font-weight="bold">Ethernet</text>
   <text x="990" y="661" text-anchor="middle" font-size="12" font-weight="bold">RJ45</text>
 
-  <!-- PMIC letto via SSH -->
-  <polyline points="700,529 860,529 905,560 908,585" fill="none" stroke="#e65100" stroke-width="2.5"/>
-  <polyline points="901,573 908,589 916,575" fill="none" stroke="#e65100" stroke-width="2.5"/>
-  <text x="820" y="520" text-anchor="middle" font-size="12" font-weight="bold" fill="#e65100">letto via SSH</text>
+  <!-- PMIC letto via SSH: percorso pulito dal PMIC alla porta Ethernet -->
+  <polyline points="700,530 890,530 890,644 908,644" fill="none" stroke="#e65100" stroke-width="2.5"/>
+  <polyline points="900,637 910,644 900,651" fill="none" stroke="#e65100" stroke-width="2.5"/>
+  <text x="795" y="520" text-anchor="middle" font-size="12" font-weight="bold" fill="#e65100">letto via SSH</text>
 
   <!-- VENTOLA -->
   <g transform="translate(1250,175)">
