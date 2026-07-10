@@ -379,20 +379,16 @@ Figura~\ref{fig:sw_architecture}. I componenti principali sono:
     \item modulo di \textbf{orchestrazione}: coordina l'intero flusso sperimentale
     (modelli, thread e ripetizioni) e salva i risultati;
 
+    \item modulo di \textbf{verifica dell'integrità}: all'avvio calcola lo sha256
+    di ciascun file GGUF e lo confronta con una copia di riferimento, così da
+    interrompere l'esecuzione se un modello risulta corrotto o modificato;
+
     \item modulo di \textbf{analisi}: aggrega i dati e genera i grafici comparativi.
 \end{itemize}
 
-Ciascun modulo è realizzato da una o più classi Python: l'organizzazione
-complessiva e le relazioni tra di esse sono riassunte nel diagramma UML di
-Figura~\ref{fig:uml_classi}, che evidenzia il ruolo centrale di orchestrazione
-della classe \texttt{BenchmarkRunner}.
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=\textwidth,height=0.85\textheight,keepaspectratio]{imm/uml_classi.png}
-    \caption{Diagramma delle classi dello script di automazione.}
-    \label{fig:uml_classi}
-\end{figure}
+Ciascun modulo è realizzato da una o più classi Python, coordinate dalla classe
+\texttt{BenchmarkRunner} che ricopre il ruolo centrale di orchestrazione
+dell'intero flusso sperimentale.
 
 I parametri dell'esperimento (indirizzo e credenziali del Raspberry Pi 5,
 parametri di campionamento del PMIC, elenco dei modelli, numero di thread, numero di

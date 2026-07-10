@@ -91,6 +91,7 @@ run_benchmark.py            entry point eseguito dal PC host
 inspect_models.py           ispezione rapida: prompt / risposta / punteggio per modello
 scripts/
   pmic.py                   backend PMIC: lettura vcgencmd, somma I·V, energia su finestra
+  integrity.py              verifica sha256 dei modelli (anti-corruzione)
   rpi5_power.sh             script di riferimento di jfikar/RPi5-power
   pi_ssh.py                 SSH Paramiko + shell interattiva llama-cli + vcgencmd
   llama_parser.py           parsing riga timing e testo generato
@@ -222,5 +223,9 @@ Output principali:
   (riga `__load__`), così l'energia di inferenza non lo include.
 - Il **bias idle** va rimisurato se cambiano le condizioni (temperatura,
   periferiche collegate).
+- **Integrità dei modelli** (`config.json → verify_models`): all'avvio calcola lo
+  sha256 di ogni GGUF e lo confronta con una baseline salvata (`models.sha256.json`,
+  creata alla prima esecuzione); se un file è cambiato/corrotto il benchmark si
+  ferma. Se aggiorni volontariamente un modello, cancella quella voce dalla baseline.
 - Tutti i parametri (Pi, PMIC, llama, thermal, modelli, thread, ripetizioni,
   benchmar

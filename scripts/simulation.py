@@ -79,6 +79,10 @@ class FakeSSH:
             return f"temp={self._temp:.1f}'C"
         if "get_throttled" in cmd:
             return f"throttled=0x{self._throttled:x}"
+        if "sha256sum" in cmd:
+            import hashlib
+            name = cmd.split()[-1]
+            return hashlib.sha256(name.encode()).hexdigest() + "  " + name
         if "pmic_read_adc" in cmd:
             i = random.uniform(0.3, 1.1)   # corrente VDD_CORE simulata
             return (

@@ -101,8 +101,9 @@
     "raw_dir": "recordings/raw",
     "plots_dir": "recordings/plots"
   },
-  "between_models": {
-    "pause_s": 3,
-    "drop_caches": true
+  "verify_models": {
+    "enabled": true,
+    "reference": "models.sha256.json",
+    "abort_on_mismatch": true
   }
 }

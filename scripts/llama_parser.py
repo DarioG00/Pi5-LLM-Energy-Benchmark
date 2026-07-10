@@ -115,12 +115,3 @@ def extract_response(raw: str, prompt: str) -> str:
     out = "\n".join(lines).strip()
     out = re.sub(r"\n?>\s*$", "", out).strip()
     return out
-
-
-def estimate_tokens(text: str) -> int:
-    """Stima grezza dei token generati (fallback se mancano le statistiche).
-
-    Regola pratica ~ 0.75 parole/token -> token ≈ parole / 0.75.
-    """
-    words = len(text.split())
-    return int(round(words / 0.75)) if words else 0

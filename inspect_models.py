@@ -1,20 +1,19 @@
 #!/usr/bin/env python3
 """Ispezione rapida delle risposte dei modelli.
 
-Per ogni modello e per ogni benchmark stampa: il prompt inviato, la risposta
-effettiva del modello e il punteggio assegnato dallo scoring. Serve a capire
-cosa risponde davvero il modello (utile per diagnosticare punteggi bassi).
+Controllo visivo veloce che (a) tutti i modelli rispondano e (b) lo scoring di
+`scripts/scoring.py` assegni i punteggi giusti. Per ogni modello e benchmark
+stampa: prompt, risposta del modello, risposta attesa, punteggio con esito
+[OK]/[NO], e a fine modello un riepilogo dei corretti per benchmark.
 
-Usa la stessa modalita' interattiva del benchmark: avvia il modello una volta,
-invia i prompt uno per uno attendendo la riga dei timing e ne raccoglie la
-risposta, azzerando la cronologia tra un prompt e l'altro (/clear). Stampa log
-di avanzamento in tempo reale.
+Usa la stessa modalita' interattiva del benchmark (llama-cli, /clear tra i
+prompt) e stampa log di avanzamento in tempo reale.
 
 Uso:
     python inspect_models.py                         # 1 campione/benchmark, 1 thread
     python inspect_models.py --samples 2 --threads 4
     python inspect_models.py --models qwen2.5-1.5b-instruct-q4_k_m.gguf
-    python inspect_models.py --benchmarks gsm8k humaneval --out ispezione.txt
+    python inspect_models.py --benchmarks truthfulqa gsm8k --out ispezione.txt
 """
 from __future__ import annotations
 
@@ -23,6 +22,7 @@ import json
 import logging
 import os
 import sys
+from collections import defaultdict
 
 from scripts.pi_ssh import PiSSH, PiConfig
 from scripts.datasets_loader import load_all
@@ -81,6 +81,9 @@ def main() -> int:
     load_to = float(llama.get("load_timeout", 180))
     infer_to = float(llama.get("infer_timeout", 240))
 
+    # riepilogo globale: {benchmark: [corretti, totale]}
+    globale = defaultdict(lambda: [0, 0])
+
     ssh = PiSSH(PiConfig.from_dict(cfg["pi"]),
                 ready_prompt=llama.get("ready_prompt", "> "),
                 prompt_mode=llama.get("prompt_mode", "inline"))
@@ -99,10 +102,11 @@ def main() -> int:
             emit(f"$ {cmd}")
             load_out = ssh.launch_model(cmd, load_to)
             log.info("modello pronto, eseguo %d prompt...", n_prompts)
-            k = 0
             if not load_out.strip():
                 emit("!! nessun output all'avvio del modello: verificare il comando "
                      "o il percorso del binario/modello.")
+            per_model = defaultdict(lambda: [0, 0])   # {benchmark: [corretti, totale]}
+            k = 0
             for bname, slist in by_bench.items():
                 for s in slist:
                     k += 1
@@ -114,9 +118,15 @@ def main() -> int:
                     meta = dict(s.meta)
                     meta.setdefault("prompt", s.prompt)
                     sc = scoring.score(s.btype, resp, s.expected, meta)
+                    ok = (sc.get("score") == 1.0)
+                    per_model[bname][1] += 1
+                    globale[bname][1] += 1
+                    if ok:
+                        per_model[bname][0] += 1
+                        globale[bname][0] += 1
                     shown = resp if len(resp) <= args.max_chars else resp[:args.max_chars] + " […]"
                     emit("-" * 90)
-                    emit(f"[{bname}] id={s.id}  tipo={s.btype}")
+                    emit(f"[{bname}] id={s.id}  tipo={s.btype}   {'[OK]' if ok else '[NO]'}")
                     emit("PROMPT:")
                     emit(s.prompt)
                     emit("ATTESO: " + (s.expected[:200] if s.expected else "(verifica tramite test)"))
@@ -126,6 +136,11 @@ def main() -> int:
                          f"confidence={sc.get('confidence')})  "
                          f"t/s: prompt={tim.get('prompt_tps')} gen={tim.get('gen_tps')}")
             ssh.stop_model()
+            tot_ok = sum(v[0] for v in per_model.values())
+            tot = sum(v[1] for v in per_model.values())
+            dettaglio = "  ".join(f"{b} {v[0]}/{v[1]}" for b, v in per_model.items())
+            emit("-" * 90)
+            emit(f"RIEPILOGO {m['file']}: {dettaglio}   |   TOTALE {tot_ok}/{tot} corretti")
             emit("")
     finally:
         try:
@@ -135,6 +150,14 @@ def main() -> int:
         ssh.close()
         if out:
             out.close()
+
+    # riepilogo globale
+    if globale:
+        emit("=" * 90)
+        emit("RIEPILOGO GLOBALE (tutti i modelli):")
+        for b, v in globale.items():
+            emit(f"  {b}: {v[0]}/{v[1]} corretti")
+        emit("=" * 90)
     if args.out:
         print(f"\nReport salvato in {args.out}")
     return 0

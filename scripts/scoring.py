@@ -4,7 +4,7 @@ Filosofia: scoring di base automatico + revisione manuale
 successiva. Ogni funzione restituisce un dizionario con:
   - score       : 0.0/1.0 (o frazione) confronto con l'atteso
   - confidence  : "high" se il match e' affidabile, "low" se euristico
-  - needs_review: True se conviene rivedere a mano / con un LLM giudice
+  - needs_review: True se conviene rivedere a mano
 """
 from __future__ import annotations
 
@@ -84,25 +84,6 @@ def score_numeric(response: str, expected: str) -> dict:
             "confidence": "high",
             "needs_review": False,
             "parsed": got}
-
-
-def score_open_ended(response: str, expected: str, incorrect: Optional[list] = None) -> dict:
-    """Euristica a bassa confidenza per TruthfulQA: overlap + check distrattori.
-
-    Va sempre rivista a mano o con un LLM-giudice.
-    """
-    r = _norm(response)
-    e = _norm(expected)
-    exp_tokens = set(e.split())
-    overlap = len(exp_tokens & set(r.split())) / max(1, len(exp_tokens))
-    hit_wrong = any(_norm(w) in r for w in (incorrect or []))
-    score = 0.0
-    if overlap >= 0.5 and not hit_wrong:
-        score = 1.0
-    elif overlap >= 0.3 and not hit_wrong:
-        score = 0.5
-    return {"score": score, "confidence": "low",
-            "needs_review": True, "parsed": round(overlap, 2)}
 
 
 def _code_prefix(prompt: str) -> str:
@@ -214,8 +195,6 @@ def score(btype: str, response: str, expected: str, meta: Optional[dict] = None)
         return score_exact_match(response, expected)
     if btype == "numeric":
         return score_numeric(response, expected)
-    if btype == "open_ended":
-        return score_open_ended(response, expected, meta.get("incorrect"))
     if btype == "code":
         return score_code(response, meta)
     return {"score": 0.0, "confidence": "low", "needs_review": True, "parsed": None}

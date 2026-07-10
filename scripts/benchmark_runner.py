@@ -62,6 +62,17 @@ class BenchmarkRunner:
     # --------------------------------------------------------------- setup
     def load_samples(self) -> None:
         self.samples = load_all(self.cfg["benchmarks"], self.base_dir)
+        cap = int(self.cfg.get("max_samples_per_benchmark", 0) or 0)
+        if cap > 0:
+            seen: dict = {}
+            kept = []
+            for s in self.samples:
+                c = seen.get(s.benchmark, 0)
+                if c < cap:
+                    kept.append(s)
+                    seen[s.benchmark] = c + 1
+            self.samples = kept
+            log.info("Limite campioni per benchmark: %d", cap)
         log.info("Totale campioni: %d", len(self.samples))
 
     def setup_hardware(self) -> None:
@@ -72,6 +83,9 @@ class BenchmarkRunner:
         # Pi (shell interattiva per llama-cli)
         self.ssh.wait_for_boot_and_connect()
         self.ssh.open_shell()
+        # verifica integrita' dei modelli (sha256), una sola volta all'avvio
+        from . import integrity
+        integrity.verify(self.ssh, self.cfg, self.base_dir)
         # bias idle
         self.power.measure_idle_bias()
 
@@ -101,32 +115,11 @@ class BenchmarkRunner:
                         self.rows.extend(rows)
                         break
 
-    def _between_models(self) -> None:
-        """Tra un lancio del modello e il successivo: breve pausa e pulizia della
-        cache di sistema del Pi. Utile a rileggere il file GGUF dal disco (evita
-        di riusare pagine potenzialmente corrotte in cache) e a liberare memoria
-        prima di caricare il modello successivo. Best-effort: gli errori (es. sudo
-        non disponibile) vengono ignorati."""
-        bm = self.cfg.get("between_models", {})
-        if bm.get("drop_caches", True):
-            try:
-                self.ssh.run_command(
-                    "sync; sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches' "
-                    "2>/dev/null || true", timeout=20)
-            except Exception:
-                pass
-        pause = float(bm.get("pause_s", 3))
-        if pause > 0:
-            time.sleep(pause)
-
     def _run_one(self, model: dict, threads: int, rep: int, llama_cfg: dict):
         """Esegue una registrazione completa. Ritorna (righe, throttled_durante)."""
         command = build_command(llama_cfg, model["file"], threads)
         tcfg = self.thermal_cfg
         local_rows: List[dict] = []
-
-        # pausa + pulizia cache prima di caricare il modello (fuori dalla misura)
-        self._between_models()
 
         # stato termico di base prima della registrazione
         base = thermal.read_state(self.ssh) if tcfg.enabled else {}
@@ -148,7 +141,7 @@ class BenchmarkRunner:
         throttled_during = False
         n_tot = len(self.samples)
         for k, s in enumerate(self.samples, 1):
-            log.info("  [%d/%d] %s %s: inferenza...", k, n_tot, s.benchmark, s.id)
+            log.info("  [%d/%d] %s %s ...", k, n_tot, s.benchmark, s.id)
             # azzera la cronologia: ogni prompt e' indipendente e non satura il contesto
             self.ssh.clear_history()
             # prepara il prompt PRIMA di aprire la finestra (lo staging /read non
@@ -166,7 +159,17 @@ class BenchmarkRunner:
                 now_occ = bool(tstate.get("throttled_value", 0) & 0xF0000)
                 if tstate.get("active") or (now_occ and not base_occurred):
                     throttled_during = True
-            per_sample.append((s, t0, t1, latency, raw, tstate))
+            # valuta subito la risposta (fuori dalla finestra di misura) per mostrare
+            # il punteggio nell'avanzamento; il risultato viene riusato per il CSV.
+            response = extract_response(raw, s.prompt)
+            meta = dict(s.meta)
+            meta.setdefault("prompt", s.prompt)
+            sc = scoring.score(s.btype, response, s.expected, meta)
+            sv = sc.get("score")
+            esito = "OK" if sv == 1.0 else ("n/d" if sv in ("", None) else "NO")
+            log.info("  [%d/%d] %s %s -> punteggio %s [%s]  (%.1fs)",
+                     k, n_tot, s.benchmark, s.id, sv, esito, latency)
+            per_sample.append((s, t0, t1, latency, raw, tstate, response, sc))
 
         # --- chiusura sessione e riepilogo timing ---
         summary = self.ssh.stop_model()
@@ -185,13 +188,9 @@ class BenchmarkRunner:
         ))
 
         # --- righe per ogni inferenza ---
-        for (s, t0, t1, latency, raw, tstate) in per_sample:
+        for (s, t0, t1, latency, raw, tstate, response, sc) in per_sample:
             energy = self.power.window_energy(rec, t0, t1)
-            response = extract_response(raw, s.prompt)
             ptim = parse_timings(raw)
-            meta = dict(s.meta)
-            meta.setdefault("prompt", s.prompt)
-            sc = scoring.score(s.btype, response, s.expected, meta)
             timings = {
                 "prompt_tps": ptim.get("prompt_tps") or sess_tim.get("prompt_tps"),
                 "gen_tps": ptim.get("gen_tps") or sess_tim.get("gen_tps"),
