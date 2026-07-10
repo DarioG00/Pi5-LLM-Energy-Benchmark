@@ -68,6 +68,27 @@ def per_config(df: pd.DataFrame) -> pd.DataFrame:
     return grp
 
 
+def total_energy_per_config(df: pd.DataFrame) -> pd.DataFrame:
+    """Energia totale consumata da ciascuna configurazione (modello x thread)
+    per completare l'intera suite di benchmark.
+
+    Per ogni ripetizione somma l'energia netta di tutte le inferenze, poi media
+    sulle ripetizioni: si ottiene l'energia media per una passata completa dei
+    benchmark. E' una misura di consumo *complessivo*, complementare all'energia
+    media per singola inferenza.
+    """
+    infer = df[df["benchmark"] != LOAD_TAG].copy()
+    per_rep = (infer.groupby(["model", "family", "quant", "threads", "repetition"])
+               .agg(energy_total_j=("energy_net_j", "sum"),
+                    n_inferenze=("energy_net_j", "size"))
+               .reset_index())
+    grp = (per_rep.groupby(["model", "family", "quant", "threads"])
+           .agg(energy_total_j=("energy_total_j", "mean"),
+                n_inferenze=("n_inferenze", "mean"))
+           .reset_index())
+    return grp.sort_values(["model", "threads"])
+
+
 def composite_score(cfg_df: pd.DataFrame) -> pd.DataFrame:
     """Score composito normalizzato (sklearn): alta qualità, bassa energia/latenza."""
     d = cfg_df.copy()
@@ -93,6 +114,19 @@ def plot_efficiency(cfg_df, out):
     ax.set_title("Energia netta media per inferenza (J) per modello e thread")
     ax.set_xlabel(""); ax.set_ylabel("Energia netta (J) (minore = meglio)")
     ax.tick_params(axis="x", rotation=20)
+    _save(fig, out)
+
+
+def plot_energy_per_config(tot_df, out):
+    """Grafico dell'energia totale consumata da ciascuna configurazione."""
+    fig, ax = plt.subplots(figsize=(11, 6))
+    sns.barplot(data=tot_df, x="model", y="energy_total_j", hue="threads", ax=ax)
+    ax.set_title("Energia totale consumata per completare i benchmark (J) "
+                 "per configurazione")
+    ax.set_xlabel(""); ax.set_ylabel("Energia totale (J) (minore = meglio)")
+    ax.tick_params(axis="x", rotation=20)
+    for cont in ax.containers:
+        ax.bar_label(cont, fmt="%.0f", fontsize=8, padding=2)
     _save(fig, out)
 
 
@@ -166,9 +200,9 @@ def plot_thermal(df, out):
         return
     fig, ax = plt.subplots(figsize=(11, 6))
     sns.boxplot(data=infer, x="model", y="temp_c", hue="threads", ax=ax)
-    ax.axhline(80, ls="--", color="red", lw=1, label="soft limit ~80°C")
+    ax.axhline(80, ls="--", color="red", lw=1, label="soft limit ~80C")
     ax.set_title("Temperatura SoC durante le inferenze per modello e thread")
-    ax.set_xlabel(""); ax.set_ylabel("Temperatura (°C)")
+    ax.set_xlabel(""); ax.set_ylabel("Temperatura (C)")
     ax.tick_params(axis="x", rotation=20)
     _save(fig, out)
 
@@ -177,10 +211,10 @@ def thermal_report(df) -> str:
     n_throttle = int(df.get("throttle_event", pd.Series(dtype=bool)).sum())
     n_active = int(df.get("throttle_active", pd.Series(dtype=bool)).sum())
     tmax = df["temp_c"].max() if "temp_c" in df and df["temp_c"].notna().any() else float("nan")
-    msg = (f"Termico — T max: {tmax:.1f}°C | righe con evento throttling: "
+    msg = (f"Termico - T max: {tmax:.1f}C | righe con evento throttling: "
            f"{n_throttle} | letture con throttling attivo: {n_active}")
     if n_throttle:
-        msg += "  ⚠ alcune misure sono state acquisite con throttling: verificale."
+        msg += "  [!] alcune misure sono state acquisite con throttling: verificale."
     return msg
 
 
@@ -195,13 +229,16 @@ def run_analysis(csv_path: str, cfg: dict, base_dir: str = ".") -> None:
 
     agg = aggregate(df)
     cfgv = per_config(df)
+    tot_e = total_energy_per_config(df)
     comp = composite_score(cfgv)
 
     # salva tabelle aggregate
     agg.to_csv(os.path.join(base_dir, cfg["output"]["raw_dir"], "aggregated_by_benchmark.csv"), index=False)
+    tot_e.to_csv(os.path.join(base_dir, cfg["output"]["raw_dir"], "energy_per_config.csv"), index=False)
     comp.to_csv(os.path.join(base_dir, cfg["output"]["raw_dir"], "ranking_composite.csv"), index=False)
 
     plot_efficiency(cfgv, os.path.join(plots_dir, "efficiency_jpt.png"))
+    plot_energy_per_config(tot_e, os.path.join(plots_dir, "energy_per_config.png"))
     plot_latency(cfgv, os.path.join(plots_dir, "latency.png"))
     plot_quality(agg, os.path.join(plots_dir, "quality_heatmap.png"))
     plot_power(cfgv, os.path.join(plots_dir, "power.png"))

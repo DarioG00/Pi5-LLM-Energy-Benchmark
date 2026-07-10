@@ -148,16 +148,16 @@ def main() -> int:
         except Exception:
             pass
         ssh.close()
-        if out:
-            out.close()
 
-    # riepilogo globale
+    # riepilogo globale (il file --out deve essere ancora aperto)
     if globale:
         emit("=" * 90)
         emit("RIEPILOGO GLOBALE (tutti i modelli):")
         for b, v in globale.items():
             emit(f"  {b}: {v[0]}/{v[1]} corretti")
         emit("=" * 90)
+    if out:
+        out.close()
     if args.out:
         print(f"\nReport salvato in {args.out}")
     return 0

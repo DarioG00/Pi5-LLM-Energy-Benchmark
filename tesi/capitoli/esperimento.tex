@@ -16,9 +16,13 @@ si considera il valore medio delle grandezze acquisite.
 
 Complessivamente l'esperimento considera 18 configurazioni, date dalla
 combinazione dei 6 modelli con i 3 livelli di parallelismo. Ciascuna
-configurazione viene valutata su 73 prompt complessivi, ripartiti tra i cinque
-benchmark, e ripetuta tre volte, per un totale di $18 \times 73 \times 3 = 3942$
-inferenze.
+configurazione viene valutata su un sottoinsieme fisso di 5 prompt per ciascun
+benchmark (25 prompt complessivi), identico per tutte le configurazioni in modo da
+preservare l'equità del confronto, e ripetuta tre volte, per un totale di
+$18 \times 25 \times 3 = 1350$ inferenze. Tale scelta consente di contenere la
+durata complessiva della campagna sul dispositivo; i dataset curati contengono un
+numero maggiore di esempi (fino a 15 per benchmark), da cui viene estratto il
+sottoinsieme effettivamente valutato.
 
 \section{Metriche di valutazione}
 
@@ -152,13 +156,13 @@ opzioni, la probabilità di indovinare a caso (baseline) è del 25\%.
         \hline
         Benchmark & Tipo di task & Campioni & Criterio di correttezza \\
         \hline
-        CommonsenseQA   & Scelta multipla    & 15 & Corrispondenza dell'opzione scelta \\
-        BIG-Bench Hard  & Risposta breve     & 15 & Corrispondenza esatta normalizzata \\
-        TruthfulQA      & Scelta multipla    & 15 & Corrispondenza dell'opzione scelta \\
-        GSM8K           & Numerico           & 15 & Estrazione del valore finale \\
-        HumanEval       & Generazione codice & 13 & Esecuzione dei test (\textit{pass@1}) \\
+        CommonsenseQA   & Scelta multipla    & 5 & Corrispondenza dell'opzione scelta \\
+        BIG-Bench Hard  & Risposta breve     & 5 & Corrispondenza esatta normalizzata \\
+        TruthfulQA      & Scelta multipla    & 5 & Corrispondenza dell'opzione scelta \\
+        GSM8K           & Numerico           & 5 & Estrazione del valore finale \\
+        HumanEval       & Generazione codice & 5 & Esecuzione dei test (\textit{pass@1}) \\
         \hline
-        \multicolumn{2}{l}{Totale} & 73 & \\
+        \multicolumn{2}{l}{Totale} & 25 & \\
         \hline
     \end{tabularx}
     \caption{Criteri di valutazione della qualità e numero di campioni per
@@ -417,7 +421,8 @@ ripetizioni), \texttt{seaborn} e \texttt{matplotlib} (per la visualizzazione) e
 \texttt{scikit-learn} (per la normalizzazione delle metriche nel calcolo di uno
 score composito). A partire dal file CSV, per ciascun modello e configurazione di
 thread, vengono generati i grafici relativi all'efficienza energetica (energia netta
-per inferenza), alla latenza, alla potenza media assorbita, alla velocità di
+per inferenza), all'energia totale consumata da ciascuna configurazione per
+completare l'intera suite di benchmark, alla latenza, alla potenza media assorbita, alla velocità di
 elaborazione (\textit{prompt processing} e \textit{generation}) e alla qualità delle
 risposte (mappa di calore per benchmark), oltre a un grafico riassuntivo del
 compromesso tra efficienza energetica e qualità e a una classifica complessiva delle

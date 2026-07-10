@@ -1,0 +1,8 @@
+{
+  "gemma-2-2b-it-Q4_K_M.gguf": "e0aee85060f168f0f2d8473d7ea41ce2f3230c1bc1374847505ea599288a7787",
+  "qwen2.5-1.5b-instruct-q4_k_m.gguf": "6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e",
+  "gemma-2-2b-it-Q8_0.gguf": "2d448a9aab894b8e8e18168cf3f490cb9f65632222f29f93514ac9ecc754debe",
+  "qwen2.5-1.5b-instruct-q8_0.gguf": "d7efb072e7724d25048a4fda0a3e10b04bdef5d06b1403a1c93bd9f1240a63c8",
+  "Llama-3.2-3B-Instruct-Q4_K_M.gguf": "6c1a2b41161032677be168d354123594c0e6e67d2b9227c84f296ad037c728ff",
+  "Llama-3.2-3B-Instruct-Q8_0.gguf": "b5607b5090a8280063fff2d706bb3408ca6542341b06aab39c3eca0a28575921"
+}

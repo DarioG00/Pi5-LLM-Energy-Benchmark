@@ -66,7 +66,7 @@ Tre famiglie, ciascuna in due livelli di quantizzazione (Q4_K_M e Q8_0):
 Comando di lancio (per configurazione):
 
 ```
-~/llama.cpp/build/bin/llama-cli -m <modello>.gguf -t N -c 512 -n 128
+~/llama.cpp/build/bin/llama-cli -m <modello>.gguf -t N -c 512 -n 256
 ```
 
 dove `N` è il numero di thread (1, 2 o 4). `llama-cli` si avvia in modalità
@@ -77,9 +77,14 @@ interattiva di default; eventuali argomenti aggiuntivi si impostano in
 
 CommonSenseQA, BIG-Bench Hard, TruthfulQA, GSM8K, HumanEval — campioni curati in
 `datasets/*.jsonl` (rispettivamente 15, 15, 15, 15 e 13 item, **73 prompt** in
-totale). Per aumentarne il numero basta aggiungere righe ai JSONL: il loader li
-conta automaticamente. Considerando 6 modelli × 3 configurazioni di thread × 3
-ripetizioni, la campagna completa esegue 18 × 73 × 3 = **3942 inferenze**.
+totale). Con `max_samples_per_benchmark` in `config.json` si valuta un
+**sottoinsieme fisso** di prompt per benchmark — identico per tutte le
+configurazioni, così il confronto resta equo — per contenere la durata sul
+dispositivo (attualmente **5 per benchmark** = 25 prompt; `0` o assente = tutti).
+Per cambiare il numero basta modificare quel limite o aggiungere righe ai JSONL,
+che il loader conta automaticamente. Considerando 6 modelli × 3 configurazioni di
+thread × 3 ripetizioni, la campagna esegue 18 × 25 × 3 = **1350 inferenze**
+(18 × 73 × 3 = 3942 senza il limite).
 
 ## Struttura
 
@@ -212,10 +217,11 @@ Output principali:
 - `recordings/results.csv` — una riga per ogni (modello, thread, ripetizione,
   benchmark, campione) con energia netta, energia totale/idle, potenza media,
   latenza, prompt/gen t/s, score, temperatura e stato di throttling;
-- `recordings/raw/aggregated_by_benchmark.csv`, `recordings/raw/ranking_composite.csv`;
-- `recordings/plots/*.png` — efficienza (energia netta per inferenza), latenza,
-  potenza, throughput (prompt processing e generation), qualità (heatmap),
-  trade-off efficienza/qualità, classifica composita e termico.
+- `recordings/raw/aggregated_by_benchmark.csv`, `recordings/raw/energy_per_config.csv`, `recordings/raw/ranking_composite.csv`;
+- `recordings/plots/*.png` — efficienza (energia netta per inferenza), **energia
+  totale consumata per configurazione**, latenza, potenza, throughput (prompt
+  processing e generation), qualità (heatmap), trade-off efficienza/qualità,
+  classifica composita e termico.
 
 ## Note operative
 

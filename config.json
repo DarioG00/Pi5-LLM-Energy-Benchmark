@@ -18,7 +18,7 @@
     "bin": "~/llama.cpp/build/bin/llama-cli",
     "models_dir": "~/LLMs",
     "ctx_size": 512,
-    "n_predict": 128,
+    "n_predict": 256,
     "extra_args": [],
     "ready_prompt": "> ",
     "load_timeout": 180,
@@ -69,6 +69,7 @@
     4
   ],
   "repetitions": 3,
+  "max_samples_per_benchmark": 5,
   "benchmarks": [
     {
       "name": "commonsenseqa",
