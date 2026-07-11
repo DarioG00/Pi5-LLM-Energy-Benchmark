@@ -77,19 +77,31 @@ interattiva di default; eventuali argomenti aggiuntivi si impostano in
 
 CommonSenseQA, BIG-Bench Hard, TruthfulQA, GSM8K, HumanEval — campioni curati in
 `datasets/*.jsonl` (rispettivamente 15, 15, 15, 15 e 13 item, **73 prompt** in
-totale). Con `max_samples_per_benchmark` in `config.json` si valuta un
+totale). Con `max_samples_per_benchmark` in `config.json` si può valutare solo un
 **sottoinsieme fisso** di prompt per benchmark — identico per tutte le
 configurazioni, così il confronto resta equo — per contenere la durata sul
-dispositivo (attualmente **5 per benchmark** = 25 prompt; `0` o assente = tutti).
-Per cambiare il numero basta modificare quel limite o aggiungere righe ai JSONL,
-che il loader conta automaticamente. Considerando 6 modelli × 3 configurazioni di
-thread × 3 ripetizioni, la campagna esegue 18 × 25 × 3 = **1350 inferenze**
-(18 × 73 × 3 = 3942 senza il limite).
+dispositivo (`0` o assente = tutti i campioni). Il loader conta automaticamente le
+righe dei JSONL.
+
+L'esperimento è organizzato in **due campagne complementari**, con due config
+pronti (output separati, si lanciano con `--config`):
+
+- `config_run1.json` — **confronto tra modelli**: dataset intero (73 prompt), solo
+  4 thread, 3 ripetizioni → 6 × 3 = 18 registrazioni, 1314 inferenze;
+- `config_run2.json` — **scaling sul parallelismo**: 3 campioni/benchmark (15
+  prompt), thread 1/2/4, 3 ripetizioni → 6 × 3 × 3 = 54 registrazioni, 810 inferenze.
+
+```bash
+python run_benchmark.py --config config_run1.json   # campagna A -> results_run1.csv
+python run_benchmark.py --config config_run2.json   # campagna B -> results_run2.csv
+```
 
 ## Struttura
 
 ```
 config.json                 parametri (Pi, PMIC, llama, thermal, modelli, benchmark)
+config_run1.json            campagna A: dataset intero, 4 thread, 3 ripetizioni
+config_run2.json            campagna B: 3 campioni/benchmark, thread 1/2/4, 3 ripetizioni
 requirements.txt            dipendenze del venv host
 datasets/*.jsonl            i 5 benchmark
 run_benchmark.py            entry point eseguito dal PC host
@@ -233,5 +245,11 @@ Output principali:
   sha256 di ogni GGUF e lo confronta con una baseline salvata (`models.sha256.json`,
   creata alla prima esecuzione); se un file è cambiato/corrotto il benchmark si
   ferma. Se aggiorni volontariamente un modello, cancella quella voce dalla baseline.
-- Tutti i parametri (Pi, PMIC, llama, thermal, modelli, thread, ripetizioni,
-  benchmar
+- Tutti i parametri (Pi, PMIC, `llama`, `thermal`, modelli, thread, ripetizioni,
+  benchmark, verifica integrità e percorsi dei dataset) sono raccolti in
+  `config.json` (per le due campagne si usano `config_run1.json` e `config_run2.json`).
+- Il campionatore PMIC è **resiliente**: chiude ogni sessione SSH dopo la lettura
+  (così non esaurisce i canali del server su campagne lunghe) e, se le letture
+  iniziano a fallire, si **riconnette** e riprende automaticamente; se una
+  registrazione resta senza campioni lo segnala con un WARNING. In analisi le
+  eventuali righe senza energia valida vengono escluse dalle metriche energetiche.

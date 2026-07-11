@@ -9,20 +9,36 @@ Raspberry Pi 5 fino alla generazione dei grafici comparativi.
 L'esperimento valuta i sei modelli quantizzati descritti nel Capitolo~1
 (Tabella~\ref{tab:llm}) lungo tre dimensioni: l'\textit{efficienza energetica},
 la \textit{qualità delle risposte} e la \textit{latenza di inferenza}. Ciascun
-modello viene eseguito con tre configurazioni del numero di thread (1, 2 e 4) e
+modello viene eseguito su uno o più livelli di parallelismo (1, 2 e 4 thread) e
 valutato sui cinque benchmark introdotti in precedenza. Per ridurre l'effetto
-della variabilità delle misure, ogni configurazione viene ripetuta tre volte e
+della variabilità delle misure, ogni registrazione viene ripetuta tre volte e
 si considera il valore medio delle grandezze acquisite.
 
-Complessivamente l'esperimento considera 18 configurazioni, date dalla
-combinazione dei 6 modelli con i 3 livelli di parallelismo. Ciascuna
-configurazione viene valutata su un sottoinsieme fisso di 5 prompt per ciascun
-benchmark (25 prompt complessivi), identico per tutte le configurazioni in modo da
-preservare l'equità del confronto, e ripetuta tre volte, per un totale di
-$18 \times 25 \times 3 = 1350$ inferenze. Tale scelta consente di contenere la
-durata complessiva della campagna sul dispositivo; i dataset curati contengono un
-numero maggiore di esempi (fino a 15 per benchmark), da cui viene estratto il
-sottoinsieme effettivamente valutato.
+Poiché valutare tutte le combinazioni di modelli e livelli di parallelismo
+sull'intero insieme di prompt richiederebbe tempi di misura proibitivi sul
+dispositivo, l'acquisizione è organizzata in due \emph{campagne di misura}
+complementari, ciascuna mirata a isolare una specifica variabile di interesse:
+
+\begin{itemize}
+    \item \textbf{Campagna A --- confronto tra i modelli.} Tutti e sei i modelli
+    vengono valutati sull'intero insieme di prompt dei cinque benchmark
+    (73 prompt complessivi, Tabella~\ref{tab:scoring}), a parallelismo fissato a
+    4 thread (il valore che massimizza il \textit{throughput}) e con tre
+    ripetizioni. Isola l'effetto della quantizzazione a parità di parallelismo e
+    fornisce la stima più robusta dell'efficienza energetica e della qualità di
+    ciascun modello. Comporta $6 \times 3 = 18$ registrazioni, per un totale di
+    $18 \times 73 = 1314$ inferenze.
+
+    \item \textbf{Campagna B --- scaling sul parallelismo.} Tutti e sei i modelli
+    vengono valutati sui tre livelli di parallelismo (1, 2 e 4 thread), con tre
+    ripetizioni, su un sottoinsieme ridotto di 3 prompt per benchmark (15 prompt
+    complessivi) scelto per contenere la durata delle misure. Isola l'effetto del
+    numero di thread su latenza ed energia. Comporta $6 \times 3 \times 3 = 54$
+    registrazioni, per un totale di $54 \times 15 = 810$ inferenze.
+\end{itemize}
+
+In entrambe le campagne il sottoinsieme di prompt valutato è identico per tutti i
+modelli e le configurazioni, così da garantire l'equità del confronto.
 
 \section{Metriche di valutazione}
 
@@ -156,17 +172,17 @@ opzioni, la probabilità di indovinare a caso (baseline) è del 25\%.
         \hline
         Benchmark & Tipo di task & Campioni & Criterio di correttezza \\
         \hline
-        CommonsenseQA   & Scelta multipla    & 5 & Corrispondenza dell'opzione scelta \\
-        BIG-Bench Hard  & Risposta breve     & 5 & Corrispondenza esatta normalizzata \\
-        TruthfulQA      & Scelta multipla    & 5 & Corrispondenza dell'opzione scelta \\
-        GSM8K           & Numerico           & 5 & Estrazione del valore finale \\
-        HumanEval       & Generazione codice & 5 & Esecuzione dei test (\textit{pass@1}) \\
+        CommonsenseQA   & Scelta multipla    & 15 & Corrispondenza dell'opzione scelta \\
+        BIG-Bench Hard  & Risposta breve     & 15 & Corrispondenza esatta normalizzata \\
+        TruthfulQA      & Scelta multipla    & 15 & Corrispondenza dell'opzione scelta \\
+        GSM8K           & Numerico           & 15 & Estrazione del valore finale \\
+        HumanEval       & Generazione codice & 13 & Esecuzione dei test (\textit{pass@1}) \\
         \hline
-        \multicolumn{2}{l}{Totale} & 25 & \\
+        \multicolumn{2}{l}{Totale} & 73 & \\
         \hline
     \end{tabularx}
-    \caption{Criteri di valutazione della qualità e numero di campioni per
-    ciascun benchmark.}
+    \caption{Criteri di valutazione della qualità e composizione completa dei
+    benchmark (numero di prompt disponibili per ciascuno).}
     \label{tab:scoring}
 \end{table}
 
@@ -258,7 +274,7 @@ Per ciascuna configurazione, il modello viene avviato sul Raspberry Pi 5 mediant
 l'interfaccia a riga di comando di \texttt{llama.cpp}. Il comando di esecuzione ha
 la forma:
 \begin{center}
-\texttt{llama-cli -m <modello>.gguf -t N -c 512 -n 128}
+\texttt{llama-cli -m <modello>.gguf -t N -c 512 -n 256}
 \end{center}
 dove ciascun parametro assolve una funzione specifica:
 \begin{itemize}
@@ -278,10 +294,13 @@ dove ciascun parametro assolve una funzione specifica:
     e la relativa risposta, poiché la cronologia della conversazione viene azzerata
     prima di ogni prompt (Sezione precedente) evitando che il contesto si accumuli;
 
-    \item \texttt{-n 128}: fissa il numero massimo di token generati per ciascuna
+    \item \texttt{-n 256}: fissa il numero massimo di token generati per ciascuna
     risposta. Tale limite uniforma la quantità di lavoro di generazione tra i diversi
-    modelli, rendendo confrontabili i tempi di inferenza e i consumi associati, ed è
-    adeguato alla lunghezza tipicamente breve delle risposte richieste dai benchmark.
+    modelli, rendendo confrontabili i tempi di inferenza e i consumi associati; il
+    valore è scelto sufficientemente ampio da consentire il completamento anche delle
+    risposte più articolate --- come il ragionamento passo-passo richiesto da GSM8K e
+    la generazione di codice di HumanEval --- pur restando compatibile con la finestra
+    di contesto di 512 token.
 \end{itemize}
 
 Il framework \texttt{llama.cpp} avvia \texttt{llama-cli} in modalità interattiva,

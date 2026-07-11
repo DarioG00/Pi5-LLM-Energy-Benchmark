@@ -1,4 +1,4 @@
-<svg viewBox="0 0 1400 770" xmlns="http://www.w3.org/2000/svg" font-family="Arial, Helvetica, sans-serif">
+<svg viewBox="0 0 1400 810" xmlns="http://www.w3.org/2000/svg" font-family="Arial, Helvetica, sans-serif">
   <!-- COMPUTER HOST -->
   <rect x="35" y="150" width="40" height="95" rx="4" fill="#3a3a3a"/>
   <rect x="85" y="140" width="150" height="105" rx="6" fill="#fff" stroke="#3a3a3a" stroke-width="3"/>
@@ -77,6 +77,6 @@
   <polyline points="1215,212 1120,330 1030,440 987,497" fill="none" stroke="#d11" stroke-width="3"/>
 
   <!-- ETHERNET -->
-  <polyline points="120,330 120,752 990,752 990,668" fill="none" stroke="#6a1b9a" stroke-width="3"/>
-  <text x="540" y="744" text-anchor="middle" font-size="14" font-weight="bold" fill="#6a1b9a">Cavo Ethernet (SSH: comandi + lettura PMIC)</text>
+  <polyline points="120,330 120,790 990,790 990,668" fill="none" stroke="#6a1b9a" stroke-width="3"/>
+  <text x="540" y="778" text-anchor="middle" font-size="14" font-weight="bold" fill="#6a1b9a">Cavo Ethernet (SSH: comandi + lettura PMIC)</text>
 </svg>

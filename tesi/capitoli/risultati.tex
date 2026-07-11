@@ -1,3 +1,158 @@
 \chapter{Risultati}
+\label{chap:risultati}
 
-\section{Misurazioni ecc..}
+In questo capitolo vengono presentati e discussi i risultati delle due campagne
+di misura descritte nel capitolo precedente. La \textbf{Campagna A} (dataset
+intero, 4 thread, tre ripetizioni) fornisce il confronto tra i sei modelli su
+efficienza energetica e qualità a parità di grado di parallelismo; la
+\textbf{Campagna B} (sottoinsieme ridotto di prompt, thread 1, 2 e 4) mette in
+luce l'effetto del grado di parallelismo su latenza, potenza ed energia. Salvo
+diversa indicazione, i valori riportati sono la media sulle tre ripetizioni; le
+grandezze energetiche sono espresse come \textit{energia netta per inferenza}
+(Joule), al netto del consumo di base della scheda (Equazione~\ref{eq:energia_netta}).
+
+\section{Confronto tra i modelli (Campagna A)}
+
+\subsection{Efficienza energetica}
+
+La Figura~\ref{fig:res-energia} riporta l'energia netta media per inferenza di
+ciascun modello, eseguito a 4 thread. Il modello più efficiente risulta
+\da{modello/quantizzazione} con \da{X} J per inferenza, mentre il più energivoro
+è \da{modello/quantizzazione} con \da{Y} J. Confrontando ciascuna famiglia nelle
+due precisioni, le varianti a 8 bit (Q8\_0) consumano \da{in media \dots\%
+in più/meno} rispetto alle corrispondenti a 4 bit (Q4\_K\_M): \da{commento sul
+motivo (dimensione dei pesi, larghezza di banda di memoria, \dots)}.
+
+\begin{figure}[htbp]
+    \centering
+    \figsegnaposto{imm/efficiency\_jpt.png --- energia netta media per inferenza (J), per modello (4 thread)}
+    \caption{Energia netta media per inferenza dei sei modelli (Campagna A, 4 thread).}
+    \label{fig:res-energia}
+\end{figure}
+
+Oltre all'energia per singola inferenza, la Figura~\ref{fig:res-energia-tot}
+riporta l'energia complessiva spesa da ciascuna configurazione per completare
+l'intera suite di benchmark: \da{osservazione sul modello complessivamente più
+economico e sull'ordine di grandezza del consumo totale}.
+
+\begin{figure}[htbp]
+    \centering
+    \figsegnaposto{imm/energy\_per\_config.png --- energia totale per completare i benchmark (J)}
+    \caption{Energia totale consumata da ciascuna configurazione per completare la suite di benchmark.}
+    \label{fig:res-energia-tot}
+\end{figure}
+
+\subsection{Qualità delle risposte}
+
+La Figura~\ref{fig:res-qualita} mostra, sotto forma di mappa di calore, la
+frazione di risposte corrette (score da 0 a 1) di ciascun modello su ciascun
+benchmark. Il modello con la qualità media più elevata è \da{modello} (accuratezza
+media \da{Z}), mentre \da{modello} ottiene i risultati più bassi. A livello di
+singolo benchmark si osserva che \da{es.\ i modelli più grandi eccellono su
+GSM8K/HumanEval, mentre sui task a scelta multipla le differenze si riducono}.
+Riguardo all'effetto della quantizzazione sulla qualità, il passaggio da 8 a 4
+bit comporta \da{una perdita trascurabile / una riduzione di \dots\ punti}: 
+\da{commento}.
+
+\begin{figure}[htbp]
+    \centering
+    \figsegnaposto{imm/quality\_heatmap.png --- accuratezza (0--1) per modello e benchmark}
+    \caption{Qualità delle risposte (accuratezza media) per modello e benchmark (Campagna A).}
+    \label{fig:res-qualita}
+\end{figure}
+
+\subsection{Velocità di elaborazione}
+
+La Figura~\ref{fig:res-throughput} riporta la velocità di elaborazione dei prompt
+(\textit{prompt processing}) e di generazione (\textit{generation}) in token al
+secondo. La generazione, che determina in larga parte la latenza percepita, varia
+da \da{min} a \da{max} token/s a seconda del modello: come atteso i modelli più
+piccoli (\da{es.\ qwen2.5-1.5B}) generano più rapidamente dei più grandi
+(\da{es.\ llama-3.2-3B}).
+
+\begin{figure}[htbp]
+    \centering
+    \figsegnaposto{imm/throughput.png --- prompt processing e generation (token/s)}
+    \caption{Velocità di elaborazione (prompt e generazione) per modello (Campagna A).}
+    \label{fig:res-throughput}
+\end{figure}
+
+\subsection{Compromesso tra efficienza e qualità}
+
+Poiché nessuna singola metrica è sufficiente a decretare il modello migliore, la
+Figura~\ref{fig:res-tradeoff} colloca ciascuna configurazione nel piano
+energia--qualità. La regione favorevole (bassa energia, alta qualità) è occupata
+da \da{modello/i}, che rappresenta quindi il miglior compromesso per un impiego su
+dispositivo a risorse limitate; all'estremo opposto \da{modello} offre \da{alta
+qualità ma a costo energetico elevato / basso consumo ma qualità insufficiente}.
+
+\begin{figure}[htbp]
+    \centering
+    \figsegnaposto{imm/tradeoff.png --- piano energia netta (x) vs qualità (y)}
+    \caption{Compromesso tra efficienza energetica e qualità delle risposte.}
+    \label{fig:res-tradeoff}
+\end{figure}
+
+\section{Effetto del grado di parallelismo (Campagna B)}
+
+\subsection{Latenza}
+
+La Figura~\ref{fig:res-latenza} mostra la latenza media di inferenza al variare
+del numero di thread (1, 2 e 4). Passando da 1 a 2 thread la latenza si riduce di
+circa \da{\dots\%}, mentre l'ulteriore passaggio da 2 a 4 thread porta un
+guadagno \da{minore / marginale}: \da{commento sul fatto che alcuni benchmark
+sono limitati dalla larghezza di banda di memoria più che dal numero di core}.
+
+\begin{figure}[htbp]
+    \centering
+    \figsegnaposto{imm/latency.png --- latenza media (s) per modello e numero di thread}
+    \caption{Latenza media di inferenza al variare del numero di thread (Campagna B).}
+    \label{fig:res-latenza}
+\end{figure}
+
+\subsection{Potenza ed energia}
+
+All'aumentare del numero di thread la potenza istantanea assorbita
+\da{cresce/rimane stabile} (Figura~\ref{fig:res-potenza}), ma la durata più breve
+dell'inferenza fa sì che l'energia netta per inferenza \da{diminuisca/aumenti}:
+\da{indicare quale configurazione di thread minimizza l'energia per inferenza e di
+quanto}. Questo evidenzia il compromesso tra \textit{time-to-answer} ed efficienza
+energetica tipico dei dispositivi edge.
+
+\begin{figure}[htbp]
+    \centering
+    \figsegnaposto{imm/power.png --- potenza media assorbita (W) per modello e thread}
+    \caption{Potenza media assorbita al variare del numero di thread (Campagna B).}
+    \label{fig:res-potenza}
+\end{figure}
+
+\section{Sintesi: classifica complessiva}
+
+Per riassumere le tre dimensioni in un unico indicatore, la
+Figura~\ref{fig:res-composito} riporta una classifica basata su uno score
+composito che pesa efficienza energetica, latenza e qualità. La configurazione
+complessivamente migliore risulta \da{modello + numero di thread}, seguita da
+\da{\dots}: \da{breve commento sul perché prevale}.
+
+\begin{figure}[htbp]
+    \centering
+    \figsegnaposto{imm/ranking\_composite.png --- classifica delle configurazioni (score composito)}
+    \caption{Classifica complessiva delle configurazioni secondo lo score composito.}
+    \label{fig:res-composito}
+\end{figure}
+
+\section{Comportamento termico}
+
+Durante l'intera campagna la temperatura del SoC è stata monitorata dopo ogni
+inferenza. Grazie alla ventola di raffreddamento attiva, la temperatura si è
+mantenuta al di sotto della soglia di \textit{throttling} ($\sim$80--85~\textcelsius),
+con un massimo di \da{T max}~\textcelsius\ e \da{nessun / N} evento di throttling
+rilevato (Figura~\ref{fig:res-termico}). Le misure di latenza ed energia non sono
+quindi state falsate da riduzioni di frequenza indotte dal calore.
+
+\begin{figure}[htbp]
+    \centering
+    \figsegnaposto{imm/thermal.png --- distribuzione delle temperature del SoC}
+    \caption{Distribuzione della temperatura del SoC durante le inferenze.}
+    \label{fig:res-termico}
+\end{figure}

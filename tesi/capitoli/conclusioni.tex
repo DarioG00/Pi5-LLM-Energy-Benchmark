@@ -1,5 +1,70 @@
 \chapter{Conclusioni}
 
-In questo capitolo vengono riassunti i risultati ottenuti e le conclusioni
-tratte dallo studio condotto. Si evidenziano le principali scoperte, le implicazioni
-dei risultati e le possibili direzioni future per ulteriori ricerche o applicazioni pratiche.
+Questo lavoro ha valutato sperimentalmente il consumo energetico, la qualità
+delle risposte e la latenza di sei Large Language Model quantizzati eseguiti
+localmente su un Raspberry Pi 5, misurando il consumo direttamente dal PMIC della
+scheda. L'obiettivo era capire se e a quali condizioni modelli di questa taglia
+siano impiegabili in modo efficiente su un dispositivo dell'Internet delle Cose,
+e quale combinazione di modello, quantizzazione e grado di parallelismo offra il
+miglior compromesso.
+
+\section{Sintesi dei risultati}
+
+Rispetto alle tre dimensioni indagate, i risultati (Capitolo~\ref{chap:risultati})
+possono essere riassunti come segue:
+\begin{itemize}
+    \item \textbf{Efficienza energetica.} Il modello più efficiente per inferenza
+    è risultato \da{modello/quantizzazione}, con circa \da{X} J per inferenza; in
+    generale le varianti a 4 bit (Q4\_K\_M) \da{si sono confermate più economiche
+    delle corrispondenti a 8 bit}.
+    \item \textbf{Qualità delle risposte.} La qualità media più elevata è stata
+    ottenuta da \da{modello}, mentre il passaggio da 8 a 4 bit ha comportato
+    \da{una perdita di qualità trascurabile / contenuta}, rendendo la
+    quantizzazione più aggressiva \da{conveniente / accettabile} nella maggior
+    parte dei casi.
+    \item \textbf{Latenza e parallelismo.} L'aumento del numero di thread ha
+    ridotto la latenza fino a \da{2/4} thread, con \da{rendimenti decrescenti}
+    oltre; la configurazione che minimizza l'energia per inferenza è risultata
+    \da{N} thread.
+\end{itemize}
+Complessivamente, secondo lo score composito che bilancia le tre metriche, la
+configurazione più equilibrata per un impiego su dispositivo a risorse limitate è
+\da{modello + numero di thread}.
+
+\section{Indicazioni pratiche}
+
+Dai risultati emergono alcune indicazioni operative per chi voglia eseguire un LLM
+su un dispositivo edge simile: \da{sintetizzare qui la scelta consigliata di
+modello e quantizzazione}, l'uso di \da{N} thread come compromesso tra reattività
+ed efficienza, e la conferma che, con un adeguato raffreddamento, un Raspberry
+Pi~5 è in grado di sostenere l'inferenza di modelli fino a \da{$\sim$3} miliardi di
+parametri quantizzati senza incorrere in \textit{throttling} termico.
+
+\section{Limiti del lavoro}
+
+I risultati vanno letti alla luce di alcuni limiti. Le misure di consumo sono
+acquisite internamente dal PMIC della scheda come somma dei prodotti tensione per
+corrente sui rami monitorati: rappresentano quindi il consumo interno della
+scheda e non quello alla presa di corrente, e non includono le perdite
+dell'alimentatore; per una stima del consumo ``a parete'' sarebbe necessaria una
+calibrazione dedicata sul singolo esemplare. La Campagna B, dedicata allo scaling
+sul parallelismo, utilizza inoltre un sottoinsieme ridotto di prompt per contenere
+i tempi di misura, con una conseguente minore risoluzione statistica sulla
+qualità. Lo studio è infine limitato a un singolo esemplare di Raspberry Pi~5, a
+un unico motore di inferenza (llama.cpp) e a due soli formati di quantizzazione
+(Q4\_K\_M e Q8\_0): l'estensione ad altre schede, backend o precisioni potrebbe
+modificare alcuni dei rapporti osservati.
+
+\section{Sviluppi futuri}
+
+Il lavoro può essere esteso in diverse direzioni. Sul piano delle misure, una
+calibrazione del PMIC rispetto a uno strumento di riferimento consentirebbe di
+riportare il consumo reale alla presa; l'ampliamento dei dataset e del numero di
+prompt aumenterebbe la robustezza statistica delle metriche di qualità. Sul piano
+sperimentale, sarebbe interessante includere ulteriori modelli e formati di
+quantizzazione (ad esempio precisioni inferiori a 4 bit), confrontare motori di
+inferenza alternativi, e valutare l'effetto di tecniche di gestione dinamica
+della frequenza e del numero di thread. Infine, l'analisi potrebbe essere estesa
+ad altri dispositivi edge per verificare la generalità delle conclusioni e per
+individuare il punto di equilibrio tra costo, consumo e qualità più adatto a
+ciascuna classe di applicazioni.

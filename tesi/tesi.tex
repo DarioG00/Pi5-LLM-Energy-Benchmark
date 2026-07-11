@@ -12,6 +12,10 @@
 \usepackage{tabularx}
 \usepackage{textcomp}
 
+% --- segnaposto per la bozza (valori da inserire dopo i run) ---
+\newcommand{\da}[1]{\textbf{[#1]}}
+\newcommand{\figsegnaposto}[1]{\fbox{\parbox[c][4.5cm][c]{0.92\textwidth}{\centering\itshape Segnaposto figura --- #1}}}
+
 \title{Valutazione del consumo energetico di Large Language Model in dispositivi dell'Internet delle Cose}
 \author{Dario Guidi}
 
@@ -56,8 +60,8 @@
 \include{capitoli/intro}
 \include{capitoli/setup}
 \include{capitoli/esperimento}
-%\include{capitoli/risultati}
-%\include{capitoli/conclusioni}
+\include{capitoli/risultati}
+\include{capitoli/conclusioni}
 %\include{capitoli/ringraziamenti}
 
 \bibliographystyle{plain}

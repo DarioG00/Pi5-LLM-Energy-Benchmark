@@ -20,7 +20,13 @@ clock monotono dell'host (lo stesso usato per delimitare le finestre di
 inferenza): non serve quindi sincronizzare gli orologi di host e Pi. La classe
 `PmicMonitor` espone la stessa interfaccia usata dal `BenchmarkRunner`.
 
-Il Pi 5 e' alimentato dall'alimentatore ufficiale (5,1 V / 5 A): il PMIC misura
+Robustezza: ogni lettura chiude esplicitamente la propria sessione SSH (per non
+esaurire i canali del server su campagne lunghe) e, se le letture cominciano a
+fallire, il campionatore si riconnette e riprende automaticamente. Se una
+registrazione dovesse restare senza campioni, viene emesso un WARNING (cosi' il
+problema e' visibile e non passa inosservato come un'energia pari a zero).
+
+Il Pi 5 e' alimentato dall'alimentatore ufficiale (5,1 V / 3 A): il PMIC misura
 il consumo senza alcun hardware esterno, evitando i rischi legati
 all'alimentazione via GPIO.
 """
@@ -98,6 +104,11 @@ class PmicMonitor:
     interattiva usata per llama-cli) e legge il PMIC in un thread in background.
     """
 
+    # dopo quante letture consecutive fallite si tenta la riconnessione
+    _FAIL_BEFORE_RECONNECT = 3
+    # ogni quante letture fallite si ritenta la riconnessione (a ~10 Hz ~2 s)
+    _RECONNECT_EVERY = 20
+
     def __init__(self, pi_cfg: Any, cfg: PmicConfig):
         self.pi_cfg = pi_cfg          # PiConfig (host/username/password/ssh_port)
         self.cfg = cfg
@@ -112,10 +123,8 @@ class PmicMonitor:
         self._lock = threading.Lock()
 
     # ------------------------------------------------------------------ setup
-    def connect(self) -> None:
-        """Apre la connessione SSH dedicata al campionamento del PMIC."""
+    def _open_client(self):
         import paramiko
-        log.info("Connessione SSH (PMIC) a %s...", self.pi_cfg.host)
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         client.connect(
@@ -125,13 +134,33 @@ class PmicMonitor:
             password=self.pi_cfg.password,
             timeout=10, banner_timeout=10, auth_timeout=10,
         )
-        self._client = client
+        return client
+
+    def connect(self) -> None:
+        """Apre la connessione SSH dedicata al campionamento del PMIC."""
+        log.info("Connessione SSH (PMIC) a %s...", self.pi_cfg.host)
+        self._client = self._open_client()
         p = self._read_power()
         if p is None:
             log.warning("Il PMIC non ha restituito un output valido al primo "
                         "tentativo: verificare 'vcgencmd pmic_read_adc' sul Pi.")
         else:
             log.info("PMIC pronto: potenza istantanea iniziale %.3f W", p)
+
+    def _reconnect(self) -> bool:
+        """Chiude e riapre la connessione SSH del PMIC. True se riuscita."""
+        try:
+            if self._client is not None:
+                self._client.close()
+        except Exception:  # noqa: BLE001
+            pass
+        self._client = None
+        try:
+            self._client = self._open_client()
+            return True
+        except Exception as exc:  # noqa: BLE001
+            log.warning("Riconnessione PMIC fallita: %s", exc)
+            return False
 
     def configure_power(self) -> None:
         """Nessuna configurazione: il Pi e' alimentato dall'alimentatore ufficiale."""
@@ -147,24 +176,50 @@ class PmicMonitor:
 
     # --------------------------------------------------------------- lettura
     def _read_power(self) -> Optional[float]:
-        """Una lettura del PMIC -> potenza (W)."""
-        assert self._client is not None, "SSH PMIC non connesso"
+        """Una lettura del PMIC -> potenza (W). Chiude sempre la sessione SSH."""
+        if self._client is None:
+            return None
+        out = None
         try:
             _in, out, _err = self._client.exec_command(PMIC_CMD, timeout=8)
             raw = out.read().decode("utf-8", "ignore")
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             log.debug("Lettura PMIC fallita: %s", exc)
             return None
+        finally:
+            # chiude esplicitamente il canale: evita di accumulare sessioni SSH
+            # (che su campagne lunghe esaurirebbero i canali del server).
+            try:
+                if out is not None:
+                    out.channel.close()
+            except Exception:  # noqa: BLE001
+                pass
         return parse_pmic_power(raw, self.cfg.corr_slope, self.cfg.corr_offset)
 
     def _sampler_loop(self) -> None:
         period = 1.0 / max(0.5, self.cfg.sample_hz)
+        fails = 0
+        warned = False
         while self._sampling:
             t = self.mark()
             p = self._read_power()
             if p is not None:
+                if fails and warned:
+                    log.info("Campionamento PMIC ripristinato.")
+                fails = 0
+                warned = False
                 with self._lock:
                     self._samples.append((t, p))
+            else:
+                fails += 1
+                if fails == self._FAIL_BEFORE_RECONNECT and not warned:
+                    log.warning("Campionamento PMIC: letture non valide, "
+                                "tento la riconnessione...")
+                    warned = True
+                if (fails >= self._FAIL_BEFORE_RECONNECT
+                        and (fails - self._FAIL_BEFORE_RECONNECT) % self._RECONNECT_EVERY == 0):
+                    if self._sampling:
+                        self._reconnect()
             dt = self.mark() - t
             time.sleep(max(0.0, period - dt))
 
@@ -186,11 +241,15 @@ class PmicMonitor:
     def stop_recording(self):
         self._sampling = False
         if self._thread is not None:
-            self._thread.join(timeout=2.0)
+            self._thread.join(timeout=3.0)
             self._thread = None
         with self._lock:
             samples = list(self._samples)
-        log.debug("Campionamento PMIC fermato (%d campioni).", len(samples))
+        if not samples:
+            log.warning("Registrazione PMIC senza campioni: la connessione al Pi "
+                        "potrebbe essere caduta. Energia non misurata per questa run.")
+        else:
+            log.debug("Campionamento PMIC fermato (%d campioni).", len(samples))
         return samples
 
     def mark(self) -> float:
@@ -218,6 +277,7 @@ class PmicMonitor:
         duration = t_to - t_from
         pts = [(t, p) for (t, p) in (rec or []) if t_from <= t <= t_to]
 
+        no_data = False
         if len(pts) >= 2:
             energy_trap = 0.0
             for (ta, pa), (tb, pb) in zip(pts, pts[1:]):
@@ -231,6 +291,7 @@ class PmicMonitor:
         else:
             avg_power = self._nearest_power(rec, 0.5 * (t_from + t_to))
             energy_total = avg_power * duration
+            no_data = not rec  # nessun campione nell'intera registrazione
 
         energy_idle = self.idle_power_w * duration
         energy_net = energy_total - energy_idle
@@ -240,6 +301,7 @@ class PmicMonitor:
             "energy_total_j": energy_total,
             "energy_idle_j": energy_idle,
             "energy_net_j": energy_net,
+            "no_data": no_data,
         }
 
     @staticmethod
@@ -254,12 +316,12 @@ class PmicMonitor:
         try:
             if self._thread is not None:
                 self._thread.join(timeout=2.0)
-        except Exception:
+        except Exception:  # noqa: BLE001
             pass
         try:
             if self._client is not None:
                 self._client.close()
                 self._client = None
                 log.info("Connessione SSH (PMIC) chiusa.")
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             log.warning("Errore in disconnessione PMIC: %s", exc)

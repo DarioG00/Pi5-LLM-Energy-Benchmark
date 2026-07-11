@@ -37,6 +37,16 @@ def load_results(csv_path: str) -> pd.DataFrame:
         df["throttle_event"] = df["throttle_event"].astype(str).str.lower().isin(["true", "1"])
     if "throttle_active" in df:
         df["throttle_active"] = df["throttle_active"].astype(str).str.lower().isin(["true", "1"])
+    # Righe con energia totale <= 0 = lettura PMIC mancante (es. connessione
+    # caduta): le si esclude dalle metriche energetiche impostandole a NaN, cosi'
+    # non falsano medie e grafici (niente barre negative spurie).
+    if "energy_total_j" in df:
+        bad = pd.to_numeric(df["energy_total_j"], errors="coerce").fillna(0) <= 0
+        n_bad = int((bad & (df["benchmark"] != LOAD_TAG)).sum())
+        if n_bad:
+            log.warning("Escludo %d inferenze senza misura di energia valida "
+                        "(energia<=0: probabile lettura PMIC mancante).", n_bad)
+        df.loc[bad, ["energy_total_j", "energy_net_j", "avg_power_w"]] = np.nan
     df["model"] = df.apply(lambda r: f"{r['family']}-{r['quant']}", axis=1)
     return df
 
@@ -79,8 +89,8 @@ def total_energy_per_config(df: pd.DataFrame) -> pd.DataFrame:
     """
     infer = df[df["benchmark"] != LOAD_TAG].copy()
     per_rep = (infer.groupby(["model", "family", "quant", "threads", "repetition"])
-               .agg(energy_total_j=("energy_net_j", "sum"),
-                    n_inferenze=("energy_net_j", "size"))
+               .agg(energy_total_j=("energy_net_j", lambda s: s.sum(min_count=1)),
+                    n_inferenze=("energy_net_j", "count"))
                .reset_index())
     grp = (per_rep.groupby(["model", "family", "quant", "threads"])
            .agg(energy_total_j=("energy_total_j", "mean"),
