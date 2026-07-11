@@ -150,11 +150,8 @@ tesi/                       tesi LaTeX, schemi hardware/software e diagrammi UML
   `-c` (con `ctx_size = 512`, valore contenuto per limitare la memoria sul Pi, i
   singoli prompt + risposta stanno comunque nel contesto).
 - Ogni prompt è inviato come **una sola riga** (gli a-capo interni diventano
-  spazi): modalità compatibile con tutte le versioni di llama-cli. Impostabile con
-  `llama.prompt_mode` in `config.json`: `"inline"` (default). Esiste anche una
-  modalità sperimentale `"read"` (comando `/read`, per preservare gli a-capo), ma
-  su alcuni build `/read` allega il file come contesto invece di inviarlo come
-  messaggio: usarla solo se verificata sul proprio Pi.
+  spazi): in modalità interattiva il ritorno a capo conferma l'invio dell'input,
+  ed è l'approccio affidabile su tutte le versioni di llama-cli.
 - La **fine di ogni generazione** è rilevata dalla riga di statistiche che
   llama.cpp stampa a fine risposta:
 

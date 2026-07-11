@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import re
 import time
-import base64
 import logging
 from dataclasses import dataclass
 from typing import Optional
@@ -43,19 +42,12 @@ class PiConfig:
 
 
 class PiSSH:
-    def __init__(self, cfg: PiConfig, ready_prompt: str = "> ",
-                 prompt_mode: str = "read",
-                 prompt_file: str = "/tmp/bench_prompt.txt"):
+    def __init__(self, cfg: PiConfig, ready_prompt: str = "> "):
         self.cfg = cfg
         self.ready_prompt = ready_prompt
-        # "inline" (default consigliato): invia il prompt come UNA riga (a-capo
-        #          sostituiti da spazi). Affidabile su tutti i build di llama-cli.
-        # "read":  SPERIMENTALE. Usa il comando /read di llama-cli per leggere il
-        #          prompt da file preservando gli a-capo, ma su alcuni build /read
-        #          allega il file come contesto invece di inviarlo come messaggio:
-        #          in quel caso la generazione non parte. Usare solo se verificato.
-        self.prompt_mode = prompt_mode
-        self.prompt_file = prompt_file
+        # Ogni prompt viene inviato come UNA riga (a-capo sostituiti da spazi):
+        # in modalita' interattiva il ritorno a capo conferma l'invio dell'input.
+        # E' l'approccio affidabile su tutti i build di llama-cli.
         self.client: Optional[paramiko.SSHClient] = None
         self.shell: Optional[paramiko.Channel] = None
         self._staged: Optional[str] = None
@@ -184,7 +176,7 @@ class PiSSH:
 
     # ------------------------------------------------------------ llama-cli
     def clear_history(self) -> None:
-        """Ripulisce la cronologia della chat di llama-cli (comando \texttt{/clear}).
+        """Ripulisce la cronologia della chat di llama-cli (comando ``/clear``).
 
         Va chiamato prima di ogni prompt: cosi' ogni inferenza e' valutata in modo
         indipendente e il contesto non si accumula fino a saturare la finestra
@@ -212,32 +204,20 @@ class PiSSH:
     def stage_prompt(self, prompt: str) -> None:
         """Prepara il prompt SENZA avviare la generazione.
 
-        Va chiamato PRIMA di aprire la finestra di misura, cosi' l'overhead di
-        preparazione (scrittura file + \texttt{/read}) non finisce nell'energia e
-        nella latenza dell'inferenza. In modalita' "read" scrive il prompt in un
-        file sul Pi (a-capo preservati) e lo carica nel buffer con \texttt{/read};
-        in modalita' "inline" memorizza il prompt collassato su una riga.
+        Va chiamato PRIMA di aprire la finestra di misura, cosi' l'eventuale
+        overhead di preparazione non finisce nell'energia e nella latenza
+        dell'inferenza. Il prompt viene collassato su una singola riga
+        (a-capo sostituiti da spazi).
         """
         assert self.shell is not None
         self._drain()
-        if self.prompt_mode == "read":
-            b64 = base64.b64encode(prompt.encode("utf-8")).decode("ascii")
-            self.run_command(f"echo {b64} | base64 -d > {self.prompt_file}")
-            self.shell.send(f"/read {self.prompt_file}\n")
-            time.sleep(0.4)          # attende il caricamento del file nel buffer
-            self._drain()            # scarta la conferma/eco del comando /read
-            self._staged = None
-        else:
-            self._staged = prompt.replace("\n", " ").strip()
+        self._staged = prompt.replace("\n", " ").strip()
 
     def submit_prompt(self, infer_timeout: float) -> str:
         """Avvia la generazione del prompt gia' preparato e attende il completamento
         (rilevato dalla riga dei timing). Ritorna l'output grezzo."""
         assert self.shell is not None
-        if self.prompt_mode == "read":
-            self.shell.send("\n")               # invia il contenuto caricato
-        else:
-            self.shell.send((self._staged or "") + "\n")
+        self.shell.send((self._staged or "") + "\n")
         return self._read_until_ready(infer_timeout, expect_perf=True)
 
     def send_prompt(self, prompt: str, infer_timeout: float) -> str:

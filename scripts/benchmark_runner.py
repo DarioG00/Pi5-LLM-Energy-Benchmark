@@ -144,8 +144,8 @@ class BenchmarkRunner:
             log.info("  [%d/%d] %s %s ...", k, n_tot, s.benchmark, s.id)
             # azzera la cronologia: ogni prompt e' indipendente e non satura il contesto
             self.ssh.clear_history()
-            # prepara il prompt PRIMA di aprire la finestra (lo staging /read non
-            # deve entrare nell'energia/latenza dell'inferenza)
+            # prepara il prompt PRIMA di aprire la finestra (l'eventuale overhead
+            # di preparazione non deve entrare nell'energia/latenza dell'inferenza)
             self.ssh.stage_prompt(s.prompt)
             t0 = self.power.mark()
             wall0 = time.monotonic()

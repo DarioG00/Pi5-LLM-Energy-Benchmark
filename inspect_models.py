@@ -85,8 +85,7 @@ def main() -> int:
     globale = defaultdict(lambda: [0, 0])
 
     ssh = PiSSH(PiConfig.from_dict(cfg["pi"]),
-                ready_prompt=llama.get("ready_prompt", "> "),
-                prompt_mode=llama.get("prompt_mode", "inline"))
+                ready_prompt=llama.get("ready_prompt", "> "))
     ssh.wait_for_boot_and_connect()
     ssh.open_shell()
     try:

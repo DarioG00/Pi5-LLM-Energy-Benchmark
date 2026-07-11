@@ -22,8 +22,7 @@
     "extra_args": [],
     "ready_prompt": "> ",
     "load_timeout": 180,
-    "infer_timeout": 240,
-    "prompt_mode": "inline"
+    "infer_timeout": 240
   },
   "thermal": {
     "enabled": true,

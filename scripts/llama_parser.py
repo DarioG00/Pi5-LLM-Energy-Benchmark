@@ -101,8 +101,6 @@ def extract_response(raw: str, prompt: str) -> str:
             continue
         if s == ">" or (s.endswith(">") and len(s) <= 2):
             continue
-        if s.startswith("/read"):                # eco del comando /read
-            continue
         if s in prompt_lines:                    # riga del prompt rieccheggiata
             continue
         # scarta le righe di log/diagnostica di llama.cpp

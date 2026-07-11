@@ -34,8 +34,7 @@ def make_real_backends(cfg: dict):
     from scripts.pi_ssh import PiSSH, PiConfig
     from scripts.pmic import PmicMonitor, PmicConfig
     pi_cfg = PiConfig.from_dict(cfg["pi"])
-    ssh = PiSSH(pi_cfg, ready_prompt=cfg["llama"].get("ready_prompt", "> "),
-                prompt_mode=cfg["llama"].get("prompt_mode", "inline"))
+    ssh = PiSSH(pi_cfg, ready_prompt=cfg["llama"].get("ready_prompt", "> "))
     monitor = PmicMonitor(pi_cfg, PmicConfig.from_dict(cfg.get("pmic", {})))
     return monitor, ssh
 
@@ -65,6 +64,12 @@ def main() -> int:
 
     base_dir = os.path.dirname(os.path.abspath(args.config)) or "."
     cfg = load_config(args.config)
+
+    if args.simulate:
+        # In simulazione l'SSH e' finto e restituisce hash fittizi: la verifica
+        # sha256 dei modelli reali non ha senso (non coincide con la baseline).
+        cfg.setdefault("verify_models", {})["enabled"] = False
+        log.info("Modalita' simulazione: verifica integrita' dei modelli disattivata.")
 
     power, ssh = make_sim_backends(cfg) if args.simulate else make_real_backends(cfg)
     runner = BenchmarkRunner(cfg, base_dir=base_dir, power=power, ssh=ssh)
