@@ -229,11 +229,12 @@ Output principali:
 - `recordings/results.csv` — una riga per ogni (modello, thread, ripetizione,
   benchmark, campione) con energia netta, energia totale/idle, potenza media,
   latenza, prompt/gen t/s, score, temperatura e stato di throttling;
-- `recordings/raw/aggregated_by_benchmark.csv`, `recordings/raw/energy_per_config.csv`, `recordings/raw/ranking_composite.csv`;
+- `recordings/raw/aggregated_by_benchmark.csv`, `recordings/raw/energy_per_config.csv`, `recordings/raw/ranking_composite.csv`, `recordings/raw/pareto_energia.csv`, `recordings/raw/pareto_latenza.csv`;
 - `recordings/plots/*.png` — efficienza (energia netta per inferenza), **energia
   totale consumata per configurazione**, latenza, potenza, throughput (prompt
   processing e generation), qualità (heatmap), trade-off efficienza/qualità,
-  classifica composita e termico.
+  **frontiera di Pareto** (energia--qualità e latenza--qualità), classifica
+  composita e termico.
 
 ## Note operative
 

@@ -16,7 +16,7 @@ import csv
 import os
 import time
 import logging
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from . import scoring
 from . import thermal
@@ -52,7 +52,7 @@ def build_command(llama_cfg: dict, model_file: str, threads: int) -> str:
 class BenchmarkRunner:
     """Orchestratore della campagna: coordina misura del consumo (PMIC), esecuzione dei modelli via SSH, valutazione delle risposte e salvataggio dei risultati."""
     def __init__(self, config: dict, base_dir: str = ".",
-                 power=None, ssh=None):
+                 power: Any = None, ssh: Any = None):
         """Inizializza il runner con la configurazione e i backend di misura (power) e comunicazione (ssh)."""
         self.cfg = config
         self.base_dir = base_dir

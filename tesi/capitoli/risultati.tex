@@ -93,6 +93,38 @@ qualità ma a costo energetico elevato / basso consumo ma qualità insufficiente
     \label{fig:res-tradeoff}
 \end{figure}
 
+\subsection{Frontiera di Pareto}
+
+Per individuare le configurazioni migliori senza fissare a priori un peso relativo
+tra gli obiettivi, si ricorre al concetto di \emph{frontiera di Pareto}. Una
+configurazione si dice \emph{dominata} se ne esiste un'altra migliore (o uguale)
+sia nel costo (energia o latenza) sia nella qualità; le configurazioni \emph{non
+dominate} costituiscono la frontiera, cioè l'insieme dei compromessi ottimali per
+cui non è possibile migliorare un obiettivo senza peggiorare l'altro. A differenza
+dello score composito, questa rappresentazione non richiede la scelta di pesi:
+evidenzia direttamente i candidati razionali e lascia al lettore la decisione finale
+in base alle proprie priorità.
+
+La Figura~\ref{fig:res-pareto-en} riporta la frontiera nel piano
+\textbf{energia--qualità} (le configurazioni in basso a destra sono le migliori);
+i punti cerchiati in rosso sono Pareto-ottimali: \da{commento su quali modelli e
+livelli di thread dominano la frontiera}. La Figura~\ref{fig:res-pareto-lat} mostra
+l'analoga frontiera nel piano \textbf{latenza--qualità}.
+
+\begin{figure}[htbp]
+    \centering
+    \figsegnaposto{imm/pareto\_energia.png --- frontiera di Pareto: energia netta per inferenza vs qualità}
+    \caption{Frontiera di Pareto nel piano energia--qualità (cerchiate in rosso le configurazioni non dominate).}
+    \label{fig:res-pareto-en}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \figsegnaposto{imm/pareto\_latenza.png --- frontiera di Pareto: latenza vs qualità}
+    \caption{Frontiera di Pareto nel piano latenza--qualità.}
+    \label{fig:res-pareto-lat}
+\end{figure}
+
 \section{Effetto del grado di parallelismo (Campagna B)}
 
 \subsection{Latenza}

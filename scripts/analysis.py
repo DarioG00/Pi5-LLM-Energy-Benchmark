@@ -112,6 +112,29 @@ def composite_score(cfg_df: pd.DataFrame) -> pd.DataFrame:
     return d.sort_values("composite", ascending=False)
 
 
+def pareto_front(cfg_df: pd.DataFrame, cost: str = "energy_net_j") -> pd.DataFrame:
+    """Determina le configurazioni Pareto-ottimali fra un costo da minimizzare
+    (``cost``, es. energia o latenza) e la qualita' (da massimizzare).
+
+    Una configurazione e' *dominata* se ne esiste un'altra con costo minore o
+    uguale e qualita' maggiore o uguale (e strettamente migliore su almeno un
+    asse). Aggiunge la colonna booleana ``pareto`` (True = configurazione non
+    dominata, cioe' sulla frontiera).
+    """
+    d = cfg_df.dropna(subset=[cost, "score"]).copy()
+    e = d[cost].values
+    s = d["score"].values
+    opt = []
+    for i in range(len(d)):
+        dominated = any(
+            (e[j] <= e[i]) and (s[j] >= s[i]) and ((e[j] < e[i]) or (s[j] > s[i]))
+            for j in range(len(d)) if j != i
+        )
+        opt.append(not dominated)
+    d["pareto"] = opt
+    return d
+
+
 # --------------------------------------------------------------------- grafici
 def _save(fig, path):
     """Salva la figura su file (con layout compatto) e chiude il plot."""
@@ -201,6 +224,33 @@ def plot_tradeoff(cfg_df, out):
     _save(fig, out)
 
 
+def plot_pareto(cfg_df, out, cost="energy_net_j",
+                cost_label="Energia netta per inferenza (J)",
+                title="Frontiera di Pareto: efficienza energetica vs qualità"):
+    """Frontiera di Pareto fra un costo (``cost``: energia o latenza) e la
+    qualita': disegna tutte le configurazioni, evidenzia quelle non dominate e le
+    collega con la linea di frontiera."""
+    d = pareto_front(cfg_df, cost)
+    fig, ax = plt.subplots(figsize=(10, 7))
+    sns.scatterplot(data=d, x=cost, y="score",
+                    hue="model", style="threads", s=120, ax=ax)
+    opt = d[d["pareto"]].sort_values(cost)
+    ax.plot(opt[cost], opt["score"], color="red", lw=1.6, ls="--",
+            marker="o", markersize=15, markerfacecolor="none",
+            markeredgecolor="red", markeredgewidth=2,
+            label="Frontiera di Pareto", zorder=5)
+    for _, r in opt.iterrows():
+        ax.annotate(f"{r['model']} t{int(r['threads'])}",
+                    (r[cost], r["score"]),
+                    textcoords="offset points", xytext=(7, 6),
+                    fontsize=8, color="red")
+    ax.set_title(title)
+    ax.set_xlabel(cost_label + " (minore = meglio)")
+    ax.set_ylabel("Score qualità (maggiore = meglio)")
+    ax.legend(bbox_to_anchor=(1.02, 1), loc="upper left", fontsize=8)
+    _save(fig, out)
+
+
 def plot_composite(comp_df, out):
     """Grafico della classifica delle configurazioni secondo lo score composito."""
     fig, ax = plt.subplots(figsize=(11, 6))
@@ -254,11 +304,15 @@ def run_analysis(csv_path: str, cfg: dict, base_dir: str = ".") -> None:
     cfgv = per_config(df)
     tot_e = total_energy_per_config(df)
     comp = composite_score(cfgv)
+    pareto_e = pareto_front(cfgv, "energy_net_j")
+    pareto_l = pareto_front(cfgv, "latency_s")
 
     # salva tabelle aggregate
     agg.to_csv(os.path.join(base_dir, cfg["output"]["raw_dir"], "aggregated_by_benchmark.csv"), index=False)
     tot_e.to_csv(os.path.join(base_dir, cfg["output"]["raw_dir"], "energy_per_config.csv"), index=False)
     comp.to_csv(os.path.join(base_dir, cfg["output"]["raw_dir"], "ranking_composite.csv"), index=False)
+    pareto_e[pareto_e["pareto"]].to_csv(os.path.join(base_dir, cfg["output"]["raw_dir"], "pareto_energia.csv"), index=False)
+    pareto_l[pareto_l["pareto"]].to_csv(os.path.join(base_dir, cfg["output"]["raw_dir"], "pareto_latenza.csv"), index=False)
 
     plot_efficiency(cfgv, os.path.join(plots_dir, "efficiency_jpt.png"))
     plot_energy_per_config(tot_e, os.path.join(plots_dir, "energy_per_config.png"))
@@ -267,6 +321,12 @@ def run_analysis(csv_path: str, cfg: dict, base_dir: str = ".") -> None:
     plot_power(cfgv, os.path.join(plots_dir, "power.png"))
     plot_throughput(cfgv, os.path.join(plots_dir, "throughput.png"))
     plot_tradeoff(cfgv, os.path.join(plots_dir, "tradeoff.png"))
+    plot_pareto(cfgv, os.path.join(plots_dir, "pareto_energia.png"),
+                "energy_net_j", "Energia netta per inferenza (J)",
+                "Frontiera di Pareto: energia vs qualità")
+    plot_pareto(cfgv, os.path.join(plots_dir, "pareto_latenza.png"),
+                "latency_s", "Latenza media di inferenza (s)",
+                "Frontiera di Pareto: latenza vs qualità")
     plot_composite(comp, os.path.join(plots_dir, "ranking_composite.png"))
     plot_thermal(df, os.path.join(plots_dir, "thermal.png"))
     log.info(thermal_report(df))
