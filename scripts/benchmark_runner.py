@@ -38,6 +38,7 @@ CSV_FIELDS = [
 
 
 def build_command(llama_cfg: dict, model_file: str, threads: int) -> str:
+    """Costruisce la riga di comando di llama-cli per un modello, con numero di thread, dimensione del contesto e limite di token."""
     bin_path = llama_cfg["bin"]
     models_dir = llama_cfg["models_dir"].rstrip("/")
     model_path = f"{models_dir}/{model_file}"
@@ -49,8 +50,10 @@ def build_command(llama_cfg: dict, model_file: str, threads: int) -> str:
 
 
 class BenchmarkRunner:
+    """Orchestratore della campagna: coordina misura del consumo (PMIC), esecuzione dei modelli via SSH, valutazione delle risposte e salvataggio dei risultati."""
     def __init__(self, config: dict, base_dir: str = ".",
                  power=None, ssh=None):
+        """Inizializza il runner con la configurazione e i backend di misura (power) e comunicazione (ssh)."""
         self.cfg = config
         self.base_dir = base_dir
         self.power = power        # PmicMonitor (o simulato)
@@ -61,6 +64,7 @@ class BenchmarkRunner:
 
     # --------------------------------------------------------------- setup
     def load_samples(self) -> None:
+        """Carica i campioni di tutti i benchmark, applicando l'eventuale limite max_samples_per_benchmark."""
         self.samples = load_all(self.cfg["benchmarks"], self.base_dir)
         cap = int(self.cfg.get("max_samples_per_benchmark", 0) or 0)
         if cap > 0:
@@ -77,6 +81,7 @@ class BenchmarkRunner:
 
     def setup_hardware(self) -> None:
         # misura consumo (PMIC): apre la connessione SSH dedicata al Pi
+        """Prepara l'hardware: apre le connessioni, avvia la shell, verifica l'integrita' dei modelli e misura il consumo idle di riferimento."""
         self.power.connect()
         self.power.configure_power()
         self.power.power_on()
@@ -91,6 +96,7 @@ class BenchmarkRunner:
 
     # ----------------------------------------------------------------- run
     def run(self) -> None:
+        """Esegue la campagna completa: per ogni modello x thread x ripetizione avvia una registrazione, ripetendola in caso di throttling."""
         llama_cfg = self.cfg["llama"]
         reps = int(self.cfg.get("repetitions", 3))
         tcfg = self.thermal_cfg
@@ -207,6 +213,7 @@ class BenchmarkRunner:
     def _mk_row(self, model, threads, rep, benchmark, sample_id, prompt,
                 expected, response, latency, energy, timings, score,
                 tstate=None, throttle_event=False) -> dict:
+        """Compone una riga del CSV a partire da misure di energia, timing, stato termico e punteggio di una singola inferenza."""
         net = energy.get("energy_net_j", 0.0)
         tstate = tstate or {}
         temp = tstate.get("temp_c", "")
@@ -240,6 +247,7 @@ class BenchmarkRunner:
 
     # ----------------------------------------------------------------- save
     def save_csv(self, path: Optional[str] = None) -> str:
+        """Salva tutte le righe raccolte nel file CSV dei risultati."""
         path = path or os.path.join(self.base_dir, self.cfg["output"]["results_csv"])
         os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, "w", newline="", encoding="utf-8") as fh:
@@ -252,6 +260,7 @@ class BenchmarkRunner:
 
     # ------------------------------------------------------------- teardown
     def teardown(self) -> None:
+        """Chiude in sicurezza la sessione del modello, la connessione SSH e il backend di misura."""
         try:
             self.ssh.stop_model()
         except Exception:

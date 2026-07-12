@@ -1,16 +1,16 @@
 \babel@toc {italian}{}\relax 
 \babel@toc {italian}{}\relax 
-\contentsline {chapter}{\numberline {1}Introduzione}{3}{chapter.1}%
-\contentsline {section}{\numberline {1.1}Background e Motivazioni}{3}{section.1.1}%
-\contentsline {section}{\numberline {1.2}Obiettivi della Tesi}{4}{section.1.2}%
-\contentsline {chapter}{\numberline {2}Setup sperimentale}{6}{chapter.2}%
-\contentsline {section}{\numberline {2.1}Configurazione hardware}{6}{section.2.1}%
-\contentsline {subsection}{\numberline {2.1.1}Alimentazione e misura del consumo tramite il PMIC}{6}{subsection.2.1.1}%
-\contentsline {subsection}{\numberline {2.1.2}Ventola di raffreddamento}{7}{subsection.2.1.2}%
-\contentsline {subsection}{\numberline {2.1.3}Connessione via Ethernet}{7}{subsection.2.1.3}%
-\contentsline {section}{\numberline {2.2}Configurazione software}{8}{section.2.2}%
-\contentsline {subsection}{\numberline {2.2.1}Software del Raspberry Pi 5}{8}{subsection.2.2.1}%
-\contentsline {subsection}{\numberline {2.2.2}Software del computer host}{9}{subsection.2.2.2}%
+\contentsline {chapter}{\numberline {1}Introduzione}{2}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Background e Motivazioni}{2}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Obiettivi della Tesi}{3}{section.1.2}%
+\contentsline {chapter}{\numberline {2}Setup sperimentale}{5}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Configurazione hardware}{5}{section.2.1}%
+\contentsline {subsection}{\numberline {2.1.1}Alimentazione e misura del consumo tramite il PMIC}{5}{subsection.2.1.1}%
+\contentsline {subsection}{\numberline {2.1.2}Ventola di raffreddamento}{6}{subsection.2.1.2}%
+\contentsline {subsection}{\numberline {2.1.3}Connessione via Ethernet}{6}{subsection.2.1.3}%
+\contentsline {section}{\numberline {2.2}Configurazione software}{7}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}Software del Raspberry Pi 5}{7}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}Software del computer host}{8}{subsection.2.2.2}%
 \contentsline {chapter}{\numberline {3}Esperimento}{11}{chapter.3}%
 \contentsline {section}{\numberline {3.1}Metriche di valutazione}{12}{section.3.1}%
 \contentsline {subsection}{\numberline {3.1.1}Efficienza energetica}{12}{subsection.3.1.1}%
@@ -25,19 +25,3 @@
 \contentsline {subsection}{\numberline {3.2.6}Monitoraggio termico}{19}{subsection.3.2.6}%
 \contentsline {section}{\numberline {3.3}Struttura dello script di automazione}{19}{section.3.3}%
 \contentsline {section}{\numberline {3.4}Salvataggio dei dati e analisi}{21}{section.3.4}%
-\contentsline {chapter}{\numberline {4}Risultati}{22}{chapter.4}%
-\contentsline {section}{\numberline {4.1}Confronto tra i modelli (Campagna A)}{22}{section.4.1}%
-\contentsline {subsection}{\numberline {4.1.1}Efficienza energetica}{22}{subsection.4.1.1}%
-\contentsline {subsection}{\numberline {4.1.2}Qualità delle risposte}{24}{subsection.4.1.2}%
-\contentsline {subsection}{\numberline {4.1.3}Velocità di elaborazione}{24}{subsection.4.1.3}%
-\contentsline {subsection}{\numberline {4.1.4}Compromesso tra efficienza e qualità}{24}{subsection.4.1.4}%
-\contentsline {section}{\numberline {4.2}Effetto del grado di parallelismo (Campagna B)}{26}{section.4.2}%
-\contentsline {subsection}{\numberline {4.2.1}Latenza}{26}{subsection.4.2.1}%
-\contentsline {subsection}{\numberline {4.2.2}Potenza ed energia}{26}{subsection.4.2.2}%
-\contentsline {section}{\numberline {4.3}Sintesi: classifica complessiva}{26}{section.4.3}%
-\contentsline {section}{\numberline {4.4}Comportamento termico}{28}{section.4.4}%
-\contentsline {chapter}{\numberline {5}Conclusioni}{29}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Sintesi dei risultati}{29}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Indicazioni pratiche}{30}{section.5.2}%
-\contentsline {section}{\numberline {5.3}Limiti del lavoro}{30}{section.5.3}%
-\contentsline {section}{\numberline {5.4}Sviluppi futuri}{30}{section.5.4}%

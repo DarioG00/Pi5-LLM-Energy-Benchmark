@@ -32,6 +32,7 @@ from scripts import scoring
 
 
 def main() -> int:
+    """Punto di ingresso dell'ispezione: per ogni modello e benchmark stampa prompt, risposta e punteggio, con i riepiloghi."""
     ap = argparse.ArgumentParser(description="Ispezione risposte dei modelli")
     ap.add_argument("--config", default="config.json")
     ap.add_argument("--samples", type=int, default=1,
@@ -74,6 +75,7 @@ def main() -> int:
     out = open(args.out, "w", encoding="utf-8") if args.out else None
 
     def emit(txt: str = "") -> None:
+        """Stampa una riga a schermo e, se richiesto, la scrive anche sul file di report."""
         print(txt, flush=True)
         if out:
             out.write(txt + "\n")

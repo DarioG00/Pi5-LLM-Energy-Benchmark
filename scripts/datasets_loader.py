@@ -12,6 +12,7 @@ log = logging.getLogger("datasets")
 
 @dataclass
 class Sample:
+    """Un singolo campione di benchmark: benchmark di appartenenza, tipo di task, id, prompt, risposta attesa e metadati."""
     benchmark: str
     btype: str
     id: str
@@ -21,6 +22,7 @@ class Sample:
 
 
 def load_jsonl(path: str) -> List[dict]:
+    """Legge un file JSONL e restituisce la lista degli oggetti (uno per riga), segnalando le righe malformate."""
     rows = []
     with open(path, "r", encoding="utf-8") as fh:
         for ln, line in enumerate(fh, 1):
@@ -35,6 +37,7 @@ def load_jsonl(path: str) -> List[dict]:
 
 
 def load_benchmark(name: str, btype: str, path: str, base_dir: str = ".") -> List[Sample]:
+    """Carica i campioni di un singolo benchmark dal relativo file JSONL, costruendo gli oggetti Sample."""
     full = path if os.path.isabs(path) else os.path.join(base_dir, path)
     if not os.path.exists(full):
         raise FileNotFoundError(f"Dataset mancante: {full}")
@@ -55,6 +58,7 @@ def load_benchmark(name: str, btype: str, path: str, base_dir: str = ".") -> Lis
 
 
 def load_all(benchmarks_cfg: List[dict], base_dir: str = ".") -> List[Sample]:
+    """Carica e concatena i campioni di tutti i benchmark elencati in configurazione."""
     out: List[Sample] = []
     for b in benchmarks_cfg:
         out.extend(load_benchmark(b["name"], b["type"], b["file"], base_dir))

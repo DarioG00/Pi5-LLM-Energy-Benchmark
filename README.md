@@ -86,12 +86,13 @@ righe dei JSONL.
 L'esperimento è organizzato in **due campagne complementari**, con due config
 pronti (output separati, si lanciano con `--config`):
 
-- `config_run1.json` — **confronto tra modelli**: dataset intero (73 prompt), solo
-  4 thread, 3 ripetizioni → 6 × 3 = 18 registrazioni, 1314 inferenze;
+- `config_run1.json` — **confronto tra modelli**: dataset intero (73 prompt), a
+  2 thread (configurazione più efficiente), 3 ripetizioni → 6 × 3 = 18 registrazioni, 1314 inferenze;
 - `config_run2.json` — **scaling sul parallelismo**: 3 campioni/benchmark (15
   prompt), thread 1/2/4, 3 ripetizioni → 6 × 3 × 3 = 54 registrazioni, 810 inferenze.
 
 ```bash
+python run_benchmark.py --config config_test.json   # prova rapida (~1 min): verifica la misura del PMIC
 python run_benchmark.py --config config_run1.json   # campagna A -> results_run1.csv
 python run_benchmark.py --config config_run2.json   # campagna B -> results_run2.csv
 ```
@@ -100,8 +101,9 @@ python run_benchmark.py --config config_run2.json   # campagna B -> results_run2
 
 ```
 config.json                 parametri (Pi, PMIC, llama, thermal, modelli, benchmark)
-config_run1.json            campagna A: dataset intero, 4 thread, 3 ripetizioni
+config_run1.json            campagna A: dataset intero, 2 thread, 3 ripetizioni
 config_run2.json            campagna B: 3 campioni/benchmark, thread 1/2/4, 3 ripetizioni
+config_test.json            mini-run di prova (~1 min) per verificare la misura del PMIC
 requirements.txt            dipendenze del venv host
 datasets/*.jsonl            i 5 benchmark
 run_benchmark.py            entry point eseguito dal PC host
@@ -119,7 +121,8 @@ scripts/
   analysis.py               aggregazione e grafici (pandas/seaborn/scikit-learn)
   simulation.py             backend simulati per il dry-run (--simulate)
 recordings/                 CSV risultati, dati aggregati, grafici
-tesi/                       tesi LaTeX, schemi hardware/software e diagrammi UML
+tesi/                       tesi LaTeX e schemi hardware/software
+docs/                       checklist esperimento + diagramma di sequenza del codice
 ```
 
 ## Metriche

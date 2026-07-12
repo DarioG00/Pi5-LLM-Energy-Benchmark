@@ -26,11 +26,13 @@ from scripts.benchmark_runner import BenchmarkRunner
 
 
 def load_config(path: str) -> dict:
+    """Legge il file di configurazione JSON e lo restituisce come dizionario."""
     with open(path, "r", encoding="utf-8") as fh:
         return json.load(fh)
 
 
 def make_real_backends(cfg: dict):
+    """Crea i backend reali (PmicMonitor e PiSSH) per l'esecuzione sull'hardware."""
     from scripts.pi_ssh import PiSSH, PiConfig
     from scripts.pmic import PmicMonitor, PmicConfig
     pi_cfg = PiConfig.from_dict(cfg["pi"])
@@ -40,12 +42,14 @@ def make_real_backends(cfg: dict):
 
 
 def make_sim_backends(cfg: dict):
+    """Crea i backend simulati (FakePmic e FakeSSH) per il dry-run senza hardware."""
     from scripts.simulation import FakePmic, FakeSSH
     ssh = FakeSSH(cfg["pi"], cfg["llama"].get("ready_prompt", "> "))
     return FakePmic(cfg.get("pmic", {})), ssh
 
 
 def main() -> int:
+    """Punto di ingresso: carica la configurazione, esegue la campagna di benchmark e avvia l'analisi finale."""
     ap = argparse.ArgumentParser(description="Benchmark energetico LLM su Raspberry Pi 5")
     ap.add_argument("--config", default="config.json")
     ap.add_argument("--simulate", action="store_true",

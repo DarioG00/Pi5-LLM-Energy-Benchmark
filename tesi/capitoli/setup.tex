@@ -107,6 +107,27 @@ di thread impiegati durante l'inferenza e gestire l'esecuzione tramite interfacc
 Inoltre, rispetto ad altri framework esistenti, offre una maggiore flessibilità nella selezione dei modelli
 quantizzati supportati.
 
+I sei modelli sono distribuiti nel formato \textbf{GGUF}, il formato nativo di
+\texttt{llama.cpp}, e sono quantizzati tramite gli schemi di quantizzazione
+post-addestramento resi disponibili dal framework. Per ciascuna famiglia sono
+state considerate due varianti:
+\begin{itemize}
+    \item \textbf{Q8\_0} (8 bit): schema di tipo \emph{legacy} in cui i pesi
+    sono quantizzati a 8 bit a blocchi, ciascuno con un proprio fattore di scala.
+    La perdita di informazione rispetto al modello originale è minima
+    (quantizzazione quasi \emph{lossless}), a fronte di una maggiore occupazione
+    di memoria.
+    \item \textbf{Q4\_K\_M} (4 bit): schema della famiglia \emph{k-quant} in
+    variante \emph{medium}. Rispetto alla quantizzazione a 4 bit più semplice, i
+    \emph{k-quant} organizzano i pesi in super-blocchi con più fattori di scala e
+    mantengono a precisione più elevata i tensori più sensibili del modello, così
+    da contenere il degrado di qualità pur dimezzando circa lo spazio occupato
+    rispetto alla variante a 8 bit.
+\end{itemize}
+Confrontare, per ciascuna famiglia, una quantizzazione aggressiva a 4 bit e una
+conservativa a 8 bit permette di osservare il compromesso tra dimensione ed
+efficienza da un lato e qualità delle risposte dall'altro.
+
 \subsection{Software del computer host}
 
 Sul computer host, con sistema operativo Windows 11 (64-bit, Intel), è stato

@@ -24,10 +24,12 @@ LOAD_TAG = "__load__"
 
 
 def _model_label(row) -> str:
+    """Etichetta con famiglia e quantizzazione del modello, usata come categoria nei grafici."""
     return f"{row['family']}\n{row['quant']}"
 
 
 def load_results(csv_path: str) -> pd.DataFrame:
+    """Legge il CSV dei risultati e ne normalizza i tipi; azzera (NaN) le metriche energetiche delle righe con energia non valida (<=0), cosi' da escluderle dai grafici."""
     df = pd.read_csv(csv_path)
     for col in ["latency_s", "energy_net_j", "avg_power_w",
                 "score", "prompt_tps", "gen_tps", "temp_c"]:
@@ -112,6 +114,7 @@ def composite_score(cfg_df: pd.DataFrame) -> pd.DataFrame:
 
 # --------------------------------------------------------------------- grafici
 def _save(fig, path):
+    """Salva la figura su file (con layout compatto) e chiude il plot."""
     fig.tight_layout()
     fig.savefig(path, dpi=130)
     plt.close(fig)
@@ -119,6 +122,7 @@ def _save(fig, path):
 
 
 def plot_efficiency(cfg_df, out):
+    """Grafico a barre dell'energia netta media per inferenza, per modello e numero di thread."""
     fig, ax = plt.subplots(figsize=(11, 6))
     sns.barplot(data=cfg_df, x="model", y="energy_net_j", hue="threads", ax=ax)
     ax.set_title("Energia netta media per inferenza (J) per modello e thread")
@@ -141,6 +145,7 @@ def plot_energy_per_config(tot_df, out):
 
 
 def plot_latency(cfg_df, out):
+    """Grafico a barre della latenza media di inferenza, per modello e numero di thread."""
     fig, ax = plt.subplots(figsize=(11, 6))
     sns.barplot(data=cfg_df, x="model", y="latency_s", hue="threads", ax=ax)
     ax.set_title("Latenza media di inferenza (s) per modello e thread")
@@ -150,6 +155,7 @@ def plot_latency(cfg_df, out):
 
 
 def plot_quality(agg_df, out):
+    """Mappa di calore dell'accuratezza media (0-1) per modello e benchmark."""
     fig, ax = plt.subplots(figsize=(12, 6))
     piv = agg_df.pivot_table(index="model", columns="benchmark",
                              values="score", aggfunc="mean")
@@ -160,6 +166,7 @@ def plot_quality(agg_df, out):
 
 
 def plot_power(cfg_df, out):
+    """Grafico a barre della potenza media assorbita, per modello e numero di thread."""
     fig, ax = plt.subplots(figsize=(11, 6))
     sns.barplot(data=cfg_df, x="model", y="avg_power_w", hue="threads", ax=ax)
     ax.set_title("Potenza media assorbita (W) per modello e thread")
@@ -169,6 +176,7 @@ def plot_power(cfg_df, out):
 
 
 def plot_throughput(cfg_df, out):
+    """Grafici a barre della velocita' di prompt processing e di generazione (token/s)."""
     fig, axes = plt.subplots(1, 2, figsize=(15, 6))
     sns.barplot(data=cfg_df, x="model", y="prompt_tps", hue="threads", ax=axes[0])
     axes[0].set_title("Prompt processing (t/s) per modello e thread")
@@ -182,6 +190,7 @@ def plot_throughput(cfg_df, out):
 
 
 def plot_tradeoff(cfg_df, out):
+    """Scatter del compromesso tra energia per inferenza e qualita', per configurazione."""
     fig, ax = plt.subplots(figsize=(10, 7))
     sns.scatterplot(data=cfg_df, x="energy_net_j", y="score",
                     hue="model", style="threads", s=140, ax=ax)
@@ -193,6 +202,7 @@ def plot_tradeoff(cfg_df, out):
 
 
 def plot_composite(comp_df, out):
+    """Grafico della classifica delle configurazioni secondo lo score composito."""
     fig, ax = plt.subplots(figsize=(11, 6))
     comp_df = comp_df.copy()
     comp_df["cfg"] = comp_df["model"] + " t" + comp_df["threads"].astype(str)
@@ -204,6 +214,7 @@ def plot_composite(comp_df, out):
 
 
 def plot_thermal(df, out):
+    """Boxplot della temperatura del SoC durante le inferenze, per modello e thread."""
     infer = df[(df["benchmark"] != LOAD_TAG) & df["temp_c"].notna()].copy()
     if infer.empty:
         log.info("Nessun dato di temperatura: salto il grafico termico.")
@@ -218,6 +229,7 @@ def plot_thermal(df, out):
 
 
 def thermal_report(df) -> str:
+    """Restituisce una riga di riepilogo su temperatura massima ed eventi di throttling."""
     n_throttle = int(df.get("throttle_event", pd.Series(dtype=bool)).sum())
     n_active = int(df.get("throttle_active", pd.Series(dtype=bool)).sum())
     tmax = df["temp_c"].max() if "temp_c" in df and df["temp_c"].notna().any() else float("nan")
@@ -229,6 +241,7 @@ def thermal_report(df) -> str:
 
 
 def run_analysis(csv_path: str, cfg: dict, base_dir: str = ".") -> None:
+    """Esegue l'intera analisi: aggrega i risultati del CSV, salva le tabelle e genera tutti i grafici di confronto in recordings/plots."""
     plots_dir = os.path.join(base_dir, cfg["output"]["plots_dir"])
     os.makedirs(plots_dir, exist_ok=True)
 

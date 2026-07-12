@@ -23,11 +23,13 @@ _PERF_RE = re.compile(r"Prompt:\s*[\d.,]+\s*t/s\s*\|\s*Generation:\s*[\d.,]+\s*t
 
 
 def strip_ansi(text: str) -> str:
+    """Rimuove le sequenze di escape ANSI e i ritorni carrello dal testo."""
     return ANSI_RE.sub("", text).replace("\r", "")
 
 
 @dataclass
 class PiConfig:
+    """Parametri di connessione SSH al Raspberry Pi (host, credenziali, porta, attese di boot)."""
     host: str = "192.168.10.2"
     username: str = "dario"
     password: str = ""
@@ -37,12 +39,15 @@ class PiConfig:
 
     @classmethod
     def from_dict(cls, d: dict) -> "PiConfig":
+        """Crea una PiConfig da un dizionario, ignorando le chiavi non pertinenti."""
         known = {k: d[k] for k in d if k in cls.__dataclass_fields__}
         return cls(**known)
 
 
 class PiSSH:
+    """Connessione SSH al Pi e pilotaggio interattivo di llama-cli: shell persistente, invio dei prompt e lettura delle risposte."""
     def __init__(self, cfg: PiConfig, ready_prompt: str = "> "):
+        """Inizializza il client SSH con la configurazione e il simbolo di prompt pronto atteso."""
         self.cfg = cfg
         self.ready_prompt = ready_prompt
         # Ogni prompt viene inviato come UNA riga (a-capo sostituiti da spazi):
@@ -72,6 +77,7 @@ class PiSSH:
         )
 
     def _open(self) -> None:
+        """Apre la connessione SSH (paramiko) verso il Pi."""
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         client.connect(
@@ -87,6 +93,7 @@ class PiSSH:
 
     # ----------------------------------------------------------------- shell
     def open_shell(self) -> None:
+        """Apre una shell interattiva sul Pi e ne svuota il banner di login."""
         assert self.client is not None, "SSH non connesso"
         self.shell = self.client.invoke_shell(width=200, height=50)
         self.shell.settimeout(0.5)
@@ -240,6 +247,7 @@ class PiSSH:
 
     # ----------------------------------------------------------------- close
     def close_shell(self) -> None:
+        """Chiude la shell interattiva, se aperta."""
         try:
             if self.shell is not None:
                 self.shell.close()
@@ -248,6 +256,7 @@ class PiSSH:
             pass
 
     def close(self) -> None:
+        """Chiude la shell e la connessione SSH."""
         self.close_shell()
         try:
             if self.client is not None:

@@ -14,6 +14,7 @@ from typing import Optional
 
 
 def _norm(s: str) -> str:
+    """Normalizza una stringa per il confronto (minuscole, spazi collassati)."""
     return re.sub(r"\s+", " ", s.strip().lower())
 
 
@@ -39,6 +40,7 @@ def _first_choice_letter(text: str) -> Optional[str]:
 
 
 def _last_number(text: str) -> Optional[float]:
+    """Estrae l'ultimo valore numerico presente nel testo, o None."""
     nums = re.findall(r"-?\d+(?:\.\d+)?", text.replace(",", ""))
     if not nums:
         return None
@@ -49,6 +51,7 @@ def _last_number(text: str) -> Optional[float]:
 
 
 def _hashed_number(text: str) -> Optional[float]:
+    """Estrae il numero finale marcato da '####' (formato GSM8K); in mancanza ripiega sull'ultimo numero."""
     m = re.search(r"####\s*(-?\d+(?:\.\d+)?)", text.replace(",", ""))
     if m:
         return float(m.group(1))
@@ -56,6 +59,7 @@ def _hashed_number(text: str) -> Optional[float]:
 
 
 def score_multiple_choice(response: str, expected: str) -> dict:
+    """Valuta una risposta a scelta multipla confrontando la lettera scelta con quella attesa."""
     got = _first_choice_letter(response)
     ok = got is not None and got == expected.strip().upper()[:1]
     return {"score": 1.0 if ok else 0.0,
@@ -65,6 +69,7 @@ def score_multiple_choice(response: str, expected: str) -> dict:
 
 
 def score_exact_match(response: str, expected: str) -> dict:
+    """Valuta per corrispondenza esatta del testo, previa normalizzazione."""
     r, e = _norm(response), _norm(expected)
     ok = e in r or r == e or r.startswith(e)
     return {"score": 1.0 if ok else 0.0,
@@ -74,6 +79,7 @@ def score_exact_match(response: str, expected: str) -> dict:
 
 
 def score_numeric(response: str, expected: str) -> dict:
+    """Valuta estraendo il valore numerico finale della risposta e confrontandolo con l'atteso."""
     got = _hashed_number(response)
     exp = _hashed_number(expected) if expected else None
     if got is None or exp is None:
@@ -165,6 +171,7 @@ def _extract_code(response: str, entry: str) -> str:
 
 
 def _run_sandbox(source: str, timeout: int = 8) -> bool:
+    """Esegue il codice indicato in un sottoprocesso isolato con timeout; True se termina senza errori."""
     import subprocess
     import sys
     import tempfile
@@ -188,6 +195,7 @@ def _run_sandbox(source: str, timeout: int = 8) -> bool:
 
 
 def score(btype: str, response: str, expected: str, meta: Optional[dict] = None) -> dict:
+    """Dispatcher: valuta la risposta secondo il tipo di benchmark e restituisce punteggio e metadati."""
     meta = meta or {}
     if btype == "multiple_choice":
         return score_multiple_choice(response, expected)

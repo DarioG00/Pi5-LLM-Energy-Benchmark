@@ -42,6 +42,7 @@ _OCC_BITS = {
 
 @dataclass
 class ThermalConfig:
+    """Parametri di gestione termica: monitoraggio, log per inferenza, ripetizione su throttling e numero massimo di tentativi."""
     enabled: bool = True           # monitoraggio termico (lettura temp/throttle)
     log_per_inference: bool = True # registra temp/throttle a ogni inferenza
     abort_on_throttle: bool = True # scarta e ripete la registrazione se throttling
@@ -49,6 +50,7 @@ class ThermalConfig:
 
     @classmethod
     def from_dict(cls, d: dict) -> "ThermalConfig":
+        """Crea una ThermalConfig da un dizionario, ignorando le chiavi non pertinenti."""
         known = {k: d[k] for k in d if k in cls.__dataclass_fields__}
         return cls(**known)
 

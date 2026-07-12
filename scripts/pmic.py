@@ -85,6 +85,7 @@ def parse_pmic_power(raw: str, slope: float = CORR_SLOPE,
 
 @dataclass
 class PmicConfig:
+    """Parametri di campionamento del PMIC (frequenza, durata idle, assestamento, coefficienti di correzione)."""
     sample_hz: float = 10.0          # cadenza di campionamento richiesta (Hz)
     idle_seconds: int = 20           # durata misura idle (bias)
     settle_seconds: int = 3          # assestamento prima di ogni registrazione
@@ -93,6 +94,7 @@ class PmicConfig:
 
     @classmethod
     def from_dict(cls, d: dict) -> "PmicConfig":
+        """Crea una PmicConfig da un dizionario, ignorando le chiavi non pertinenti."""
         known = {k: d[k] for k in d if k in cls.__dataclass_fields__}
         return cls(**known)
 
@@ -110,6 +112,7 @@ class PmicMonitor:
     _RECONNECT_EVERY = 20
 
     def __init__(self, pi_cfg: Any, cfg: PmicConfig):
+        """Inizializza il monitor con la configurazione del Pi e i parametri di campionamento del PMIC."""
         self.pi_cfg = pi_cfg          # PiConfig (host/username/password/ssh_port)
         self.cfg = cfg
         self.settle_seconds = cfg.settle_seconds
@@ -124,6 +127,7 @@ class PmicMonitor:
 
     # ------------------------------------------------------------------ setup
     def _open_client(self):
+        """Apre e restituisce una connessione SSH dedicata alla lettura del PMIC."""
         import paramiko
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -197,6 +201,7 @@ class PmicMonitor:
         return parse_pmic_power(raw, self.cfg.corr_slope, self.cfg.corr_offset)
 
     def _sampler_loop(self) -> None:
+        """Ciclo del thread in background: legge la potenza dal PMIC alla frequenza impostata e, se le letture falliscono, tenta la riconnessione."""
         period = 1.0 / max(0.5, self.cfg.sample_hz)
         fails = 0
         warned = False
@@ -230,6 +235,7 @@ class PmicMonitor:
 
     # ------------------------------------------------------------ recording
     def start_recording(self) -> None:
+        """Avvia una nuova registrazione e il thread di campionamento in background."""
         with self._lock:
             self._samples = []
         self._rec_t0 = time.monotonic()
@@ -239,6 +245,7 @@ class PmicMonitor:
         log.debug("Campionamento PMIC avviato (%.0f Hz).", self.cfg.sample_hz)
 
     def stop_recording(self):
+        """Ferma il campionamento e restituisce i campioni raccolti (avvisa se la registrazione e' vuota)."""
         self._sampling = False
         if self._thread is not None:
             self._thread.join(timeout=3.0)
@@ -306,12 +313,14 @@ class PmicMonitor:
 
     @staticmethod
     def _nearest_power(rec, t: float) -> float:
+        """Restituisce la potenza del campione temporalmente piu' vicino all'istante indicato."""
         if not rec:
             return 0.0
         return min(rec, key=lambda s: abs(s[0] - t))[1]
 
     # ----------------------------------------------------------------- close
     def disconnect(self) -> None:
+        """Ferma il campionamento e chiude la connessione SSH del PMIC."""
         self._sampling = False
         try:
             if self._thread is not None:
