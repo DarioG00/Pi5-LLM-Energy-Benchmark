@@ -1,0 +1,224 @@
+(envEnergyBenchmark) PS C:\Users\guidi\codes\Pi5-LLM-Energy-Benchmark> python run_benchmark.py --config config_test.json
+09:11:41 [datasets] INFO: Benchmark 'commonsenseqa': 15 campioni caricati da C:\Users\guidi\codes\Pi5-LLM-Energy-Benchmark\datasets/commonsenseqa.jsonl
+09:11:41 [datasets] INFO: Benchmark 'bbh': 15 campioni caricati da C:\Users\guidi\codes\Pi5-LLM-Energy-Benchmark\datasets/bbh.jsonl
+09:11:41 [datasets] INFO: Benchmark 'truthfulqa': 15 campioni caricati da C:\Users\guidi\codes\Pi5-LLM-Energy-Benchmark\datasets/truthfulqa.jsonl
+09:11:41 [datasets] INFO: Benchmark 'gsm8k': 15 campioni caricati da C:\Users\guidi\codes\Pi5-LLM-Energy-Benchmark\datasets/gsm8k.jsonl
+09:11:41 [datasets] INFO: Benchmark 'humaneval': 13 campioni caricati da C:\Users\guidi\codes\Pi5-LLM-Energy-Benchmark\datasets/humaneval.jsonl
+09:11:41 [runner] INFO: Limite campioni per benchmark: 1
+09:11:41 [runner] INFO: Totale campioni: 5
+09:11:41 [pmic] INFO: Connessione SSH (PMIC) a 192.168.10.2...
+09:11:41 [paramiko.transport] INFO: Connected (version 2.0, client OpenSSH_10.0p2)
+09:11:41 [paramiko.transport] INFO: Authentication (password) successful!
+09:11:41 [pmic] INFO: PMIC pronto: potenza istantanea iniziale 2.566 W
+09:11:41 [pmic] INFO: Backend PMIC: alimentazione dall'alimentatore ufficiale del Pi.
+09:11:41 [pmic] INFO: Backend PMIC: il Raspberry Pi e' alimentato esternamente e gia' acceso.
+09:11:41 [ssh] INFO: Attesa boot del Raspberry Pi e connessione SSH a 192.168.10.2...
+09:11:41 [paramiko.transport] INFO: Connected (version 2.0, client OpenSSH_10.0p2)
+09:11:41 [paramiko.transport] INFO: Authentication (password) successful!
+09:11:41 [ssh] INFO: Connessione SSH stabilita con 192.168.10.2
+09:11:42 [pmic] INFO: Misura del consumo idle (PMIC) per 20 s...
+09:12:02 [pmic] INFO: Potenza idle media (PMIC): 2.1276 W (200 campioni)
+09:12:02 [runner] INFO: === qwen2.5-1.5b-instruct-q4_k_m.gguf | t=1 | rip 1/1 (tentativo 1) ===
+09:12:05 [ssh] INFO: Avvio modello: ~/llama.cpp/build/bin/llama-cli -m ~/LLMs/qwen2.5-1.5b-instruct-q4_k_m.gguf -t 1 -c 512 -n 256
+09:12:42 [runner] INFO: modello caricato in 37s; eseguo 5 inferenze...
+09:12:42 [runner] INFO:   [1/5] commonsenseqa csqa-1 ...
+09:12:47 [runner] INFO:   [1/5] commonsenseqa csqa-1 -> punteggio 1.0 [OK]  (4.9s)
+09:12:47 [runner] INFO:   [2/5] bbh bbh-bool-1 ...
+09:12:49 [runner] INFO:   [2/5] bbh bbh-bool-1 -> punteggio 1.0 [OK]  (2.1s)
+09:12:49 [runner] INFO:   [3/5] truthfulqa tqa-1 ...
+09:12:53 [runner] INFO:   [3/5] truthfulqa tqa-1 -> punteggio 1.0 [OK]  (3.6s)
+09:12:53 [runner] INFO:   [4/5] gsm8k gsm8k-1 ...
+09:13:15 [runner] INFO:   [4/5] gsm8k gsm8k-1 -> punteggio 1.0 [OK]  (22.4s)
+09:13:15 [runner] INFO:   [5/5] humaneval HumanEval-0 ...
+09:13:32 [runner] INFO:   [5/5] humaneval HumanEval-0 -> punteggio 1.0 [OK]  (16.2s)
+09:13:33 [runner] INFO: Risultati salvati in C:\Users\guidi\codes\Pi5-LLM-Energy-Benchmark\recordings/results_test.csv (6 righe)
+09:13:35 [ssh] INFO: Connessione SSH chiusa.
+09:13:35 [pmic] INFO: Connessione SSH (PMIC) chiusa.
+09:13:46 [analysis] INFO: Grafico salvato: C:\Users\guidi\codes\Pi5-LLM-Energy-Benchmark\recordings/plots_test\efficiency_jpt.png
+09:13:46 [analysis] INFO: Grafico salvato: C:\Users\guidi\codes\Pi5-LLM-Energy-Benchmark\recordings/plots_test\energy_per_config.png
+09:13:46 [analysis] INFO: Grafico salvato: C:\Users\guidi\codes\Pi5-LLM-Energy-Benchmark\recordings/plots_test\latency.png
+09:13:46 [analysis] INFO: Grafico salvato: C:\Users\guidi\codes\Pi5-LLM-Energy-Benchmark\recordings/plots_test\quality_heatmap.png
+09:13:46 [analysis] INFO: Grafico salvato: C:\Users\guidi\codes\Pi5-LLM-Energy-Benchmark\recordings/plots_test\power.png
+09:13:46 [analysis] INFO: Grafico salvato: C:\Users\guidi\codes\Pi5-LLM-Energy-Benchmark\recordings/plots_test\throughput.png
+09:13:47 [analysis] INFO: Grafico salvato: C:\Users\guidi\codes\Pi5-LLM-Energy-Benchmark\recordings/plots_test\tradeoff.png
+09:13:47 [analysis] INFO: Grafico salvato: C:\Users\guidi\codes\Pi5-LLM-Energy-Benchmark\recordings/plots_test\pareto_energia.png
+09:13:47 [analysis] INFO: Grafico salvato: C:\Users\guidi\codes\Pi5-LLM-Energy-Benchmark\recordings/plots_test\pareto_latenza.png
+09:13:47 [analysis] INFO: Grafico salvato: C:\Users\guidi\codes\Pi5-LLM-Energy-Benchmark\recordings/plots_test\ranking_composite.png
+09:13:47 [analysis] INFO: Grafico salvato: C:\Users\guidi\codes\Pi5-LLM-Energy-Benchmark\recordings/plots_test\thermal.png
+09:13:47 [analysis] INFO: Termico - T max: 68.6C | righe con evento throttling: 0 | letture con throttling attivo: 0
+09:13:47 [analysis] INFO: Analisi completata. Grafici in C:\Users\guidi\codes\Pi5-LLM-Energy-Benchmark\recordings/plots_test
+(envEnergyBenchmark) PS C:\Users\guidi\codes\Pi5-LLM-Energy-Benchmark> python inspect_models.py --benchmarks gsm8k --samples 1
+09:14:14 [datasets] INFO: Benchmark 'commonsenseqa': 15 campioni caricati da C:\Users\guidi\codes\Pi5-LLM-Energy-Benchmark\datasets/commonsenseqa.jsonl
+09:14:14 [datasets] INFO: Benchmark 'bbh': 15 campioni caricati da C:\Users\guidi\codes\Pi5-LLM-Energy-Benchmark\datasets/bbh.jsonl
+09:14:14 [datasets] INFO: Benchmark 'truthfulqa': 15 campioni caricati da C:\Users\guidi\codes\Pi5-LLM-Energy-Benchmark\datasets/truthfulqa.jsonl
+09:14:14 [datasets] INFO: Benchmark 'gsm8k': 15 campioni caricati da C:\Users\guidi\codes\Pi5-LLM-Energy-Benchmark\datasets/gsm8k.jsonl
+09:14:14 [datasets] INFO: Benchmark 'humaneval': 13 campioni caricati da C:\Users\guidi\codes\Pi5-LLM-Energy-Benchmark\datasets/humaneval.jsonl
+09:14:14 [ssh] INFO: Attesa boot del Raspberry Pi e connessione SSH a 192.168.10.2...
+09:14:14 [paramiko.transport] INFO: Connected (version 2.0, client OpenSSH_10.0p2)
+09:14:14 [paramiko.transport] INFO: Authentication (password) successful!
+09:14:14 [ssh] INFO: Connessione SSH stabilita con 192.168.10.2
+09:14:15 [inspect] INFO: [modello 1/6] carico gemma-2-2b-it-Q4_K_M.gguf a 1 thread (il caricamento richiede alcune decine di secondi)...
+==========================================================================================
+MODELLO: gemma-2-2b-it-Q4_K_M.gguf  (family=gemma-2-2B, quant=Q4_K_M)  thread=1
+==========================================================================================
+$ ~/llama.cpp/build/bin/llama-cli -m ~/LLMs/gemma-2-2b-it-Q4_K_M.gguf -t 1 -c 512 -n 256
+09:14:15 [ssh] INFO: Avvio modello: ~/llama.cpp/build/bin/llama-cli -m ~/LLMs/gemma-2-2b-it-Q4_K_M.gguf -t 1 -c 512 -n 256
+09:14:43 [inspect] INFO: modello pronto, eseguo 1 prompt...
+09:14:43 [inspect] INFO:   [1/1] gsm8k id=gsm8k-1: invio prompt...
+------------------------------------------------------------------------------------------
+[gsm8k] id=gsm8k-1  tipo=numeric   [OK]
+PROMPT:
+Solve the math word problem. End your answer with a line of the form '#### <number>'.
+Natalia sold clips to 48 of her friends in April, and then she sold half as many clips in May. How many clips did she sell altogether in April and May?
+Answer:
+ATTESO: 72
+RISPOSTA DEL MODELLO:
+Natalia sold 48 clips in April. In May, she sold half as many clips, which is 48 / 2 = 24 clips.
+In total, she sold 48 + 24 = 72 clips.
+#### 72
+PUNTEGGIO: 1.0  (parsed=72.0, confidence=high)  t/s: prompt=10.7 gen=4.5
+------------------------------------------------------------------------------------------
+RIEPILOGO gemma-2-2b-it-Q4_K_M.gguf: gsm8k 1/1   |   TOTALE 1/1 corretti
+
+09:15:05 [inspect] INFO: [modello 2/6] carico Llama-3.2-3B-Instruct-Q4_K_M.gguf a 1 thread (il caricamento richiede alcune decine di secondi)...
+==========================================================================================
+MODELLO: Llama-3.2-3B-Instruct-Q4_K_M.gguf  (family=llama-3.2-3B, quant=Q4_K_M)  thread=1
+==========================================================================================
+$ ~/llama.cpp/build/bin/llama-cli -m ~/LLMs/Llama-3.2-3B-Instruct-Q4_K_M.gguf -t 1 -c 512 -n 256
+09:15:05 [ssh] INFO: Avvio modello: ~/llama.cpp/build/bin/llama-cli -m ~/LLMs/Llama-3.2-3B-Instruct-Q4_K_M.gguf -t 1 -c 512 -n 256
+09:15:50 [inspect] INFO: modello pronto, eseguo 1 prompt...
+09:15:50 [inspect] INFO:   [1/1] gsm8k id=gsm8k-1: invio prompt...
+------------------------------------------------------------------------------------------
+[gsm8k] id=gsm8k-1  tipo=numeric   [OK]
+PROMPT:
+Solve the math word problem. End your answer with a line of the form '#### <number>'.
+Natalia sold clips to 48 of her friends in April, and then she sold half as many clips in May. How many clips did she sell altogether in April and May?
+Answer:
+ATTESO: 72
+RISPOSTA DEL MODELLO:
+To find the total number of clips Natalia sold, we need to add the number of clips she sold in April and May.
+In April, she sold 48 clips.
+In May, she sold half as many clips as in April, so she sold 48 / 2 = 24 clips.
+The total number of clips she sold in April and May is 48 + 24 = 72 clips.
+#### 72
+PUNTEGGIO: 1.0  (parsed=72.0, confidence=high)  t/s: prompt=7.7 gen=3.9
+------------------------------------------------------------------------------------------
+RIEPILOGO Llama-3.2-3B-Instruct-Q4_K_M.gguf: gsm8k 1/1   |   TOTALE 1/1 corretti
+
+09:16:26 [inspect] INFO: [modello 3/6] carico qwen2.5-1.5b-instruct-q4_k_m.gguf a 1 thread (il caricamento richiede alcune decine di secondi)...
+==========================================================================================
+MODELLO: qwen2.5-1.5b-instruct-q4_k_m.gguf  (family=qwen2.5-1.5B, quant=Q4_K_M)  thread=1
+==========================================================================================
+$ ~/llama.cpp/build/bin/llama-cli -m ~/LLMs/qwen2.5-1.5b-instruct-q4_k_m.gguf -t 1 -c 512 -n 256
+09:16:26 [ssh] INFO: Avvio modello: ~/llama.cpp/build/bin/llama-cli -m ~/LLMs/qwen2.5-1.5b-instruct-q4_k_m.gguf -t 1 -c 512 -n 256
+09:16:29 [inspect] INFO: modello pronto, eseguo 1 prompt...
+09:16:29 [inspect] INFO:   [1/1] gsm8k id=gsm8k-1: invio prompt...
+------------------------------------------------------------------------------------------
+[gsm8k] id=gsm8k-1  tipo=numeric   [OK]
+PROMPT:
+Solve the math word problem. End your answer with a line of the form '#### <number>'.
+Natalia sold clips to 48 of her friends in April, and then she sold half as many clips in May. How many clips did she sell altogether in April and May?
+Answer:
+ATTESO: 72
+RISPOSTA DEL MODELLO:
+First, we need to determine the number of clips Natalia sold in May. We know she sold half as many clips in May as she did in April.
+Since she sold 48 clips in April, half of that amount is:
+\[ \frac{48}{2} = 24 \]
+So, Natalia sold 24 clips in May.
+Next, we need to find the total number of clips she sold in both April and May. We add the number of clips sold in April and May:
+\[ 48 + 24 = 72 \]
+Therefore, Natalia sold a total of 72 clips in April and May. The final answer is:
+#### 72
+PUNTEGGIO: 1.0  (parsed=72.0, confidence=high)  t/s: prompt=16.5 gen=7.9
+------------------------------------------------------------------------------------------
+RIEPILOGO qwen2.5-1.5b-instruct-q4_k_m.gguf: gsm8k 1/1   |   TOTALE 1/1 corretti
+
+09:16:55 [inspect] INFO: [modello 4/6] carico gemma-2-2b-it-Q8_0.gguf a 1 thread (il caricamento richiede alcune decine di secondi)...
+==========================================================================================
+MODELLO: gemma-2-2b-it-Q8_0.gguf  (family=gemma-2-2B, quant=Q8_0)  thread=1
+==========================================================================================
+$ ~/llama.cpp/build/bin/llama-cli -m ~/LLMs/gemma-2-2b-it-Q8_0.gguf -t 1 -c 512 -n 256
+09:16:55 [ssh] INFO: Avvio modello: ~/llama.cpp/build/bin/llama-cli -m ~/LLMs/gemma-2-2b-it-Q8_0.gguf -t 1 -c 512 -n 256
+09:17:37 [inspect] INFO: modello pronto, eseguo 1 prompt...
+09:17:37 [inspect] INFO:   [1/1] gsm8k id=gsm8k-1: invio prompt...
+------------------------------------------------------------------------------------------
+[gsm8k] id=gsm8k-1  tipo=numeric   [OK]
+PROMPT:
+Solve the math word problem. End your answer with a line of the form '#### <number>'.
+Natalia sold clips to 48 of her friends in April, and then she sold half as many clips in May. How many clips did she sell altogether in April and May?
+Answer:
+ATTESO: 72
+RISPOSTA DEL MODELLO:
+Here's how to solve the problem:
+* **May sales:** Natalia sold half as many clips in May as she did in April, so she sold 48 / 2 = 24 clips.
+* **Total sales:** In total, she sold 48 + 24 = 72 clips.
+#### 72
+PUNTEGGIO: 1.0  (parsed=72.0, confidence=high)  t/s: prompt=15.8 gen=4.6
+------------------------------------------------------------------------------------------
+RIEPILOGO gemma-2-2b-it-Q8_0.gguf: gsm8k 1/1   |   TOTALE 1/1 corretti
+
+09:18:00 [inspect] INFO: [modello 5/6] carico Llama-3.2-3B-Instruct-Q8_0.gguf a 1 thread (il caricamento richiede alcune decine di secondi)...
+==========================================================================================
+MODELLO: Llama-3.2-3B-Instruct-Q8_0.gguf  (family=llama-3.2-3B, quant=Q8_0)  thread=1
+==========================================================================================
+$ ~/llama.cpp/build/bin/llama-cli -m ~/LLMs/Llama-3.2-3B-Instruct-Q8_0.gguf -t 1 -c 512 -n 256
+09:18:00 [ssh] INFO: Avvio modello: ~/llama.cpp/build/bin/llama-cli -m ~/LLMs/Llama-3.2-3B-Instruct-Q8_0.gguf -t 1 -c 512 -n 256
+09:18:50 [inspect] INFO: modello pronto, eseguo 1 prompt...
+09:18:50 [inspect] INFO:   [1/1] gsm8k id=gsm8k-1: invio prompt...
+------------------------------------------------------------------------------------------
+[gsm8k] id=gsm8k-1  tipo=numeric   [OK]
+PROMPT:
+Solve the math word problem. End your answer with a line of the form '#### <number>'.
+Natalia sold clips to 48 of her friends in April, and then she sold half as many clips in May. How many clips did she sell altogether in April and May?
+Answer:
+ATTESO: 72
+RISPOSTA DEL MODELLO:
+To solve this problem, we need to first find out how many clips Natalia sold in May, and then add it to the clips she sold in April.
+Since Natalia sold half as many clips in May as in April, and she sold 48 clips in April, we can calculate the number of clips she sold in May as:
+48 / 2 = 24
+Now, let's add the clips she sold in April (48) and May (24):
+48 + 24 = 72
+So, Natalia sold 72 clips altogether in April and May. #### 72
+PUNTEGGIO: 1.0  (parsed=72.0, confidence=high)  t/s: prompt=11.1 gen=3.7
+------------------------------------------------------------------------------------------
+RIEPILOGO Llama-3.2-3B-Instruct-Q8_0.gguf: gsm8k 1/1   |   TOTALE 1/1 corretti
+
+09:19:33 [inspect] INFO: [modello 6/6] carico qwen2.5-1.5b-instruct-q8_0.gguf a 1 thread (il caricamento richiede alcune decine di secondi)...
+==========================================================================================
+MODELLO: qwen2.5-1.5b-instruct-q8_0.gguf  (family=qwen2.5-1.5B, quant=Q8_0)  thread=1
+==========================================================================================
+$ ~/llama.cpp/build/bin/llama-cli -m ~/LLMs/qwen2.5-1.5b-instruct-q8_0.gguf -t 1 -c 512 -n 256
+09:19:33 [ssh] INFO: Avvio modello: ~/llama.cpp/build/bin/llama-cli -m ~/LLMs/qwen2.5-1.5b-instruct-q8_0.gguf -t 1 -c 512 -n 256
+09:19:59 [inspect] INFO: modello pronto, eseguo 1 prompt...
+09:19:59 [inspect] INFO:   [1/1] gsm8k id=gsm8k-1: invio prompt...
+------------------------------------------------------------------------------------------
+[gsm8k] id=gsm8k-1  tipo=numeric   [OK]
+PROMPT:
+Solve the math word problem. End your answer with a line of the form '#### <number>'.
+Natalia sold clips to 48 of her friends in April, and then she sold half as many clips in May. How many clips did she sell altogether in April and May?
+Answer:
+ATTESO: 72
+RISPOSTA DEL MODELLO:
+To solve the problem, we need to determine the total number of clips Natalia sold in both April and May.
+First, we know that Natalia sold clips to 48 of her friends in April.
+Next, we need to calculate the number of clips she sold in May. The problem states that she sold half as many clips in May as she did in April. Therefore, we need to find half of 48:
+\[
+\frac{48}{2} = 24
+\]
+So, Natalia sold 24 clips in May.
+Now, to find the total number of clips sold in both months, we add the number of clips sold in April to the number of clips sold in May:
+\[
+48 + 24 = 72
+\]
+Therefore, the total number of clips Natalia sold altogether in April and May is 72. The answer is:
+#### 72
+PUNTEGGIO: 1.0  (parsed=72.0, confidence=high)  t/s: prompt=24.1 gen=7.7
+------------------------------------------------------------------------------------------
+RIEPILOGO qwen2.5-1.5b-instruct-q8_0.gguf: gsm8k 1/1   |   TOTALE 1/1 corretti
+
+09:20:31 [ssh] INFO: Connessione SSH chiusa.
+==========================================================================================
+RIEPILOGO GLOBALE (tutti i modelli):
+  gsm8k: 6/6 corretti
+==========================================================================================
+(envEnergyBenchmark) PS C:\Users\guidi\codes\Pi5-LLM-Energy-Benchmark>
