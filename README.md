@@ -222,6 +222,10 @@ python run_benchmark.py
 # opzioni utili
 python run_benchmark.py --no-analysis    # salta la generazione dei grafici
 python run_benchmark.py --verbose        # log dettagliato
+
+# rigenera SOLO i grafici/tabelle da un CSV esistente (senza rifare il benchmark);
+# 2o argomento opzionale = config con i percorsi di output desiderati
+python -m scripts.analysis recordings/results.csv config.json
 ```
 
 Output principali:
@@ -232,9 +236,9 @@ Output principali:
 - `recordings/raw/aggregated_by_benchmark.csv`, `recordings/raw/energy_per_config.csv`, `recordings/raw/ranking_composite.csv`, `recordings/raw/pareto_energia.csv`, `recordings/raw/pareto_latenza.csv`;
 - `recordings/plots/*.png` — efficienza (energia netta per inferenza), **energia
   totale consumata per configurazione**, latenza, potenza, throughput (prompt
-  processing e generation), qualità (heatmap), trade-off efficienza/qualità,
-  **frontiera di Pareto** (energia--qualità e latenza--qualità), classifica
-  composita e termico.
+  processing e generation), **distribuzioni a boxplot di energia e latenza**,
+  qualità (heatmap), trade-off efficienza/qualità, **frontiera di Pareto**
+  (energia--qualità e latenza--qualità), classifica composita e termico.
 
 ## Note operative
 

@@ -14,31 +14,36 @@ Rispetto alle tre dimensioni indagate, i risultati (Capitolo~\ref{chap:risultati
 possono essere riassunti come segue:
 \begin{itemize}
     \item \textbf{Efficienza energetica.} Il modello più efficiente per inferenza
-    è risultato \da{modello/quantizzazione}, con circa \da{X} J per inferenza; in
-    generale le varianti a 4 bit (Q4\_K\_M) \da{si sono confermate più economiche
-    delle corrispondenti a 8 bit}.
+    è risultato \textbf{qwen2.5-1.5B Q4\_K\_M}, con circa \textbf{19,9~J} per
+    inferenza; in generale le varianti a 4 bit (Q4\_K\_M) si sono confermate più
+    economiche delle corrispondenti a 8 bit (in media circa il 21\% in meno).
     \item \textbf{Qualità delle risposte.} La qualità media più elevata è stata
-    ottenuta da \da{modello}, mentre il passaggio da 8 a 4 bit ha comportato
-    \da{una perdita di qualità trascurabile / contenuta}, rendendo la
-    quantizzazione più aggressiva \da{conveniente / accettabile} nella maggior
-    parte dei casi.
+    ottenuta dai modelli \textbf{gemma-2-2B}, ma le differenze tra i sei modelli
+    sono risultate contenute; il passaggio da 8 a 4 bit ha comportato una perdita
+    di qualità del tutto \textbf{trascurabile}, rendendo la quantizzazione più
+    aggressiva a 4 bit \textbf{conveniente} nella maggior parte dei casi (stessa
+    qualità, meno spazio occupato e meno energia).
     \item \textbf{Latenza e parallelismo.} L'aumento del numero di thread ha
-    ridotto la latenza fino a \da{2/4} thread, con \da{rendimenti decrescenti}
-    oltre; la configurazione che minimizza l'energia per inferenza è risultata
-    \da{N} thread.
+    ridotto la latenza fino a \textbf{2 thread} (circa \mbox{-29\%} rispetto a 1
+    thread), con \textbf{rendimenti nulli o negativi} oltre: a 4 thread la latenza
+    non migliora e l'energia peggiora. L'energia per inferenza è minima a 1 thread,
+    ma a fronte di una latenza molto più alta, per cui i \textbf{2 thread}
+    rappresentano il miglior compromesso.
 \end{itemize}
 Complessivamente, secondo lo score composito che bilancia le tre metriche, la
 configurazione più equilibrata per un impiego su dispositivo a risorse limitate è
-\da{modello + numero di thread}.
+\textbf{qwen2.5-1.5B Q4\_K\_M a 2 thread}.
 
 \section{Indicazioni pratiche}
 
 Dai risultati emergono alcune indicazioni operative per chi voglia eseguire un LLM
-su un dispositivo edge simile: \da{sintetizzare qui la scelta consigliata di
-modello e quantizzazione}, l'uso di \da{N} thread come compromesso tra reattività
-ed efficienza, e la conferma che, con un adeguato raffreddamento, un Raspberry
-Pi~5 è in grado di sostenere l'inferenza di modelli fino a \da{$\sim$3} miliardi di
-parametri quantizzati senza incorrere in \textit{throttling} termico.
+su un dispositivo edge simile: privilegiare un \textbf{modello piccolo
+quantizzato a 4 bit} (qui qwen2.5-1.5B Q4\_K\_M ha offerto il miglior compromesso
+tra energia, latenza e qualità, ma anche gemma-2-2B a 4 bit resta un'ottima scelta
+se si privilegia la qualità), l'uso di \textbf{2 thread} come compromesso tra
+reattività ed efficienza, e la conferma che, con un adeguato raffreddamento, un
+Raspberry Pi~5 è in grado di sostenere l'inferenza di modelli fino a $\sim$3
+miliardi di parametri quantizzati senza incorrere in \textit{throttling} termico.
 
 \section{Limiti del lavoro}
 

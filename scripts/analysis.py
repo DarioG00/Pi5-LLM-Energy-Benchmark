@@ -177,6 +177,35 @@ def plot_latency(cfg_df, out):
     _save(fig, out)
 
 
+def plot_efficiency_box(df, out):
+    """Boxplot della distribuzione dell'energia netta per inferenza, per modello e
+    thread (mostra mediana, quartili e variabilita' tra i benchmark)."""
+    infer = df[(df["benchmark"] != LOAD_TAG) & df["energy_net_j"].notna()].copy()
+    if infer.empty:
+        log.info("Nessun dato di energia valido: salto il boxplot dell'energia.")
+        return
+    fig, ax = plt.subplots(figsize=(11, 6))
+    sns.boxplot(data=infer, x="model", y="energy_net_j", hue="threads", ax=ax)
+    ax.set_title("Distribuzione dell'energia netta per inferenza (J) per modello e thread")
+    ax.set_xlabel(""); ax.set_ylabel("Energia netta (J)")
+    ax.tick_params(axis="x", rotation=20)
+    _save(fig, out)
+
+
+def plot_latency_box(df, out):
+    """Boxplot della distribuzione della latenza di inferenza, per modello e thread."""
+    infer = df[(df["benchmark"] != LOAD_TAG) & df["latency_s"].notna()].copy()
+    if infer.empty:
+        log.info("Nessun dato di latenza: salto il boxplot della latenza.")
+        return
+    fig, ax = plt.subplots(figsize=(11, 6))
+    sns.boxplot(data=infer, x="model", y="latency_s", hue="threads", ax=ax)
+    ax.set_title("Distribuzione della latenza di inferenza (s) per modello e thread")
+    ax.set_xlabel(""); ax.set_ylabel("Latenza (s)")
+    ax.tick_params(axis="x", rotation=20)
+    _save(fig, out)
+
+
 def plot_quality(agg_df, out):
     """Mappa di calore dell'accuratezza media (0-1) per modello e benchmark."""
     fig, ax = plt.subplots(figsize=(12, 6))
@@ -294,6 +323,7 @@ def run_analysis(csv_path: str, cfg: dict, base_dir: str = ".") -> None:
     """Esegue l'intera analisi: aggrega i risultati del CSV, salva le tabelle e genera tutti i grafici di confronto in recordings/plots."""
     plots_dir = os.path.join(base_dir, cfg["output"]["plots_dir"])
     os.makedirs(plots_dir, exist_ok=True)
+    os.makedirs(os.path.join(base_dir, cfg["output"]["raw_dir"]), exist_ok=True)
 
     df = load_results(csv_path)
     if df.empty:
@@ -315,8 +345,10 @@ def run_analysis(csv_path: str, cfg: dict, base_dir: str = ".") -> None:
     pareto_l[pareto_l["pareto"]].to_csv(os.path.join(base_dir, cfg["output"]["raw_dir"], "pareto_latenza.csv"), index=False)
 
     plot_efficiency(cfgv, os.path.join(plots_dir, "efficiency_jpt.png"))
+    plot_efficiency_box(df, os.path.join(plots_dir, "energy_box.png"))
     plot_energy_per_config(tot_e, os.path.join(plots_dir, "energy_per_config.png"))
     plot_latency(cfgv, os.path.join(plots_dir, "latency.png"))
+    plot_latency_box(df, os.path.join(plots_dir, "latency_box.png"))
     plot_quality(agg, os.path.join(plots_dir, "quality_heatmap.png"))
     plot_power(cfgv, os.path.join(plots_dir, "power.png"))
     plot_throughput(cfgv, os.path.join(plots_dir, "throughput.png"))
@@ -338,6 +370,7 @@ if __name__ == "__main__":
     import json
     logging.basicConfig(level=logging.INFO)
     csv_path = sys.argv[1] if len(sys.argv) > 1 else "recordings/results.csv"
-    with open("config.json", encoding="utf-8") as fh:
+    cfg_path = sys.argv[2] if len(sys.argv) > 2 else "config.json"
+    with open(cfg_path, encoding="utf-8") as fh:
         cfg = json.load(fh)
     run_analysis(csv_path, cfg, ".")
