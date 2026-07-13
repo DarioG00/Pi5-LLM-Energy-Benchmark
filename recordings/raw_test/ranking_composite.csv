@@ -1,0 +1,2 @@
+model,family,quant,threads,latency_s,energy_net_j,avg_power_w,prompt_tps,gen_tps,score,n_energy,n_lat,n_score,composite
+qwen2.5-1.5B-Q4_K_M,qwen2.5-1.5B,Q4_K_M,1,9.859860000000001,25.6456302,4.55278,16.119999999999997,12.559999999999999,1.0,0.0,0.0,0.0,0.6000000000000001
