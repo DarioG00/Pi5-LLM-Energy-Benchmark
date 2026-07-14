@@ -1,0 +1,7 @@
+model,family,quant,threads,energy_total_j,n_inferenze
+gemma-2-2B-Q4_K_M,gemma-2-2B,Q4_K_M,2,46.470955000000004,150.0
+gemma-2-2B-Q8_0,gemma-2-2B,Q8_0,2,45.42604366666666,150.0
+llama-3.2-3B-Q4_K_M,llama-3.2-3B,Q4_K_M,2,45.075618666666664,150.0
+llama-3.2-3B-Q8_0,llama-3.2-3B,Q8_0,2,45.756352666666665,150.0
+qwen2.5-1.5B-Q4_K_M,qwen2.5-1.5B,Q4_K_M,2,46.27183933333333,150.0
+qwen2.5-1.5B-Q8_0,qwen2.5-1.5B,Q8_0,2,42.938858,150.0

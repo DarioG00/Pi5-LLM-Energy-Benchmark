@@ -1,4 +1,4 @@
-\begin{thebibliography}{1}
+\begin{thebibliography}{10}
 
 \bibitem{gemma2_gguf}
 {bartowski}.
@@ -12,6 +12,18 @@
 \newblock \url{https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF}.
 \newblock Consultato il 3 luglio 2026.
 
+\bibitem{humaneval}
+Mark Chen, Jerry Tworek, Heewoo Jun, Qiming Yuan, et~al.
+\newblock Evaluating large language models trained on code.
+\newblock \url{https://huggingface.co/datasets/openai/openai_humaneval}, 2021.
+\newblock Dataset {HumanEval} su Hugging Face. Consultato nel luglio 2026.
+
+\bibitem{gsm8k}
+Karl Cobbe, Vineet Kosaraju, Mohammad Bavarian, Mark Chen, Heewoo Jun, Lukasz Kaiser, Matthias Plappert, Jerry Tworek, Jacob Hilton, Reiichiro Nakano, Christopher Hesse, and John Schulman.
+\newblock Training verifiers to solve math word problems.
+\newblock \url{https://huggingface.co/datasets/openai/gsm8k}, 2021.
+\newblock Dataset {GSM8K} su Hugging Face. Consultato nel luglio 2026.
+
 \bibitem{jfikar_rpi5power}
 Jan Fikar.
 \newblock {RPi5-power}: Simple script measuring the consumption of {Raspberry} {Pi} 5 in watts.
@@ -22,6 +34,12 @@ Jan Fikar.
 Erik~Johannes Husom, Arda Goknil, Merve Astekin, Lwin~Khin Shar, Andre K{\aa}sen, Sagar Sen, Benedikt~Andreas Mithassel, and Ahmet Soylu.
 \newblock Sustainable {LLM} inference for edge {AI}: Evaluating quantized {LLMs} for energy efficiency, output accuracy, and inference latency.
 \newblock {\em ACM Transactions on Internet of Things}, 6(4):28:1--28:35, 2025.
+
+\bibitem{truthfulqa}
+Stephanie Lin, Jacob Hilton, and Owain Evans.
+\newblock {TruthfulQA}: Measuring how models mimic human falsehoods.
+\newblock \url{https://huggingface.co/datasets/truthful_qa}, 2022.
+\newblock Dataset su Hugging Face (configurazione multiple\_choice, MC1). Consultato nel luglio 2026.
 
 \bibitem{mao2024green}
 Yuyi Mao, Xianghao Yu, Kaibin Huang, Ying-Jun~Angela Zhang, and Jun Zhang.
@@ -45,5 +63,17 @@ Yuyi Mao, Xianghao Yu, Kaibin Huang, Ying-Jun~Angela Zhang, and Jun Zhang.
 \newblock Heating and cooling {Raspberry} {Pi} 5.
 \newblock \url{https://www.raspberrypi.com/news/heating-and-cooling-raspberry-pi-5/}, 2023.
 \newblock Documentazione ufficiale. Consultato il 2 luglio 2026.
+
+\bibitem{bbh}
+Mirac Suzgun, Nathan Scales, Nathanael Sch{\"a}rli, Sebastian Gehrmann, Yi~Tay, Hyung~Won Chung, Aakanksha Chowdhery, Quoc~V. Le, Ed~H. Chi, Denny Zhou, and Jason Wei.
+\newblock Challenging {BIG-Bench} tasks and whether chain-of-thought can solve them.
+\newblock \url{https://huggingface.co/datasets/lukaemon/bbh}, 2022.
+\newblock Dataset {BIG-Bench Hard} su Hugging Face. Consultato nel luglio 2026.
+
+\bibitem{commonsenseqa}
+Alon Talmor, Jonathan Herzig, Nicholas Lourie, and Jonathan Berant.
+\newblock {CommonsenseQA}: A question answering challenge targeting commonsense knowledge.
+\newblock \url{https://huggingface.co/datasets/tau/commonsense_qa}, 2019.
+\newblock Dataset su Hugging Face. Consultato nel luglio 2026.
 
 \end{thebibliography}

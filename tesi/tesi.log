@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.5.31)  13 JUL 2026 22:50
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.5.31)  14 JUL 2026 17:36
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -399,12 +399,12 @@ Underfull \hbox (badness 6526) in paragraph at lines 160--160
 [][][]\T1/cmr/m/n/10 Le di-pen-den-ze pos-so-no es-se-re in-stal-la-te con il co-man-do \T1/cmtt/m/n/10 pip install -r
  []
 
-<./imm/hw_architecture.png, id=280, 1902.10625pt x 1100.11pt>
+<./imm/hw_architecture.png, id=290, 1902.10625pt x 1100.11pt>
 File: ./imm/hw_architecture.png Graphic file (type png)
 <use ./imm/hw_architecture.png>
 Package pdftex.def Info: ./imm/hw_architecture.png  used on input line 172.
 (pdftex.def)             Requested size: 390.0pt x 225.55759pt.
-<./imm/sw_architecture.png, id=283, 2065.7175pt x 1025.8325pt>
+<./imm/sw_architecture.png, id=293, 2065.7175pt x 1025.8325pt>
 File: ./imm/sw_architecture.png Graphic file (type png)
 <use ./imm/sw_architecture.png>
 Package pdftex.def Info: ./imm/sw_architecture.png  used on input line 182.
@@ -449,7 +449,7 @@ Overfull \hbox (7.96103pt too wide) in paragraph at lines 391--395
 
  (./capitoli/risultati.tex
 Capitolo 4.
-<imm/efficiency_jpt.png, id=383, 794.97pt x 433.62pt>
+<imm/efficiency_jpt.png, id=393, 794.97pt x 433.62pt>
 File: imm/efficiency_jpt.png Graphic file (type png)
 <use imm/efficiency_jpt.png>
 Package pdftex.def Info: imm/efficiency_jpt.png  used on input line 32.
@@ -460,106 +460,111 @@ Package pdftex.def Info: imm/efficiency_jpt.png  used on input line 32.
 
 
 ]
-<imm/energy_per_config.png, id=391, 794.97pt x 433.62pt>
+<imm/energy_per_config.png, id=401, 794.97pt x 433.62pt>
 File: imm/energy_per_config.png Graphic file (type png)
 <use imm/energy_per_config.png>
 Package pdftex.def Info: imm/energy_per_config.png  used on input line 47.
 (pdftex.def)             Requested size: 390.0pt x 212.7337pt.
  [24 <./imm/efficiency_jpt.png>]
-<imm/quality_heatmap.png, id=400, 867.24pt x 433.62pt>
+<imm/quality_heatmap.png, id=410, 867.24pt x 433.62pt>
 File: imm/quality_heatmap.png Graphic file (type png)
 <use imm/quality_heatmap.png>
 Package pdftex.def Info: imm/quality_heatmap.png  used on input line 74.
 (pdftex.def)             Requested size: 390.0pt x 195.00148pt.
-<imm/throughput.png, id=402, 1084.05pt x 433.62pt>
+<imm/throughput.png, id=412, 1084.05pt x 433.62pt>
 File: imm/throughput.png Graphic file (type png)
 <use imm/throughput.png>
 Package pdftex.def Info: imm/throughput.png  used on input line 92.
 (pdftex.def)             Requested size: 390.0pt x 155.99721pt.
  [25 <./imm/energy_per_config.png>] [26 <./imm/quality_heatmap.png> <./imm/throughput.png>]
-<imm/tradeoff.png, id=417, 722.7pt x 505.89pt>
+<imm/tradeoff.png, id=427, 722.7pt x 505.89pt>
 File: imm/tradeoff.png Graphic file (type png)
 <use imm/tradeoff.png>
 Package pdftex.def Info: imm/tradeoff.png  used on input line 111.
 (pdftex.def)             Requested size: 390.0pt x 272.99898pt.
  [27 <./imm/tradeoff.png>]
-<imm/pareto_energia.png, id=427, 722.7pt x 505.89pt>
+<imm/pareto_energia.png, id=437, 722.7pt x 505.89pt>
 File: imm/pareto_energia.png Graphic file (type png)
 <use imm/pareto_energia.png>
 Package pdftex.def Info: imm/pareto_energia.png  used on input line 142.
 (pdftex.def)             Requested size: 390.0pt x 272.99898pt.
-<imm/pareto_latenza.png, id=428, 722.7pt x 505.89pt>
+<imm/pareto_latenza.png, id=438, 722.7pt x 505.89pt>
 File: imm/pareto_latenza.png Graphic file (type png)
 <use imm/pareto_latenza.png>
 Package pdftex.def Info: imm/pareto_latenza.png  used on input line 149.
 (pdftex.def)             Requested size: 390.0pt x 272.99898pt.
  [28 <./imm/pareto_energia.png>] [29 <./imm/pareto_latenza.png>]
-<imm/latency.png, id=442, 794.97pt x 433.62pt>
+<imm/latency.png, id=452, 794.97pt x 433.62pt>
 File: imm/latency.png Graphic file (type png)
 <use imm/latency.png>
 Package pdftex.def Info: imm/latency.png  used on input line 176.
 (pdftex.def)             Requested size: 390.0pt x 212.7337pt.
-<imm/power.png, id=444, 794.97pt x 433.62pt>
+<imm/power.png, id=454, 794.97pt x 433.62pt>
 File: imm/power.png Graphic file (type png)
 <use imm/power.png>
 Package pdftex.def Info: imm/power.png  used on input line 195.
 (pdftex.def)             Requested size: 390.0pt x 212.7337pt.
- [30 <./imm/latency.png>]
-<imm/ranking_composite.png, id=454, 794.97pt x 433.62pt>
+ [30 <./imm/latency.png>] [31 <./imm/power.png>]
+Overfull \hbox (16.99896pt too wide) in paragraph at lines 237--245
+\T1/cmr/m/n/12 La con-fi-gu-ra-zio-ne com-ples-si-va-men-te mi-glio-re ri-sul-ta \T1/cmr/bx/n/12 qwen2.5-1.5B Q4_K_M
+ []
+
+<imm/ranking_composite.png, id=473, 794.97pt x 433.62pt>
 File: imm/ranking_composite.png Graphic file (type png)
 <use imm/ranking_composite.png>
-Package pdftex.def Info: imm/ranking_composite.png  used on input line 214.
+Package pdftex.def Info: imm/ranking_composite.png  used on input line 248.
 (pdftex.def)             Requested size: 390.0pt x 212.7337pt.
-<imm/thermal.png, id=456, 794.97pt x 433.62pt>
+[32 <./imm/ranking_composite.png>]
+<imm/thermal.png, id=482, 794.97pt x 433.62pt>
 File: imm/thermal.png Graphic file (type png)
 <use imm/thermal.png>
-Package pdftex.def Info: imm/thermal.png  used on input line 230.
+Package pdftex.def Info: imm/thermal.png  used on input line 264.
 (pdftex.def)             Requested size: 390.0pt x 212.7337pt.
-) [31 <./imm/power.png>] [32 <./imm/ranking_composite.png> <./imm/thermal.png>]
+) [33 <./imm/thermal.png>]
 \openout2 = `capitoli/conclusioni.aux'.
 
  (./capitoli/conclusioni.tex
 Capitolo 5.
-[33
+[34
 
 
 
 
-]) [34] [35]
+]) [35] [36]
 \openout2 = `capitoli/ringraziamenti.aux'.
 
  (./capitoli/ringraziamenti.tex
 Capitolo 6.
-[36
+[37
 
 
 
 
-]) [37] (./tesi.bbl
-Underfull \hbox (badness 7814) in paragraph at lines 4--8
+]) [38] (./tesi.bbl
+Underfull \hbox (badness 5359) in paragraph at lines 4--8
 []\T1/cmr/m/n/12 bartowski.  gemma-2-2b-it-GGUF.  []$\T1/cmtt/m/n/12 https : / / huggingface . co /
  []
 
+[39
 
-Underfull \hbox (badness 1590) in paragraph at lines 38--42
+
+
+]
+Underfull \hbox (badness 1163) in paragraph at lines 56--60
 []\T1/cmr/m/n/12 Raspberry Pi Ltd.  Ra-sp-ber-ry pi hard-ware --- GPIO.  []$\T1/cmtt/m/n/12 https :
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 38--42
+Underfull \hbox (badness 10000) in paragraph at lines 56--60
 \T1/cmtt/m/n/12 / / www . raspberrypi . com / documentation / computers / raspberry-[]pi .
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 44--48
+Underfull \hbox (badness 10000) in paragraph at lines 62--66
 \T1/cmtt/m/n/12 raspberrypi . com / news / heating-[]and-[]cooling-[]raspberry-[]pi-[]5/$[]\T1/cmr/m/n/12 ,
  []
 
-) [38
-
-
-
-] (./tesi.aux (./capitoli/intro.aux) (./capitoli/setup.aux) (./capitoli/esperimento.aux) (./capitoli/risultati.aux) (./capitoli/conclusioni.aux) (./capitoli/ringraziamenti.aux))
+) [40] (./tesi.aux (./capitoli/intro.aux) (./capitoli/setup.aux) (./capitoli/esperimento.aux) (./capitoli/risultati.aux) (./capitoli/conclusioni.aux) (./capitoli/ringraziamenti.aux))
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-05-26>
@@ -568,18 +573,18 @@ Package rerunfilecheck Info: File `tesi.out' has not changed.
 (rerunfilecheck)             Checksum: 7A5FC4DFAF1E4C595DAD2B94B304D45B;7788.
  ) 
 Here is how much of TeX's memory you used:
- 13068 strings out of 467337
- 202272 string characters out of 5419514
- 630829 words of memory out of 5000000
- 41843 multiletter control sequences out of 15000+600000
+ 13085 strings out of 467337
+ 202465 string characters out of 5419514
+ 631162 words of memory out of 5000000
+ 41851 multiletter control sequences out of 15000+600000
  649050 words of font info for 92 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  75i,10n,79p,429b,622s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfbx1095.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfbx1728.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfbx2488.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfrm0700.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfrm0800.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfrm1095.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfrm1728.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfti1095.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfti1200.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sftt1000.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sftt1095.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sftt1200.pfb>
-Output written on tesi.pdf (39 pages, 1531151 bytes).
+Output written on tesi.pdf (41 pages, 1540301 bytes).
 PDF statistics:
- 647 PDF objects out of 1000 (max. 8388607)
- 524 compressed objects within 6 object streams
- 113 named destinations out of 1000 (max. 500000)
+ 681 PDF objects out of 1000 (max. 8388607)
+ 556 compressed objects within 6 object streams
+ 122 named destinations out of 1000 (max. 500000)
  415 words of extra memory for PDF output out of 10000 (max. 10000000)
 

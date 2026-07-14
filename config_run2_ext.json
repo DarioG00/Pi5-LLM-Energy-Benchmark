@@ -1,0 +1,108 @@
+{
+  "pi": {
+    "host": "192.168.10.2",
+    "username": "dario",
+    "password": "Tes1&2026",
+    "ssh_port": 22,
+    "boot_wait_seconds": 90,
+    "boot_retry_seconds": 5
+  },
+  "pmic": {
+    "sample_hz": 10.0,
+    "idle_seconds": 20,
+    "settle_seconds": 3,
+    "corr_slope": 1.0,
+    "corr_offset": 0.0
+  },
+  "llama": {
+    "bin": "~/llama.cpp/build/bin/llama-cli",
+    "models_dir": "~/LLMs",
+    "ctx_size": 512,
+    "n_predict": 256,
+    "extra_args": [],
+    "ready_prompt": "> ",
+    "load_timeout": 180,
+    "infer_timeout": 240
+  },
+  "thermal": {
+    "enabled": true,
+    "log_per_inference": true,
+    "abort_on_throttle": true,
+    "max_retries": 2
+  },
+  "models": [
+    {
+      "file": "gemma-2-2b-it-Q4_K_M.gguf",
+      "family": "gemma-2-2B",
+      "quant": "Q4_K_M"
+    },
+    {
+      "file": "Llama-3.2-3B-Instruct-Q4_K_M.gguf",
+      "family": "llama-3.2-3B",
+      "quant": "Q4_K_M"
+    },
+    {
+      "file": "qwen2.5-1.5b-instruct-q4_k_m.gguf",
+      "family": "qwen2.5-1.5B",
+      "quant": "Q4_K_M"
+    },
+    {
+      "file": "gemma-2-2b-it-Q8_0.gguf",
+      "family": "gemma-2-2B",
+      "quant": "Q8_0"
+    },
+    {
+      "file": "Llama-3.2-3B-Instruct-Q8_0.gguf",
+      "family": "llama-3.2-3B",
+      "quant": "Q8_0"
+    },
+    {
+      "file": "qwen2.5-1.5b-instruct-q8_0.gguf",
+      "family": "qwen2.5-1.5B",
+      "quant": "Q8_0"
+    }
+  ],
+  "threads": [
+    1,
+    2,
+    4
+  ],
+  "repetitions": 1,
+  "benchmarks": [
+    {
+      "name": "commonsenseqa",
+      "file": "datasets/commonsenseqa.jsonl",
+      "type": "multiple_choice"
+    },
+    {
+      "name": "bbh",
+      "file": "datasets/bbh.jsonl",
+      "type": "exact_match"
+    },
+    {
+      "name": "truthfulqa",
+      "file": "datasets/truthfulqa.jsonl",
+      "type": "multiple_choice"
+    },
+    {
+      "name": "gsm8k",
+      "file": "datasets/gsm8k.jsonl",
+      "type": "numeric"
+    },
+    {
+      "name": "humaneval",
+      "file": "datasets/humaneval.jsonl",
+      "type": "code"
+    }
+  ],
+  "output": {
+    "results_csv": "recordings/results_run2_ext.csv",
+    "raw_dir": "recordings/raw_run2_ext",
+    "plots_dir": "recordings/plots_run2_ext"
+  },
+  "verify_models": {
+    "enabled": true,
+    "reference": "models.sha256.json",
+    "abort_on_mismatch": true
+  }
+}

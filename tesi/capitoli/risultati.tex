@@ -198,16 +198,50 @@ parità di energia, mentre a 4 thread si perde su entrambi i fronti.
 \end{figure}
 
 \section{Sintesi: classifica complessiva}
+\label{sec:composito}
 
-Per riassumere le tre dimensioni in un unico indicatore, la
-Figura~\ref{fig:res-composito} riporta una classifica basata su uno score
-composito che pesa efficienza energetica, latenza e qualità. La configurazione
-complessivamente migliore risulta \textbf{qwen2.5-1.5B Q4\_K\_M a 2 thread}
-(score 0,75), seguita da \textbf{gemma-2-2B Q4\_K\_M a 2 thread} (0,69): qwen a 4
-bit prevale perché unisce l'energia più bassa, la latenza più bassa e una qualità
-comunque competitiva, mentre le configurazioni Llama-3.2-3B, penalizzate da
-consumo ed energia elevati, si collocano in fondo alla classifica nonostante la
-buona qualità sui task di ragionamento.
+Per riassumere in un unico indicatore le tre dimensioni di analisi si definisce uno
+\emph{score composito}. Le tre metriche di una configurazione --- energia netta per
+inferenza $E$, latenza $L$ e accuratezza media $Q$ --- hanno unità di misura e
+intervalli di valori diversi; per renderle confrontabili vengono normalizzate con
+una trasformazione \emph{min--max} sull'insieme delle configurazioni:
+\begin{equation}
+    \tilde{x} = \frac{x - x_{\min}}{x_{\max} - x_{\min}} \in [0, 1],
+    \label{eq:minmax}
+\end{equation}
+dove $x_{\min}$ e $x_{\max}$ sono il valore minimo e massimo di quella metrica tra
+tutte le configurazioni confrontate. Poiché per l'energia e la latenza sono
+preferibili valori \emph{bassi}, mentre per la qualità è preferibile un valore
+\emph{alto}, lo score composito $C$ è definito come media pesata in cui i termini
+di energia e latenza vengono invertiti:
+\begin{equation}
+    C = w_E\,(1 - \tilde{E}) + w_L\,(1 - \tilde{L}) + w_Q\,\tilde{Q},
+    \qquad w_E + w_L + w_Q = 1,
+    \label{eq:composito}
+\end{equation}
+con pesi $w_E = 0{,}4$ (energia), $w_L = 0{,}2$ (latenza) e $w_Q = 0{,}4$
+(qualità). A un valore di $C$ più alto corrisponde una configurazione
+complessivamente migliore.
+
+La scelta dei pesi riflette le priorità dello studio: l'\emph{efficienza
+energetica} e la \emph{qualità delle risposte} sono considerate gli obiettivi
+primari e ricevono quindi lo stesso peso ($0{,}4$ ciascuno), mentre alla
+\emph{latenza} è attribuito un peso inferiore ($0{,}2$), essendo un requisito meno
+stringente per molte applicazioni edge non strettamente interattive. Trattandosi
+di una scelta soggettiva, lo score composito va inteso come una sintesi
+orientativa e non come un giudizio assoluto: per questo motivo è affiancato dalla
+frontiera di Pareto (Figure~\ref{fig:res-pareto-en} e~\ref{fig:res-pareto-lat}),
+che individua le configurazioni ottimali \emph{senza} richiedere alcuna scelta di
+pesi.
+
+La Figura~\ref{fig:res-composito} riporta la classifica delle configurazioni
+secondo tale score. La configurazione complessivamente migliore risulta
+\textbf{qwen2.5-1.5B Q4\_K\_M a 2 thread} (score 0,75), seguita da
+\textbf{gemma-2-2B Q4\_K\_M a 2 thread} (0,69): qwen a 4 bit prevale perché unisce
+l'energia più bassa, la latenza più bassa e una qualità comunque competitiva,
+mentre le configurazioni Llama-3.2-3B, penalizzate da consumo ed energia elevati,
+si collocano in fondo alla classifica nonostante la buona qualità sui task di
+ragionamento.
 
 \begin{figure}[htbp]
     \centering
