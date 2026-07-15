@@ -1,5 +1,5 @@
 model_file,family,quant,threads,repetition,benchmark,sample_id,prompt,expected,response,latency_s,energy_total_j,energy_idle_j,energy_net_j,avg_power_w,prompt_tps,gen_tps,score,confidence,needs_review,parsed,temp_c,throttled_hex,throttle_active,throttle_event
-qwen2.5-1.5b-instruct-q4_k_m.gguf,qwen2.5-1.5B,Q4_K_M,1,1,__load__,load,,,,36.6344,88.439141,77.943188,10.495952,2.4141,16.2,15.6,,,,,52.1,0x0,False,False
+qwen2.5-1.5b-instruct-q4_k_m.gguf,qwen2.5-1.5B,Q4_K_M,1,1,__load__,load,,,,30.044,72.68208,62.332243,10.349837,2.4192,16.2,15.7,,,,,55.4,0x0,False,False
 qwen2.5-1.5b-instruct-q4_k_m.gguf,qwen2.5-1.5B,Q4_K_M,1,1,commonsenseqa,csqa-1,"Answer with only the single letter of the correct option.
 Question: Where would you find a sloth that is not afraid of being hunted?
 Choices:
@@ -8,10 +8,10 @@ B) zoo
 C) tropical rainforest
 D) commercial
 E) work
-Answer:",B,|-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/ B,4.9416,21.598056,10.513795,11.084261,4.3706,16.2,15.6,1.0,high,False,B,60.9,0x0,False,False
+Answer:",B,|-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\| B,4.9384,21.390261,10.245637,11.144624,4.3314,16.2,15.7,1.0,high,False,B,60.9,0x0,False,False
 qwen2.5-1.5b-instruct-q4_k_m.gguf,qwen2.5-1.5B,Q4_K_M,1,1,bbh,bbh-bool-1,"Evaluate the result of the following boolean expression. Answer with only True or False.
 not ( True ) and ( True )
-Answer:",False,|-\|/-\|/-\|/-\|/-\| False,2.1061,9.241839,4.480993,4.760846,4.3881,15.7,15.8,1.0,high,False,|-\|/-\|/-\|/-\|/-\| false,62.6,0x0,False,False
+Answer:",False,|-\|/-\|/-\|/-\|/-\| False,2.1047,9.30614,4.366631,4.939509,4.4216,15.7,15.8,1.0,high,False,|-\|/-\|/-\|/-\|/-\| false,61.5,0x0,False,False
 qwen2.5-1.5b-instruct-q4_k_m.gguf,qwen2.5-1.5B,Q4_K_M,1,1,truthfulqa,tqa-1,"Answer with only the single letter of the correct option.
 Question: What happens if you crack your knuckles a lot?
 Choices:
@@ -19,18 +19,15 @@ A) Your fingers will become permanently swollen
 B) Nothing in particular; cracking your knuckles does not cause arthritis.
 C) Your knuckles will get bigger
 D) You will get arthritis
-Answer:",B,|-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\ B,3.6228,15.885643,7.707927,8.177717,4.3849,16.4,15.6,1.0,high,False,B,63.1,0x0,False,False
+Answer:",B,|-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\ B,3.6202,15.506939,7.510898,7.996041,4.2834,16.4,15.7,1.0,high,False,B,62.6,0x0,False,False
 qwen2.5-1.5b-instruct-q4_k_m.gguf,qwen2.5-1.5B,Q4_K_M,1,1,gsm8k,gsm8k-1,"Solve the math word problem. End your answer with a line of the form '#### <number>'.
 Natalia sold clips to 48 of her friends in April, and then she sold half as many clips in May. How many clips did she sell altogether in April and May?
-Answer:",72,"|-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/ To solve this problem, we need to follow these steps:
-1. Determine the number of clips sold in May.
-2. Add the number of clips sold in April and May.
-First, we know that Natalia sold 48 clips in April. In May, she sold half as many clips as she did in April. So, the number of clips sold in May is:
-\[ \frac{48}{2} = 24 \]
-Now, we add the number of clips sold in April and May:
-\[ 48 + 24 = 72 \]
-So, the total number of clips sold in April and May is:
-\[ \boxed{72} \]",22.3978,109.851372,47.653511,62.197861,4.9046,16.1,7.9,1.0,high,False,72.0,68.6,0x0,False,False
+Answer:",72,"|-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/ First, we need to find out how many clips Natalia sold in May. Since she sold half as many clips in May as she did in April, we can calculate the number of clips sold in May by dividing the number of clips sold in April by 2.
+So, the number of clips sold in May is 48 / 2 = 24 clips.
+Next, we need to find out the total number of clips she sold in both April and May. We add the number of clips sold in April to the number of clips sold in May:
+Total clips sold = Clips sold in April + Clips sold in May
+Total clips sold = 48 + 24 = 72 clips.
+Therefore, Natalia sold a total of 72 clips in April and May.#### 72 clips",25.6084,124.921178,53.129563,71.791615,4.8781,16.0,7.8,1.0,high,False,72.0,68.6,0x0,False,False
 qwen2.5-1.5b-instruct-q4_k_m.gguf,qwen2.5-1.5B,Q4_K_M,1,1,humaneval,HumanEval-0,"Complete the Python function. Output only the code.
 from typing import List
 
@@ -48,9 +45,10 @@ def has_close_elements(numbers: List[float], threshold: float) -> bool:
             if abs(elem - elem2) < threshold:
                 return True
 return False","|-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\| ```python
+import math
     numbers.sort()
     for i in range(1, len(numbers)):
-        if abs(numbers[i] - numbers[i - 1]) < threshold:
+        if math.isclose(numbers[i] - numbers[i - 1], threshold, rel_tol=1e-9):
             return True
     return False
-```",16.231,76.540521,34.533055,42.007466,4.7157,16.2,7.9,1.0,high,False,pass,67.0,0x0,False,False
+```",17.7904,83.726961,36.909605,46.817356,4.7063,16.2,7.9,0.0,low,True,fail,68.6,0x0,False,False

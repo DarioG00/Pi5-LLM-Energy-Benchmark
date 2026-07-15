@@ -1,18 +1,81 @@
 #!/usr/bin/env python3
 """Entry point eseguito dal PC host per il benchmark energetico LLM su Pi 5.
 
-Il consumo è misurato direttamente dal PMIC del Raspberry Pi 5
+Orchestra dal PC host, via SSH, l'esecuzione dei modelli su llama.cpp sul Pi 5,
+misurando per ogni inferenza energia (J), latenza e qualita' della risposta.
+Il consumo e' misurato direttamente dal PMIC del Raspberry Pi 5
 (`vcgencmd pmic_read_adc`, metodo jfikar/RPi5-power): nessun hardware di misura
-esterno, il Pi è alimentato dal suo alimentatore ufficiale.
+esterno, il Pi e' alimentato dal suo alimentatore ufficiale.
 
-Esempi:
-    python run_benchmark.py                 # esecuzione reale
-    python run_benchmark.py --simulate      # prova della pipeline senza hardware
-    python run_benchmark.py --no-analysis   # salta i grafici finali
+--------------------------------------------------------------------------------
+USO
+--------------------------------------------------------------------------------
+    python run_benchmark.py [--config FILE] [--simulate] [--no-analysis] [-v]
 
-Prerequisiti reali:
+Argomenti:
+    --config FILE   File di configurazione JSON da usare (default: config.json).
+                    Determina modelli, thread, ripetizioni, benchmark, PMIC e
+                    cartelle di output. Vedi sotto i config disponibili.
+    --simulate      Dry-run senza hardware: usa backend finti (FakePmic/FakeSSH),
+                    non serve il Pi. Disattiva automaticamente la verifica sha256
+                    dei modelli. Utile per provare la pipeline e i grafici.
+    --no-analysis   Esegue solo la raccolta dati e salva il CSV, senza generare
+                    i grafici finali (l'analisi si puo' rilanciare a parte, vedi).
+    -v, --verbose   Log di livello DEBUG invece di INFO.
+
+--------------------------------------------------------------------------------
+CONFIG DISPONIBILI
+--------------------------------------------------------------------------------
+    config.json            Base: 6 modelli, thread [1,2,4], 3 rip, 5 prompt/bench.
+    config_test.json       Mini-test PMIC: 1 modello, 1 thread, 1 rip, 1 prompt.
+                           Da lanciare prima di una campagna per verificare che
+                           l'energia netta misurata sia positiva.
+    config_run1.json       Campagna A (originale): dataset intero, thread [2],
+                           3 ripetizioni. Confronto tra i sei modelli.
+    config_run2.json       Campagna B (originale): thread [1,2,4], 3 rip,
+                           3 prompt/bench. Effetto del parallelismo.
+    config_run1_ext.json   Campagna A ESTESA: 30 prompt/bench, thread [2], 3 rip
+                           (nessun max_samples -> dataset intero).  ~6,2 h.
+    config_run2_ext.json   Campagna B ESTESA: 30 prompt/bench, thread [1,2,4],
+                           1 ripetizione.  ~8,0 h.
+
+    Nota: se un config NON contiene "max_samples_per_benchmark", vengono usati
+    TUTTI i prompt del dataset (il parametro e' opzionale, default = nessun limite).
+
+--------------------------------------------------------------------------------
+ESEMPI
+--------------------------------------------------------------------------------
+    # Prova della pipeline senza hardware (nessun Pi richiesto):
+    python run_benchmark.py --simulate
+
+    # Test rapido del PMIC prima di una campagna lunga:
+    python run_benchmark.py --config config_test.json
+
+    # Le due campagne estese (piu' dati):
+    python run_benchmark.py --config config_run1_ext.json
+    python run_benchmark.py --config config_run2_ext.json
+
+    # Salvare l'intero output della console in un file di log (PowerShell):
+    python run_benchmark.py --config config_run1_ext.json *> run1_ext.log
+
+    # Solo raccolta dati, grafici da rigenerare dopo:
+    python run_benchmark.py --config config_run1_ext.json --no-analysis
+    python -m scripts.analysis recordings/results_run1_ext.csv config_run1_ext.json
+
+--------------------------------------------------------------------------------
+OUTPUT
+--------------------------------------------------------------------------------
+    - CSV dei risultati e cartelle grafici/dati grezzi nei percorsi indicati dal
+      config (es. recordings/results_run1_ext.csv, plots_run1_ext/, raw_run1_ext/).
+    - Interruzione con Ctrl+C: i risultati parziali gia' raccolti vengono salvati.
+    - Codice di ritorno 0 se e' stato prodotto un CSV, 1 altrimenti.
+
+--------------------------------------------------------------------------------
+PREREQUISITI (esecuzione reale)
+--------------------------------------------------------------------------------
     - Raspberry Pi 5 acceso e raggiungibile via Ethernet all'IP di config.json;
-    - accesso SSH abilitato; `vcgencmd pmic_read_adc` disponibile sul Pi.
+    - accesso SSH abilitato; `vcgencmd pmic_read_adc` disponibile sul Pi;
+    - modelli GGUF presenti sul Pi nei percorsi indicati dal config.
 """
 from __future__ import annotations
 

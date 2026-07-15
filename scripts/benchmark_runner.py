@@ -88,6 +88,12 @@ class BenchmarkRunner:
         # Pi (shell interattiva per llama-cli)
         self.ssh.wait_for_boot_and_connect()
         self.ssh.open_shell()
+        # preflight: elimina eventuali llama-cli rimasti da una campagna
+        # precedente interrotta (altrimenti occupano RAM e causano swap/OOM)
+        self.ssh.kill_stray_llama()
+        freem = self.ssh.free_mem_mb()
+        if freem == freem:  # non NaN
+            log.info("RAM disponibile sul Pi all'avvio: %.0f MiB", freem)
         # verifica integrita' dei modelli (sha256), una sola volta all'avvio
         from . import integrity
         integrity.verify(self.ssh, self.cfg, self.base_dir)
@@ -136,6 +142,11 @@ class BenchmarkRunner:
         time.sleep(getattr(self.power, "settle_seconds", 3))
 
         # --- caricamento del modello ---
+        # slate pulito: nessun llama-cli residuo deve competere per la RAM
+        self.ssh.kill_stray_llama()
+        freem = self.ssh.free_mem_mb()
+        if freem == freem and freem < 1000:  # non NaN e sotto soglia di sicurezza
+            log.warning("RAM disponibile bassa sul Pi (%.0f MiB): rischio OOM/swap", freem)
         t_load0 = self.power.mark()
         load_out = self.ssh.launch_model(command, llama_cfg.get("load_timeout", 180))
         t_load1 = self.power.mark()

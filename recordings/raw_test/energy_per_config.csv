@@ -1,2 +1,2 @@
 model,family,quant,threads,energy_total_j,n_inferenze
-qwen2.5-1.5B-Q4_K_M,qwen2.5-1.5B,Q4_K_M,1,128.228151,5.0
+qwen2.5-1.5B-Q4_K_M,qwen2.5-1.5B,Q4_K_M,1,142.689145,5.0

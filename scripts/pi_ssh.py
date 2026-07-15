@@ -181,6 +181,30 @@ class PiSSH:
             log.warning("get_throttled fallita: %s", exc)
             return ""
 
+    # --------------------------------------------------- igiene dei processi
+    def kill_stray_llama(self) -> None:
+        """Termina eventuali processi llama-cli rimasti attivi sul Pi.
+
+        Previene lo scenario in cui un llama-cli non chiuso correttamente (es.
+        una ripetizione interrotta o un Ctrl-C che non ha fatto uscire il
+        processo) resti in memoria: al lancio successivo partirebbero DUE
+        istanze che si contendono la RAM, con conseguente swap pesante, blocchi
+        delle inferenze e OOM al caricamento. Usa un canale SSH separato
+        (exec_command), quindi non disturba la shell interattiva.
+        """
+        try:
+            self.run_command("pkill -9 -f llama-cli 2>/dev/null; true", timeout=15)
+        except Exception as exc:  # noqa: BLE001
+            log.warning("kill_stray_llama fallita: %s", exc)
+
+    def free_mem_mb(self) -> float:
+        """RAM disponibile sul Pi in MiB (per accorgersi di memory pressure)."""
+        try:
+            out = self.run_command("free -m | awk '/^Mem:/{print $7}'", timeout=15)
+            return float(out.strip().splitlines()[-1])
+        except Exception:  # noqa: BLE001
+            return float("nan")
+
     # ------------------------------------------------------------ llama-cli
     def clear_history(self) -> None:
         """Ripulisce la cronologia della chat di llama-cli (comando ``/clear``).
@@ -233,17 +257,25 @@ class PiSSH:
         return self.submit_prompt(infer_timeout)
 
     def stop_model(self) -> str:
-        """Esce da llama-cli (Ctrl-C) e raccoglie il riepilogo finale dei timing."""
+        """Esce da llama-cli (Ctrl-C) e raccoglie il riepilogo finale dei timing.
+
+        Dopo il Ctrl-C esegue anche un ``pkill`` di sicurezza: se il processo non
+        fosse uscito, verrebbe comunque terminato, evitando che resti in memoria
+        e collida con la ripetizione successiva.
+        """
         if self.shell is None:
+            self.kill_stray_llama()
             return ""
         try:
             self.shell.send("\x03")  # Ctrl-C
             time.sleep(1.5)
             out = self._drain()
-            return strip_ansi(out)
         except Exception as exc:
             log.warning("Errore nello stop del modello: %s", exc)
-            return ""
+            out = ""
+        # garanzia: nessun llama-cli deve sopravvivere alla ripetizione
+        self.kill_stray_llama()
+        return strip_ansi(out)
 
     # ----------------------------------------------------------------- close
     def close_shell(self) -> None:
