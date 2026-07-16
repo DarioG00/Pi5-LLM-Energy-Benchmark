@@ -1,0 +1,2 @@
+model,family,quant,threads,latency_s,energy_net_j,avg_power_w,prompt_tps,gen_tps,score,pareto
+gemma-2-2B-Q4_K_M,gemma-2-2B,Q4_K_M,2,9.705991333333333,41.19923985333333,6.235329999999999,20.90266666666667,8.024666666666667,0.6933333333333334,True
