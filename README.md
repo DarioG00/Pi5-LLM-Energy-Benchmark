@@ -111,8 +111,10 @@ python run_benchmark.py --config config_run2_ext.json   # campagna B -> results_
 
 ```
 config.json                 parametri (Pi, PMIC, llama, thermal, modelli, benchmark)
-config_run1.json            campagna A: dataset intero, 2 thread, 3 ripetizioni
-config_run2.json            campagna B: 3 campioni/benchmark, thread 1/2/4, 3 ripetizioni
+config_run1_ext.json        campagna A: 150 prompt, 2 thread, 3 ripetizioni  (usato)
+config_run2_ext.json        campagna B: 150 prompt, thread 1/2/4, 1 ripetizione, cooldown  (usato)
+config_run1.json            campagna A originale (dataset ridotto), mantenuta per riferimento
+config_run2.json            campagna B originale (dataset ridotto), mantenuta per riferimento
 config_test.json            mini-run di prova (~1 min) per verificare la misura del PMIC
 requirements.txt            dipendenze del venv host
 datasets/*.jsonl            i 5 benchmark

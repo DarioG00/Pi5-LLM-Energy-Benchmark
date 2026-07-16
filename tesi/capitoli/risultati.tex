@@ -5,11 +5,12 @@ In questo capitolo vengono presentati e discussi i risultati delle due campagne
 di misura descritte nel capitolo precedente. La \textbf{Campagna A} (dataset
 intero, 2 thread, tre ripetizioni) fornisce il confronto tra i sei modelli su
 efficienza energetica e qualità a parità di grado di parallelismo; la
-\textbf{Campagna B} (sottoinsieme ridotto di prompt, thread 1, 2 e 4) mette in
-luce l'effetto del grado di parallelismo su latenza, potenza ed energia. Salvo
-diversa indicazione, i valori riportati sono la media sulle tre ripetizioni; le
-grandezze energetiche sono espresse come \textit{energia netta per inferenza}
-(Joule), al netto del consumo di base della scheda (Equazione~\ref{eq:energia_netta}).
+\textbf{Campagna B} (stesso insieme di 150 prompt, thread 1, 2 e 4, singola
+ripetizione) mette in luce l'effetto del grado di parallelismo su latenza, potenza
+ed energia. Nella Campagna A i valori riportati sono la media sulle tre
+ripetizioni; le grandezze energetiche sono espresse come \textit{energia netta per
+inferenza} (Joule), al netto del consumo di base della scheda
+(Equazione~\ref{eq:energia_netta}).
 
 \section{Confronto tra i modelli (Campagna A)}
 
@@ -165,11 +166,11 @@ energia.
 
 La Figura~\ref{fig:res-latenza} mostra la latenza media di inferenza al variare
 del numero di thread (1, 2 e 4). Passando da 1 a 2 thread la latenza si riduce di
-circa \textbf{29\%} (da 13,2 a 9,4~s in media), mentre l'ulteriore passaggio da 2
+circa \textbf{24\%} (da 14,2 a 10,9~s in media), mentre l'ulteriore passaggio da 2
 a 4 thread non porta alcun guadagno --- anzi la latenza \emph{peggiora}
-leggermente (circa \mbox{+9\%}). Diversi benchmark sono limitati dalla larghezza
-di banda della memoria più che dal numero di core: il terzo e quarto core non
-accelerano la generazione e introducono contesa. Il valore ottimale di
+(circa \mbox{+18\%}, risalendo a 12,8~s). Diversi benchmark sono limitati dalla
+larghezza di banda della memoria più che dal numero di core: il terzo e quarto core
+non accelerano la generazione e introducono contesa. Il valore ottimale di
 parallelismo risulta quindi \textbf{2 thread}.
 
 \begin{figure}[htbp]
@@ -181,15 +182,16 @@ parallelismo risulta quindi \textbf{2 thread}.
 
 \subsection{Potenza ed energia}
 
-All'aumentare del numero di thread la potenza istantanea assorbita \textbf{cresce}
-(da circa 4,9~W a 1 thread a 7,2~W a 4 thread, Figura~\ref{fig:res-potenza});
-tuttavia, poiché a 2 thread la durata dell'inferenza si accorcia di quasi un
-terzo, l'energia netta per inferenza \textbf{resta pressoché invariata} tra 1 e 2
-thread (circa 38--39~J) e \textbf{aumenta} invece a 4 thread (circa 49~J,
-\mbox{+25\%}). In termini di sola energia il minimo si ha a 1 thread, ma a fronte
-di una latenza molto più elevata; il miglior compromesso tra \textit{time-to-answer}
-ed efficienza energetica è a \textbf{2 thread}, che quasi dimezza la latenza a
-parità di energia, mentre a 4 thread si perde su entrambi i fronti.
+All'aumentare del numero di thread la potenza media assorbita \textbf{cresce}
+(da circa 4,9~W a 1 thread a 7,0~W a 4 thread, Figura~\ref{fig:res-potenza}).
+L'energia netta per inferenza è \textbf{minima a 1 thread} (circa 40,6~J) e cresce
+con il parallelismo: solo lievemente da 1 a 2 thread (\mbox{+10\%}, circa 44,8~J),
+ma nettamente a 4 thread (\mbox{+28\%} rispetto a 2 thread, circa 57,5~J). In
+termini di sola energia il minimo si ha quindi a 1 thread, ma a fronte di una
+latenza molto più elevata; il miglior compromesso tra \textit{time-to-answer} ed
+efficienza energetica è a \textbf{2 thread}, che riduce di circa un quarto la
+latenza con un modesto sovrapprezzo energetico, mentre a 4 thread si perde su
+entrambi i fronti.
 
 \begin{figure}[htbp]
     \centering
@@ -254,18 +256,26 @@ task di ragionamento.
 
 \section{Comportamento termico}
 
-Durante la Campagna A la temperatura del SoC è stata monitorata dopo ogni
-inferenza. Grazie alla ventola di raffreddamento attiva e alle pause di
-raffreddamento introdotte tra le configurazioni, la temperatura si è mantenuta al
-di sotto della soglia di \textit{throttling} ($\sim$80--85~\textcelsius), con un
-massimo di \textbf{76,8}~\textcelsius\ e \textbf{nessun} evento di throttling
-rilevato (Figura~\ref{fig:res-termico}). Le misure di latenza ed energia non sono
-quindi state falsate da riduzioni di frequenza indotte dal calore. Va tuttavia
-osservato che sessioni di misura molto prolungate, sommando il riscaldamento del
-SoC alla sollecitazione continua in lettura della scheda microSD, possono
-compromettere l'integrità dei file dei modelli memorizzati; per questo motivo la
-procedura adotta la verifica di integrità all'avvio e le pause di raffreddamento
-descritte nel capitolo precedente.
+Durante entrambe le campagne la temperatura del SoC è stata monitorata dopo ogni
+inferenza. Grazie alla ventola di raffreddamento attiva --- e, nella Campagna B,
+alle pause di raffreddamento tra le configurazioni --- la temperatura si è mantenuta
+sotto la soglia di \textit{throttling} ($\sim$80--85~\textcelsius): nella Campagna A
+(2 thread) il massimo è stato di \textbf{76,8}~\textcelsius, mentre nella Campagna B
+i picchi si sono avuti sulle configurazioni a 4 thread, comunque contenuti intorno
+agli \textbf{81}~\textcelsius. In \textbf{nessuna} delle due campagne si è verificato
+throttling (Figura~\ref{fig:res-termico}), per cui le misure di latenza ed energia
+non sono state falsate da riduzioni di frequenza indotte dal calore. Poiché in
+entrambe le campagne il funzionamento è avvenuto a piena frequenza, le misure
+restano inoltre \emph{direttamente confrontabili}, nonostante la Campagna B adotti
+le pause di raffreddamento assenti nella Campagna A: la pausa agisce solo sulla
+temperatura di picco, che al di sotto della soglia di throttling non influenza né la
+latenza né l'energia.
+
+Va tuttavia osservato che sessioni di misura molto prolungate, sommando il
+riscaldamento del SoC alla sollecitazione continua in lettura della scheda microSD,
+possono comprometterne l'integrità dei file dei modelli memorizzati; per questo
+motivo la procedura adotta la verifica di integrità all'avvio e le pause di
+raffreddamento descritte nel capitolo precedente.
 
 \begin{figure}[htbp]
     \centering
