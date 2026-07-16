@@ -106,9 +106,26 @@ class BenchmarkRunner:
         llama_cfg = self.cfg["llama"]
         reps = int(self.cfg.get("repetitions", 3))
         tcfg = self.thermal_cfg
+        # pausa di raffreddamento tra una registrazione e la successiva: fa
+        # ripartire ogni misura da una temperatura piu' bassa, senza falsare i
+        # dati (la finestra di misura e' per-inferenza, la pausa e' fuori).
+        cooldown = int(self.cfg.get("cooldown_seconds", 0) or 0)
+        first_run = True
         for model in self.cfg["models"]:
             for threads in self.cfg["threads"]:
                 for rep in range(1, reps + 1):
+                    # pausa prima di ogni registrazione tranne la primissima
+                    if not first_run and cooldown > 0:
+                        temp = self.ssh.measure_temp() if tcfg.enabled else float("nan")
+                        if temp == temp:  # non NaN
+                            log.info("Pausa di raffreddamento di %ds (T attuale %.1f°C)...",
+                                     cooldown, temp)
+                        else:
+                            log.info("Pausa di raffreddamento di %ds...", cooldown)
+                        time.sleep(cooldown)
+                        if tcfg.enabled:
+                            log.info("Ripresa (T dopo pausa %.1f°C).", self.ssh.measure_temp())
+                    first_run = False
                     attempt = 0
                     while True:
                         attempt += 1
@@ -184,8 +201,10 @@ class BenchmarkRunner:
             sc = scoring.score(s.btype, response, s.expected, meta)
             sv = sc.get("score")
             esito = "OK" if sv == 1.0 else ("n/d" if sv in ("", None) else "NO")
-            log.info("  [%d/%d] %s %s -> punteggio %s [%s]  (%.1fs)",
-                     k, n_tot, s.benchmark, s.id, sv, esito, latency)
+            temp = tstate.get("temp_c") if tstate else None
+            tstr = " | T=%.1f°C" % temp if isinstance(temp, (int, float)) else ""
+            log.info("  [%d/%d] %s %s -> punteggio %s [%s]  (%.1fs)%s",
+                     k, n_tot, s.benchmark, s.id, sv, esito, latency, tstr)
             per_sample.append((s, t0, t1, latency, raw, tstate, response, sc))
 
         # --- chiusura sessione e riepilogo timing ---

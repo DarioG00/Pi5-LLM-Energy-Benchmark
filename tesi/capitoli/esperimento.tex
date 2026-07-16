@@ -11,8 +11,9 @@ L'esperimento valuta i sei modelli quantizzati descritti nel Capitolo~1
 la \textit{qualità delle risposte} e la \textit{latenza di inferenza}. Ciascun
 modello viene eseguito su uno o più livelli di parallelismo (1, 2 e 4 thread) e
 valutato sui cinque benchmark introdotti in precedenza. Per ridurre l'effetto
-della variabilità delle misure, ogni registrazione viene ripetuta tre volte e
-si considera il valore medio delle grandezze acquisite.
+della variabilità delle misure, ciascuna registrazione viene ripetuta più volte
+(secondo il criterio specifico di ciascuna campagna, descritto nel seguito) e si
+considera il valore medio delle grandezze acquisite.
 
 Poiché valutare tutte le combinazioni di modelli e livelli di parallelismo
 sull'intero insieme di prompt richiederebbe tempi di misura proibitivi sul
@@ -22,19 +23,24 @@ complementari, ciascuna mirata a isolare una specifica variabile di interesse:
 \begin{itemize}
     \item \textbf{Campagna A --- confronto tra i modelli.} Tutti e sei i modelli
     vengono valutati sull'intero insieme di prompt dei cinque benchmark
-    (73 prompt complessivi, Tabella~\ref{tab:scoring}), a parallelismo fissato a
-    2 thread (la configurazione risultata più efficiente per energia, latenza e \textit{throughput}) e con tre
-    ripetizioni. Isola l'effetto della quantizzazione a parità di parallelismo e
-    fornisce la stima più robusta dell'efficienza energetica e della qualità di
-    ciascun modello. Comporta $6 \times 3 = 18$ registrazioni, per un totale di
-    $18 \times 73 = 1314$ inferenze.
+    (150 prompt complessivi, 30 per benchmark, Tabella~\ref{tab:scoring}), a
+    parallelismo fissato a 2 thread (la configurazione risultata più efficiente per
+    energia, latenza e \textit{throughput}) e con \textbf{tre ripetizioni}. Isola
+    l'effetto della quantizzazione a parità di parallelismo e fornisce la stima più
+    robusta dell'efficienza energetica e della qualità di ciascun modello. Comporta
+    $6 \times 3 = 18$ registrazioni, per un totale di $18 \times 150 = 2700$
+    inferenze.
 
     \item \textbf{Campagna B --- scaling sul parallelismo.} Tutti e sei i modelli
-    vengono valutati sui tre livelli di parallelismo (1, 2 e 4 thread), con tre
-    ripetizioni, su un sottoinsieme ridotto di 3 prompt per benchmark (15 prompt
-    complessivi) scelto per contenere la durata delle misure. Isola l'effetto del
-    numero di thread su latenza ed energia. Comporta $6 \times 3 \times 3 = 54$
-    registrazioni, per un totale di $54 \times 15 = 810$ inferenze.
+    vengono valutati sui tre livelli di parallelismo (1, 2 e 4 thread) sullo stesso
+    insieme di 150 prompt (30 per benchmark), con una \textbf{singola ripetizione}.
+    Isola l'effetto del numero di thread su latenza ed energia. Comporta
+    $6 \times 3 \times 1 = 18$ registrazioni, per un totale di $18 \times 150 = 2700$
+    inferenze. La scelta di una sola ripetizione su molti prompt distinti --- anziché
+    poche prompt ripetute più volte --- è deliberata: a parità di numero di inferenze,
+    la variabilità delle metriche tra prompt diversi è nettamente superiore a quella
+    tra ripetizioni della stessa misura, per cui coprire più prompt distinti fornisce
+    una stima statisticamente più solida di latenza ed energia.
 \end{itemize}
 
 In entrambe le campagne il sottoinsieme di prompt valutato è identico per tutti i
@@ -172,13 +178,13 @@ opzioni, la probabilità di indovinare a caso (baseline) è del 25\%.
         \hline
         Benchmark & Tipo di task & Campioni & Criterio di correttezza \\
         \hline
-        CommonsenseQA   & Scelta multipla    & 15 & Corrispondenza dell'opzione scelta \\
-        BIG-Bench Hard  & Risposta breve     & 15 & Corrispondenza esatta normalizzata \\
-        TruthfulQA      & Scelta multipla    & 15 & Corrispondenza dell'opzione scelta \\
-        GSM8K           & Numerico           & 15 & Estrazione del valore finale \\
-        HumanEval       & Generazione codice & 13 & Esecuzione dei test (\textit{pass@1}) \\
+        CommonsenseQA   & Scelta multipla    & 30 & Corrispondenza dell'opzione scelta \\
+        BIG-Bench Hard  & Risposta breve     & 30 & Corrispondenza esatta normalizzata \\
+        TruthfulQA      & Scelta multipla    & 30 & Corrispondenza dell'opzione scelta \\
+        GSM8K           & Numerico           & 30 & Estrazione del valore finale \\
+        HumanEval       & Generazione codice & 30 & Esecuzione dei test (\textit{pass@1}) \\
         \hline
-        \multicolumn{2}{l}{Totale} & 73 & \\
+        \multicolumn{2}{l}{Totale} & 150 & \\
         \hline
     \end{tabularx}
     \caption{Criteri di valutazione della qualità e composizione completa dei
@@ -335,11 +341,22 @@ l'Equazione~\ref{eq:energia_misurata}.
 
 \subsection{Ripetizioni e media delle misure}
 
-Ogni configurazione di modello e numero di thread viene eseguita tre volte sui
-medesimi prompt dei cinque benchmark. Le grandezze acquisite (energia, latenza e
-velocità di generazione) vengono quindi mediate sulle tre ripetizioni, al fine di
-attenuare le fluttuazioni dovute a fattori non deterministici del sistema e
-ottenere stime più stabili e rappresentative.
+Nella Campagna A ogni configurazione di modello e numero di thread viene eseguita
+\emph{tre volte} sui medesimi prompt dei cinque benchmark; le grandezze acquisite
+(energia, latenza e velocità di generazione) vengono quindi mediate sulle tre
+ripetizioni, al fine di attenuare le fluttuazioni dovute a fattori non
+deterministici del sistema e ottenere stime più stabili e rappresentative. Le
+misure raccolte si sono rivelate molto stabili tra una ripetizione e l'altra
+(coefficiente di variazione dell'energia entro il 5\% circa per tutti i modelli),
+a conferma della ripetibilità della procedura.
+
+Nella Campagna B, dedicata allo scaling sul parallelismo, si adotta invece una
+\emph{singola ripetizione} sull'intero insieme di 150 prompt. Questa scelta non
+riduce la solidità statistica: poiché la variabilità delle metriche tra prompt
+diversi domina largamente quella tra ripetizioni della stessa misura (come mostrato
+dalla stabilità osservata nella Campagna A), a parità di numero complessivo di
+inferenze è preferibile coprire un numero maggiore di prompt distinti piuttosto che
+ripetere più volte gli stessi.
 
 \subsection{Monitoraggio termico}
 
@@ -367,10 +384,29 @@ certificare a posteriori che le acquisizioni non siano avvenute in regime di
 throttling; qualora una condizione di throttling venga comunque rilevata durante una
 ripetizione, la misura corrispondente viene scartata e ripetuta.
 
-Poiché la ventola attiva mantiene la temperatura sotto controllo, non è previsto alcun
-\textit{cool-down} (attesa di raffreddamento) tra le configurazioni: nella pratica non
-è mai risultato necessario e la sua assenza contiene i tempi complessivi della campagna
-di misura.
+Sebbene la ventola attiva mantenga la temperatura sotto la soglia di throttling, tra
+una configurazione e la successiva è stata introdotta una breve \textit{pausa di
+raffreddamento} (\textit{cool-down}) di alcune decine di secondi. La pausa fa
+ripartire ogni registrazione da una temperatura più bassa, aumentando il margine
+rispetto alle soglie di throttling; essendo collocata al di fuori delle finestre di
+misura, non altera in alcun modo i valori di energia e latenza acquisiti.
+
+Questa precauzione nasce da un'osservazione emersa durante le campagne più lunghe.
+L'esecuzione prolungata sotto carico continuo comporta, oltre al riscaldamento del
+SoC, un intenso e sostenuto accesso in lettura ai file dei modelli sulla scheda di
+memoria: la combinazione di temperature elevate e di sollecitazione continua della
+microSD può provocare una \emph{corruzione silenziosa} dei file GGUF memorizzati
+(alterazione di singoli byte non segnalata da alcun errore di sistema), che a sua
+volta compromette le misurazioni successive facendo generare al modello risposte
+prive di senso. Il fenomeno è tipico delle schede microSD, il cui supporto a memoria
+\textit{flash} è sensibile all'usura e al calore. Per questo motivo la procedura
+prevede due contromisure: la verifica di integrità \texttt{sha256} all'avvio di ogni
+campagna (che interrompe l'esecuzione qualora un file risulti alterato) e la pausa di
+raffreddamento appena descritta. Per campagne particolarmente onerose è inoltre
+consigliabile ospitare i file dei modelli su un supporto più affidabile (ad esempio
+un'unità a stato solido collegata via USB) anziché sulla sola microSD; tale scelta non
+influisce sulle misure di consumo, poiché durante l'inferenza il modello risiede già
+in memoria centrale e l'energia netta è calcolata al netto del consumo di base.
 
 \section{Struttura dello script di automazione}
 

@@ -15,7 +15,8 @@ Il PC host coordina tutto:
 2. campiona il **PMIC** del Pi (`vcgencmd pmic_read_adc`) a ~10 Hz: la potenza è
    la somma dei prodotti corrente×tensione sui 12 rami della scheda;
 3. registra il consumo **idle** del Pi e lo usa come **bias** da sottrarre;
-4. per ogni **modello × numero di thread (1, 2, 4) × ripetizione (×3)** avvia
+4. per ogni **modello × numero di thread (1, 2, 4) × ripetizione** (numero di
+   ripetizioni dipendente dalla campagna, vedi sotto) avvia
    `llama-cli` (il modello resta caricato in memoria per l'intera sessione),
    **azzera la cronologia (`/clear`) prima di ogni prompt**, invia i prompt dei
    **5 benchmark** e misura energia, latenza, token/s e qualità;
@@ -76,25 +77,34 @@ interattiva di default; eventuali argomenti aggiuntivi si impostano in
 ## Benchmark (5)
 
 CommonSenseQA, BIG-Bench Hard, TruthfulQA, GSM8K, HumanEval — campioni curati in
-`datasets/*.jsonl` (rispettivamente 15, 15, 15, 15 e 13 item, **73 prompt** in
-totale). Con `max_samples_per_benchmark` in `config.json` si può valutare solo un
+`datasets/*.jsonl` (**30 item per benchmark, 150 prompt** in totale). Con
+`max_samples_per_benchmark` in `config.json` si può valutare solo un
 **sottoinsieme fisso** di prompt per benchmark — identico per tutte le
 configurazioni, così il confronto resta equo — per contenere la durata sul
 dispositivo (`0` o assente = tutti i campioni). Il loader conta automaticamente le
 righe dei JSONL.
 
-L'esperimento è organizzato in **due campagne complementari**, con due config
-pronti (output separati, si lanciano con `--config`):
+L'esperimento è organizzato in **due campagne complementari** (output separati,
+si lanciano con `--config`):
 
-- `config_run1.json` — **confronto tra modelli**: dataset intero (73 prompt), a
-  2 thread (configurazione più efficiente), 3 ripetizioni → 6 × 3 = 18 registrazioni, 1314 inferenze;
-- `config_run2.json` — **scaling sul parallelismo**: 3 campioni/benchmark (15
-  prompt), thread 1/2/4, 3 ripetizioni → 6 × 3 × 3 = 54 registrazioni, 810 inferenze.
+- `config_run1_ext.json` — **confronto tra modelli** (Campagna A): dataset intero
+  (150 prompt), a 2 thread (configurazione più efficiente), 3 ripetizioni → 6 × 3
+  = 18 registrazioni, 2700 inferenze;
+- `config_run2_ext.json` — **scaling sul parallelismo** (Campagna B): stesso
+  dataset (150 prompt), thread 1/2/4, 1 ripetizione → 6 × 3 × 1 = 18 registrazioni,
+  2700 inferenze. Una sola ripetizione su molti prompt distinti è statisticamente
+  più solida di poche prompt ripetute (la variabilità tra prompt domina quella tra
+  ripetizioni).
+
+Entrambi i config prevedono una **pausa di raffreddamento** (`cooldown_seconds`)
+tra una configurazione e la successiva, per aumentare il margine termico. I config
+originali `config_run1.json`/`config_run2.json` (dataset più piccoli) restano
+disponibili.
 
 ```bash
-python run_benchmark.py --config config_test.json   # prova rapida (~1 min): verifica la misura del PMIC
-python run_benchmark.py --config config_run1.json   # campagna A -> results_run1.csv
-python run_benchmark.py --config config_run2.json   # campagna B -> results_run2.csv
+python run_benchmark.py --config config_test.json       # prova rapida (~1 min): verifica la misura del PMIC
+python run_benchmark.py --config config_run1_ext.json   # campagna A -> results_run1_ext.csv
+python run_benchmark.py --config config_run2_ext.json   # campagna B -> results_run2_ext.csv
 ```
 
 ## Struttura
@@ -184,8 +194,21 @@ configurabile nella sezione `thermal` di `config.json`:
   (fino a `max_retries`); le righe conservano `throttle_event` per tracciabilità.
 
 Il case monta una **ventola di raffreddamento attiva** che tiene la temperatura
-ampiamente sotto le soglie di throttling: il modulo si limita quindi a
-**monitorare** (nessun cool-down tra le configurazioni, mai risultato necessario).
+sotto le soglie di throttling. Tra una configurazione e la successiva è prevista
+una **pausa di raffreddamento** (`cooldown_seconds`), collocata fuori dalle
+finestre di misura, per far ripartire ogni registrazione da una temperatura più
+bassa (non altera energia e latenza).
+
+**Nota — microSD e sovraccarico termico.** Le campagne molto lunghe sommano il
+riscaldamento del SoC alla sollecitazione continua in lettura della microSD:
+questa combinazione può provocare una **corruzione silenziosa** dei file GGUF
+sulla scheda (byte alterati senza alcun errore di sistema), che poi fa generare al
+modello risposte prive di senso e compromette le misure successive. Contromisure
+adottate: la **verifica `sha256`** all'avvio (interrompe il run se un file è
+alterato) e la pausa di raffreddamento; per campagne particolarmente onerose è
+consigliabile tenere i modelli su un **SSD/chiavetta USB** anziché sulla sola
+microSD — scelta che non altera le misure di consumo, poiché durante l'inferenza
+il modello risiede già in RAM.
 
 ## Ispezione rapida delle risposte
 
