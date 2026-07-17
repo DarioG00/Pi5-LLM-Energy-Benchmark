@@ -50,6 +50,26 @@ parsimonioso e llama come il più oneroso.
     \label{fig:res-energia-tot}
 \end{figure}
 
+La \textbf{potenza media} assorbita durante l'inferenza è invece \emph{pressoché
+costante} tra i modelli (circa \textbf{6,2~W} a 2 thread, entro un intervallo di
+6,1--6,3~W, Figura~\ref{fig:res-potenza-modelli}): essa dipende essenzialmente dal
+grado di utilizzo della CPU imposto dal livello di parallelismo, e non dalla
+dimensione o dal livello di quantizzazione del modello. Ne consegue un'osservazione
+importante: poiché l'energia è il prodotto della potenza per il tempo
+($E = P \cdot \Delta t$) e la potenza è quasi la stessa per tutti, le differenze di
+energia per inferenza osservate tra i modelli derivano quasi interamente dalla
+diversa \textbf{durata} dell'inferenza (la latenza), più che da una diversa potenza
+istantanea.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{imm/power_a.png}
+    \caption{Potenza media assorbita per modello, a 2 thread (Campagna A). La potenza
+    è pressoché costante tra i modelli, poiché determinata dal grado di parallelismo
+    più che dal modello eseguito.}
+    \label{fig:res-potenza-modelli}
+\end{figure}
+
 \subsection{Qualità delle risposte}
 
 La Figura~\ref{fig:res-qualita} mostra, sotto forma di mappa di calore, la
