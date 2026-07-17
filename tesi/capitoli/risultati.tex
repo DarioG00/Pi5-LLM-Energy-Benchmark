@@ -90,6 +90,16 @@ differenza del tutto \textbf{trascurabile} (accuratezza media 0,68 a 8 bit contr
 qualità delle risposte, pur dimezzando circa lo spazio occupato e riducendo
 sensibilmente il consumo.
 
+È importante sottolineare che le differenze di accuratezza qui osservate --- sia tra
+modelli sia tra le due precisioni --- sono dello stesso ordine di grandezza della
+variabilità dovuta alla natura \emph{non deterministica} della generazione
+(campionamento con temperatura non nulla): lo stesso modello, sugli stessi prompt,
+mostra oscillazioni di alcuni punti percentuali da una ripetizione all'altra. Tali
+differenze non vanno quindi interpretate come una superiorità sistematica di una
+precisione sull'altra --- il verso stesso dello scarto cambia da famiglia a famiglia
+(8 bit lievemente superiore per Llama-3.2-3B, 4 bit per gemma e qwen) --- ma indicano
+che le due precisioni sono \textbf{sostanzialmente equivalenti} in qualità.
+
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{imm/quality_heatmap.png}
@@ -141,7 +151,7 @@ Poiché nessuna singola metrica è sufficiente a decretare il modello migliore, 
 Figura~\ref{fig:res-tradeoff} colloca ciascuna configurazione nel piano
 energia--qualità. La regione favorevole (bassa energia, alta qualità) è occupata
 nettamente da \textbf{qwen2.5-1.5B Q4\_K\_M}, che unisce l'energia più bassa alla
-qualità media più alta e rappresenta quindi il miglior compromesso per un impiego
+una qualità tra le più elevate e rappresenta quindi il miglior compromesso per un impiego
 su dispositivo a risorse limitate; all'estremo opposto le configurazioni
 \textbf{Llama-3.2-3B} offrono un'alta qualità solo sui task di ragionamento, ma a
 un costo di energia e latenza nettamente superiore e senza un vantaggio
@@ -169,10 +179,12 @@ in base alle proprie priorità.
 La Figura~\ref{fig:res-pareto-en} riporta la frontiera nel piano
 \textbf{energia--qualità} (le configurazioni in basso a destra sono le migliori).
 Il risultato è particolarmente netto: \textbf{qwen2.5-1.5B Q4\_K\_M} unisce
-contemporaneamente l'energia minima (24,6~J) e la qualità media massima (0,71), e
-\emph{domina} quindi tutte le altre configurazioni, risultando l'unico punto sulla
-frontiera di Pareto; ogni altra configurazione consuma di più a fronte di una
-qualità media pari o inferiore. Le configurazioni Llama-3.2-3B, in particolare,
+contemporaneamente l'energia minima (24,6~J) e, insieme, una qualità tra le più elevate: poiché
+nessun'altra configurazione la supera contemporaneamente su entrambi gli assi, essa
+risulta l'unico punto \emph{non dominato} della frontiera. Va però ricordato che le
+differenze di qualità tra i modelli di testa rientrano nella variabilità di misura,
+per cui questa posizione dominante è trainata soprattutto dal consumo nettamente
+inferiore di qwen a 4 bit. Le configurazioni Llama-3.2-3B, in particolare,
 risultano nettamente \emph{dominate}. La Figura~\ref{fig:res-pareto-lat}
 mostra l'analoga frontiera nel piano \textbf{latenza--qualità}; anch'essa si
 riferisce alla Campagna A e confronta quindi i sei modelli a parità di
@@ -233,6 +245,24 @@ efficienza energetica è a \textbf{2 thread}, che riduce di circa un quarto la
 latenza con un modesto sovrapprezzo energetico, mentre a 4 thread si perde su
 entrambi i fronti.
 
+Un dettaglio degno di nota riguarda il confronto tra le due precisioni al variare del
+parallelismo: la potenza media delle varianti a 4 e a 8 bit si \emph{ribalta} passando
+da 1 a 4 thread. A \textbf{1 thread} le varianti a 8 bit assorbono circa 0,4~W in più
+delle corrispondenti a 4 bit, mentre a \textbf{4 thread} sono queste ultime a consumare
+di più (circa 0,65~W in più) --- e il comportamento è uniforme in tutte e tre le
+famiglie. Il fenomeno è una conseguenza diretta del fatto che il carico è limitato
+dalla \textbf{larghezza di banda della memoria}: la potenza assorbita riflette quanto i
+core stanno effettivamente calcolando rispetto a quanto restano in \emph{stallo} in
+attesa dei dati. Con un solo thread il bus di memoria non è saturo e il modello a 8 bit
+--- che deve leggere circa il doppio dei byte per token --- tiene il core più occupato,
+assorbendo un po' di più. Con quattro thread, invece, i core competono per la stessa
+banda condivisa: il modello a 8 bit la satura e i core trascorrono più tempo in stallo
+(un core fermo consuma meno), mentre il modello a 4 bit, più leggero, li mantiene
+attivi nel calcolo, assorbendo così una potenza maggiore. Questo \emph{non} penalizza i
+4 bit: la potenza aggiuntiva si traduce in calcolo utile, tant'è che a 4 thread le
+varianti a 4 bit restano più veloci (latenza media 10,0~s contro 15,5~s) e più
+efficienti (47,7~J contro 67,4~J per inferenza).
+
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{imm/power.png}
@@ -283,9 +313,11 @@ di grado di parallelismo. La Figura~\ref{fig:res-composito} riporta la relativa
 classifica. La configurazione complessivamente migliore risulta
 \textbf{qwen2.5-1.5B Q4\_K\_M a 2 thread} (score \textbf{1,00}), seguita da
 \textbf{qwen2.5-1.5B Q8\_0} (0,67) e \textbf{gemma-2-2B Q4\_K\_M} (0,59): qwen a 4
-bit ottiene il punteggio massimo perché è simultaneamente la migliore su tutte e
-tre le metriche --- energia più bassa, latenza più bassa e qualità media più alta
----, mentre le configurazioni Llama-3.2-3B, penalizzate da consumo ed energia
+bit ottiene il punteggio massimo perché unisce l'energia più bassa e la latenza più
+bassa a una qualità competitiva --- il primato è trainato soprattutto dai vantaggi,
+robusti, su energia e latenza, dato che le differenze di qualità tra i modelli di
+testa rientrano nel rumore di misura ---, mentre le configurazioni Llama-3.2-3B,
+penalizzate da consumo ed energia
 elevati, si collocano in fondo alla classifica nonostante la buona qualità sui
 task di ragionamento.
 

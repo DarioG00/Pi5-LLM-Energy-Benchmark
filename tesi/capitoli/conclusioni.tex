@@ -17,10 +17,10 @@ possono essere riassunti come segue:
     è risultato \textbf{qwen2.5-1.5B Q4\_K\_M}, con circa \textbf{24,6~J} per
     inferenza; in generale le varianti a 4 bit (Q4\_K\_M) si sono confermate più
     economiche delle corrispondenti a 8 bit (in media circa il 18\% in meno).
-    \item \textbf{Qualità delle risposte.} La qualità media più elevata è stata
-    ottenuta da \textbf{qwen2.5-1.5B Q4\_K\_M}, ma le differenze tra i sei modelli
-    sono risultate contenute (tutti tra 0,66 e 0,71); il passaggio da 8 a 4 bit ha
-    comportato una differenza di qualità del tutto \textbf{trascurabile}, rendendo la
+    \item \textbf{Qualità delle risposte.} Le differenze di qualità tra i sei
+    modelli sono risultate contenute (tutti tra 0,66 e 0,71) e comparabili con la
+    variabilità della generazione non deterministica; in particolare, il passaggio
+    da 8 a 4 bit ha comportato una differenza del tutto \textbf{trascurabile}, rendendo la
     quantizzazione più aggressiva a 4 bit \textbf{conveniente} nella maggior parte
     dei casi (stessa qualità, meno spazio occupato e meno energia).
     \item \textbf{Latenza e parallelismo.} L'aumento del numero di thread ha
