@@ -250,10 +250,13 @@ parallelismo: la potenza media delle varianti a 4 e a 8 bit si \emph{ribalta} pa
 da 1 a 4 thread. A \textbf{1 thread} le varianti a 8 bit assorbono circa 0,4~W in più
 delle corrispondenti a 4 bit, mentre a \textbf{4 thread} sono queste ultime a consumare
 di più (circa 0,65~W in più) --- e il comportamento è uniforme in tutte e tre le
-famiglie. Il fenomeno è una conseguenza diretta del fatto che il carico è limitato
-dalla \textbf{larghezza di banda della memoria}: la potenza assorbita riflette quanto i
-core stanno effettivamente calcolando rispetto a quanto restano in \emph{stallo} in
-attesa dei dati. Con un solo thread il bus di memoria non è saturo e il modello a 8 bit
+famiglie. A prima vista il risultato sorprende --- il modello a 4 bit, più leggero, dovrebbe
+consumare sempre meno --- ma si spiega ricordando che la potenza istantanea misura
+\emph{quanto i core stanno effettivamente calcolando}, e non la quantità totale di
+lavoro da svolgere: un core che calcola assorbe potenza, mentre un core fermo in
+\emph{stallo} ad attendere i dati dalla memoria ne assorbe molta meno. Poiché il
+carico è limitato dalla \textbf{larghezza di banda della memoria}, è proprio la quota
+di tempo che i core trascorrono in stallo a determinare il ribaltamento. Con un solo thread il bus di memoria non è saturo e il modello a 8 bit
 --- che deve leggere circa il doppio dei byte per token --- tiene il core più occupato,
 assorbendo un po' di più. Con quattro thread, invece, i core competono per la stessa
 banda condivisa: il modello a 8 bit la satura e i core trascorrono più tempo in stallo
@@ -262,6 +265,16 @@ attivi nel calcolo, assorbendo così una potenza maggiore. Questo \emph{non} pen
 4 bit: la potenza aggiuntiva si traduce in calcolo utile, tant'è che a 4 thread le
 varianti a 4 bit restano più veloci (latenza media 10,0~s contro 15,5~s) e più
 efficienti (47,7~J contro 67,4~J per inferenza).
+
+Va precisato che questa spiegazione, per quanto coerente con i dati e con la natura
+\emph{memory-bandwidth bound} del carico, resta un'\textbf{interpretazione}: le misure
+disponibili registrano la sola potenza \emph{complessiva} della scheda (la somma dei
+dodici rami del PMIC), non l'andamento dei singoli rami. Una dimostrazione diretta
+richiederebbe di visualizzare separatamente i \textbf{dodici canali del PMIC} --- in
+particolare confrontando i rami della memoria (\textit{DDR\_VDD2}, \textit{DDR\_VDDQ})
+con quello del core del SoC (\textit{VDD\_CORE}) --- così da osservare l'effettivo
+spostamento del consumo tra sottosistema di memoria e sottosistema di calcolo al
+variare del grado di parallelismo.
 
 \begin{figure}[htbp]
     \centering

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.5.31)  17 JUL 2026 19:07
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.5.31)  17 JUL 2026 19:21
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -519,19 +519,19 @@ Package pdftex.def Info: imm/latency.png  used on input line 230.
 <imm/power.png, id=480, 794.97pt x 433.62pt>
 File: imm/power.png Graphic file (type png)
 <use imm/power.png>
-Package pdftex.def Info: imm/power.png  used on input line 268.
+Package pdftex.def Info: imm/power.png  used on input line 281.
 (pdftex.def)             Requested size: 390.0pt x 212.7337pt.
  [34] [35 <./imm/power.png>]
 <imm/ranking_composite.png, id=496, 794.97pt x 433.62pt>
 File: imm/ranking_composite.png Graphic file (type png)
 <use imm/ranking_composite.png>
-Package pdftex.def Info: imm/ranking_composite.png  used on input line 326.
+Package pdftex.def Info: imm/ranking_composite.png  used on input line 339.
 (pdftex.def)             Requested size: 390.0pt x 212.7337pt.
  [36 <./imm/ranking_composite.png>]
-<imm/thermal.png, id=506, 794.97pt x 433.62pt>
+<imm/thermal.png, id=505, 794.97pt x 433.62pt>
 File: imm/thermal.png Graphic file (type png)
 <use imm/thermal.png>
-Package pdftex.def Info: imm/thermal.png  used on input line 357.
+Package pdftex.def Info: imm/thermal.png  used on input line 370.
 (pdftex.def)             Requested size: 390.0pt x 212.7337pt.
 ) [37 <./imm/thermal.png>]
 \openout2 = `capitoli/conclusioni.aux'.
@@ -594,7 +594,7 @@ Here is how much of TeX's memory you used:
  1141 hyphenation exceptions out of 8191
  75i,10n,79p,429b,622s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfbx1095.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfbx1728.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfbx2488.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfrm0700.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfrm0800.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfrm1095.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfrm1728.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfti1095.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfti1200.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sftt1000.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sftt1095.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sftt1200.pfb>
-Output written on tesi.pdf (45 pages, 1586086 bytes).
+Output written on tesi.pdf (45 pages, 1587114 bytes).
 PDF statistics:
  706 PDF objects out of 1000 (max. 8388607)
  574 compressed objects within 6 object streams

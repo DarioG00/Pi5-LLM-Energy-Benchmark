@@ -35,8 +35,8 @@
 \contentsline {section}{\numberline {4.2}Effetto del grado di parallelismo (Campagna B)}{33}{section.4.2}%
 \contentsline {subsection}{\numberline {4.2.1}Latenza}{33}{subsection.4.2.1}%
 \contentsline {subsection}{\numberline {4.2.2}Potenza ed energia}{34}{subsection.4.2.2}%
-\contentsline {section}{\numberline {4.3}Sintesi: classifica complessiva}{34}{section.4.3}%
-\contentsline {section}{\numberline {4.4}Comportamento termico}{36}{section.4.4}%
+\contentsline {section}{\numberline {4.3}Sintesi: classifica complessiva}{35}{section.4.3}%
+\contentsline {section}{\numberline {4.4}Comportamento termico}{37}{section.4.4}%
 \contentsline {chapter}{\numberline {5}Conclusioni}{38}{chapter.5}%
 \contentsline {section}{\numberline {5.1}Sintesi dei risultati}{38}{section.5.1}%
 \contentsline {section}{\numberline {5.2}Indicazioni pratiche}{39}{section.5.2}%
