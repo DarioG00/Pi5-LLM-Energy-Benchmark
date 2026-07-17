@@ -1,2 +1,2 @@
 model,family,quant,threads,latency_s,energy_net_j,avg_power_w,prompt_tps,gen_tps,score,pareto
-qwen2.5-1.5B-Q4_K_M,qwen2.5-1.5B,Q4_K_M,1,12.74634,33.0114866,4.74282,16.02,12.28,1.0,True
+qwen2.5-1.5B-Q4_K_M,qwen2.5-1.5B,Q4_K_M,1,12.447799999999999,32.7884578,4.703480000000001,16.02,12.260000000000002,1.0,True

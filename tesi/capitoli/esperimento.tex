@@ -37,13 +37,13 @@ complementari, ciascuna mirata a isolare una specifica variabile di interesse:
     Isola l'effetto del numero di thread su latenza ed energia. Comporta
     $6 \times 3 \times 1 = 18$ registrazioni, per un totale di $18 \times 150 = 2700$
     inferenze. La scelta di una sola ripetizione su molti prompt distinti --- anziché
-    poche prompt ripetute più volte --- è deliberata: a parità di numero di inferenze,
+    pochi prompt ripetuti più volte --- è deliberata: a parità di numero di inferenze,
     la variabilità delle metriche tra prompt diversi è nettamente superiore a quella
     tra ripetizioni della stessa misura, per cui coprire più prompt distinti fornisce
     una stima statisticamente più solida di latenza ed energia.
 \end{itemize}
 
-In entrambe le campagne il sottoinsieme di prompt valutato è identico per tutti i
+In entrambe le campagne l'insieme di prompt valutato è identico per tutti i
 modelli e le configurazioni, così da garantire l'equità del confronto.
 
 \section{Metriche di valutazione}
@@ -240,12 +240,14 @@ principali.
 
 \subsection{Alimentazione e lettura del PMIC}
 
-Il Raspberry Pi 5 è alimentato dall'alimentatore ufficiale (USB-C, 5,1~V, fino a
-3~A, 15~W) e resta acceso per l'intera campagna di misura: non è quindi presente alcuno
+Il Raspberry Pi 5 è alimentato da un alimentatore USB-C da 5,1~V / 3~A (15~W) e
+resta acceso per l'intera campagna di misura: non è quindi presente alcuno
 strumento esterno da configurare né alcuna sequenza di accensione da pilotare. Il
-valore di 5,1~V erogato dall'alimentatore ufficiale rientra nella tolleranza di
-alimentazione del dispositivo (5~V $\pm$ 5\%) e previene condizioni di
-\textit{undervoltage} durante i picchi di assorbimento in carico.
+valore di 5,1~V erogato rientra nella tolleranza di alimentazione del dispositivo
+(5~V $\pm$ 5\%); pur essendo inferiore all'alimentatore ufficiale da 27~W (5~A)
+raccomandato per il Pi~5, tale alimentazione si è rivelata sufficiente per il carico
+adottato, senza mai dare luogo a condizioni di \textit{undervoltage} durante i picchi
+di assorbimento in carico (come verificato tramite \texttt{get\_throttled}).
 
 All'avvio dell'esperimento lo script apre una connessione SSH dedicata verso il
 Pi e verifica che il comando \texttt{vcgencmd pmic\_read\_adc} risponda
@@ -371,8 +373,8 @@ al raggiungimento di un \textit{soft limit} di 80~°C i core ARM vengono
 progressivamente rallentati, mentre a un \textit{hard limit} di 85~°C la riduzione
 della frequenza diventa più aggressiva. Nella configurazione adottata l'inferenza è
 eseguita interamente sulla CPU (core ARM) e il Raspberry Pi 5 è raffreddato dalla
-ventola attiva integrata nel coperchio del case, che mantiene la temperatura
-ampiamente al di sotto di tali soglie durante l'intera campagna.
+ventola attiva integrata nel coperchio del case, che mantiene la temperatura entro
+i limiti di sicurezza durante le campagne di misura, senza mai attivare il throttling.
 
 Per garantire la validità delle misure, durante l'esperimento lo script si limita a
 \emph{monitorare} lo stato termico del dispositivo, eseguendo dopo ogni inferenza i
@@ -384,9 +386,10 @@ certificare a posteriori che le acquisizioni non siano avvenute in regime di
 throttling; qualora una condizione di throttling venga comunque rilevata durante una
 ripetizione, la misura corrispondente viene scartata e ripetuta.
 
-Sebbene la ventola attiva mantenga la temperatura sotto la soglia di throttling, tra
-una configurazione e la successiva è stata introdotta una breve \textit{pausa di
-raffreddamento} (\textit{cool-down}) di alcune decine di secondi. La pausa fa
+Sebbene la ventola attiva mantenga la temperatura sotto la soglia di throttling,
+nella Campagna B --- che include le configurazioni a 4 thread, termicamente più
+impegnative --- tra una configurazione e la successiva è stata introdotta una breve
+\textit{pausa di raffreddamento} (\textit{cool-down}) di alcune decine di secondi. La pausa fa
 ripartire ogni registrazione da una temperatura più bassa, aumentando il margine
 rispetto alle soglie di throttling; essendo collocata al di fuori delle finestre di
 misura, non altera in alcun modo i valori di energia e latenza acquisiti.

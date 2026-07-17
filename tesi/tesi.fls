@@ -284,6 +284,11 @@ INPUT ./imm/throughput.png
 INPUT ./imm/throughput.png
 INPUT ./imm/throughput.png
 INPUT ./imm/throughput.png
+INPUT ./imm/latency_a.png
+INPUT ./imm/latency_a.png
+INPUT ./imm/latency_a.png
+INPUT ./imm/latency_a.png
+INPUT ./imm/latency_a.png
 INPUT ./imm/tradeoff.png
 INPUT ./imm/tradeoff.png
 INPUT ./imm/tradeoff.png

@@ -14,22 +14,27 @@ Rispetto alle tre dimensioni indagate, i risultati (Capitolo~\ref{chap:risultati
 possono essere riassunti come segue:
 \begin{itemize}
     \item \textbf{Efficienza energetica.} Il modello più efficiente per inferenza
-    è risultato \textbf{qwen2.5-1.5B Q4\_K\_M}, con circa \textbf{19,9~J} per
+    è risultato \textbf{qwen2.5-1.5B Q4\_K\_M}, con circa \textbf{24,6~J} per
     inferenza; in generale le varianti a 4 bit (Q4\_K\_M) si sono confermate più
-    economiche delle corrispondenti a 8 bit (in media circa il 21\% in meno).
+    economiche delle corrispondenti a 8 bit (in media circa il 18\% in meno).
     \item \textbf{Qualità delle risposte.} La qualità media più elevata è stata
-    ottenuta dai modelli \textbf{gemma-2-2B}, ma le differenze tra i sei modelli
-    sono risultate contenute; il passaggio da 8 a 4 bit ha comportato una perdita
-    di qualità del tutto \textbf{trascurabile}, rendendo la quantizzazione più
-    aggressiva a 4 bit \textbf{conveniente} nella maggior parte dei casi (stessa
-    qualità, meno spazio occupato e meno energia).
+    ottenuta da \textbf{qwen2.5-1.5B Q4\_K\_M}, ma le differenze tra i sei modelli
+    sono risultate contenute (tutti tra 0,66 e 0,71); il passaggio da 8 a 4 bit ha
+    comportato una differenza di qualità del tutto \textbf{trascurabile}, rendendo la
+    quantizzazione più aggressiva a 4 bit \textbf{conveniente} nella maggior parte
+    dei casi (stessa qualità, meno spazio occupato e meno energia).
     \item \textbf{Latenza e parallelismo.} L'aumento del numero di thread ha
     ridotto la latenza fino a \textbf{2 thread} (circa \mbox{-24\%} rispetto a 1
     thread), con \textbf{rendimenti nulli o negativi} oltre: a 4 thread la latenza
     non migliora (anzi peggiora di circa il 18\%) e l'energia peggiora
     (\mbox{+28\%} rispetto a 2 thread). L'energia per inferenza è minima a 1 thread,
     ma a fronte di una latenza molto più alta, per cui i \textbf{2 thread}
-    rappresentano il miglior compromesso.
+    rappresentano il miglior compromesso. Anche la quantizzazione incide sulla
+    latenza: a parità di modello e di thread, le varianti a \textbf{8 bit} sono
+    risultate mediamente circa il \textbf{30\% più lente} delle corrispondenti a 4
+    bit (da \mbox{+13\%} per qwen a \mbox{+37\%} per llama), per il maggior volume di
+    dati da leggere per token --- un ulteriore vantaggio dei 4 bit, che si aggiunge
+    al minor consumo a fronte di una qualità sostanzialmente equivalente.
 \end{itemize}
 Complessivamente, secondo lo score composito che bilancia le tre metriche, la
 configurazione più equilibrata per un impiego su dispositivo a risorse limitate è
@@ -40,8 +45,10 @@ configurazione più equilibrata per un impiego su dispositivo a risorse limitate
 Dai risultati emergono alcune indicazioni operative per chi voglia eseguire un LLM
 su un dispositivo edge simile: privilegiare un \textbf{modello piccolo
 quantizzato a 4 bit} (qui qwen2.5-1.5B Q4\_K\_M ha offerto il miglior compromesso
-tra energia, latenza e qualità, ma anche gemma-2-2B a 4 bit resta un'ottima scelta
-se si privilegia la qualità), l'uso di \textbf{2 thread} come compromesso tra
+tra energia, latenza e qualità, risultando anche il più accurato in media; qualora
+però l'applicazione richieda spiccate capacità di ragionamento, il più grande
+Llama-3.2-3B eccelle sui compiti aritmetici e di ragionamento, ma a un costo
+energetico sensibilmente superiore), l'uso di \textbf{2 thread} come compromesso tra
 reattività ed efficienza, e la conferma che, con un adeguato raffreddamento, un
 Raspberry Pi~5 è in grado di sostenere l'inferenza di modelli fino a $\sim$3
 miliardi di parametri quantizzati senza incorrere in \textit{throttling} termico.
@@ -54,9 +61,17 @@ corrente sui rami monitorati: rappresentano quindi il consumo interno della
 scheda e non quello alla presa di corrente, e non includono le perdite
 dell'alimentatore; per una stima del consumo ``a parete'' sarebbe necessaria una
 calibrazione dedicata sul singolo esemplare. La Campagna B, dedicata allo scaling
-sul parallelismo, utilizza inoltre un sottoinsieme ridotto di prompt per contenere
-i tempi di misura, con una conseguente minore risoluzione statistica sulla
-qualità. Lo studio è infine limitato a un singolo esemplare di Raspberry Pi~5, a
+sul parallelismo, adotta inoltre una \textbf{singola ripetizione} per configurazione
+(anziché le tre della Campagna A) per contenere i tempi di misura: la scelta è
+giustificata dal fatto che, sullo stesso insieme di 150 prompt, la variabilità tra
+prompt distinti domina quella tra ripetizioni, ma comporta comunque una minore
+mediazione delle fluttuazioni non deterministiche rispetto alla Campagna A. Un ulteriore
+limite riguarda il supporto di archiviazione: l'esecuzione prolungata sotto carico
+può sollecitare la scheda microSD al punto da corromperne \emph{silenziosamente} i
+file dei modelli --- fenomeno mitigato dalla verifica di integrità \texttt{sha256} e
+dalle pause di raffreddamento adottate, ma che evidenzia la fragilità della microSD
+in un impiego così intensivo. Lo studio
+è infine limitato a un singolo esemplare di Raspberry Pi~5, a
 un unico motore di inferenza (llama.cpp) e a due soli formati di quantizzazione
 (Q4\_K\_M e Q8\_0): l'estensione ad altre schede, backend o precisioni potrebbe
 modificare alcuni dei rapporti osservati.
@@ -65,8 +80,12 @@ modificare alcuni dei rapporti osservati.
 
 Il lavoro può essere esteso in diverse direzioni. Sul piano delle misure, una
 calibrazione del PMIC rispetto a uno strumento di riferimento consentirebbe di
-riportare il consumo reale alla presa; l'ampliamento dei dataset e del numero di
-prompt aumenterebbe la robustezza statistica delle metriche di qualità. Sul piano
+riportare il consumo reale alla presa; un ulteriore ampliamento dei dataset e del
+numero di prompt aumenterebbe ancora la robustezza statistica delle metriche di
+qualità; l'adozione di un supporto di archiviazione più affidabile --- un'unità a
+stato solido collegata via USB oppure una microSD di classe industriale --- eliminerebbe
+inoltre il rischio di corruzione dei file dei modelli osservato nelle campagne più
+lunghe. Sul piano
 sperimentale, sarebbe interessante includere ulteriori modelli e formati di
 quantizzazione (ad esempio precisioni inferiori a 4 bit), confrontare motori di
 inferenza alternativi, e valutare l'effetto di tecniche di gestione dinamica

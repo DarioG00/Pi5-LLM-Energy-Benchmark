@@ -73,7 +73,7 @@
   <text x="1197" y="460" text-anchor="middle" font-size="16" font-weight="bold">PMIC del Raspberry Pi 5</text>
   <text x="1197" y="488" text-anchor="middle" font-size="13">letto via vcgencmd pmic_read_adc (12 rami: I x V)</text>
   <text x="1197" y="514" text-anchor="middle" font-size="13">stato termico: measure_temp, get_throttled</text>
-  <text x="1197" y="538" text-anchor="middle" font-size="12">alimentazione: alimentatore ufficiale (5,1 V / 3 A)</text>
+  <text x="1197" y="538" text-anchor="middle" font-size="12">alimentazione: alimentatore USB-C 5,1 V / 3 A (15 W)</text>
 
   <!-- ETHERNET (SSH) -->
   <polyline points="320,650 320,715 1197,715 1197,556" fill="none" stroke="#000" stroke-width="2.5"/>

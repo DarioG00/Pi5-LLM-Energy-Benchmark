@@ -41,12 +41,14 @@ una singola scheda e non trasferibile ad altre unità; in questo lavoro si regis
 quindi direttamente la somma non corretta delle potenze dei rami, misura coerente
 e adeguata al confronto tra modelli (v.\ Capitolo successivo).
 
-Per l'alimentazione è stato impiegato l'\textbf{alimentatore ufficiale del
-Raspberry Pi 5} (USB-C, 5,1~V, fino a 3~A, 15~W), collegato alla porta di
-alimentazione \textit{USB-C} della scheda. L'impiego dell'alimentatore ufficiale,
-progettato per il Pi 5, garantisce una tensione stabile ed evita condizioni di
-sottoalimentazione (\textit{undervoltage}) durante i picchi di assorbimento in
-carico. Si è scelto deliberatamente di \emph{non} alimentare il dispositivo
+Per l'alimentazione è stato impiegato un \textbf{alimentatore USB-C da 5,1~V /
+3~A (15~W)}, collegato alla porta di alimentazione \textit{USB-C} della scheda. Pur
+restando al di sotto dell'alimentatore ufficiale da 27~W (5,1~V / 5~A) raccomandato
+per il Raspberry Pi~5, tale potenza è risultata sufficiente per il carico di lavoro
+considerato --- inferenza eseguita interamente sulla CPU, senza periferiche USB
+energivore collegate --- e per l'intera campagna di misura non si è mai verificata
+alcuna condizione di sottoalimentazione (\textit{undervoltage}), come confermato dal
+monitoraggio del registro \texttt{get\_throttled}. Si è scelto deliberatamente di \emph{non} alimentare il dispositivo
 tramite i pin GPIO: tale modalità bypassa le protezioni dell'ingresso USB-C ed
 espone il PMIC al rischio di danneggiamento~\cite{raspberrypi_gpio}. Misurando il
 consumo direttamente dal PMIC, non è inoltre necessario interporre alcuno
@@ -82,6 +84,15 @@ rete e del consumo energetico dovuta a interferenze, fluttuazioni del segnale o
 ad altre attività del sottosistema wireless. In questo modo è possibile ottenere
 una stima più accurata del consumo energetico attribuibile esclusivamente
 all'esecuzione dei modelli quantizzati.
+
+Per la stessa finalità, durante le misure al Raspberry Pi~5 erano collegati
+\textbf{esclusivamente l'alimentatore e il cavo Ethernet}, e i sottosistemi
+\textit{Wi-Fi} e \textit{Bluetooth} sono stati \textbf{entrambi disattivati}. Si
+eliminano così i consumi e le fluttuazioni introdotti da tali radio --- e da
+eventuali periferiche --- che altrimenti si sommerebbero al consumo della scheda
+introducendo rumore nelle misure; la configurazione minimale contribuisce inoltre a
+rendere più stabile e ripetibile il consumo di riferimento a riposo (\textit{idle})
+sottratto nel calcolo dell'energia netta.
 
 La maggiore stabilità del consumo del sistema in condizioni di inattività
 (\textit{idle}) consente inoltre di utilizzare tale valore come riferimento per

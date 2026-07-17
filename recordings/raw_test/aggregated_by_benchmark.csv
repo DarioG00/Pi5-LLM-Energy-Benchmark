@@ -1,6 +1,6 @@
 model,family,quant,threads,benchmark,latency_s,energy_net_j,avg_power_w,gen_tps,score
-qwen2.5-1.5B-Q4_K_M,qwen2.5-1.5B,Q4_K_M,1,bbh,2.1219,4.96981,4.6863,15.4,1.0
-qwen2.5-1.5B-Q4_K_M,qwen2.5-1.5B,Q4_K_M,1,commonsenseqa,4.9811,11.040862,4.5608,15.4,1.0
-qwen2.5-1.5B-Q4_K_M,qwen2.5-1.5B,Q4_K_M,1,gsm8k,35.5859,97.198963,5.0756,7.6,1.0
-qwen2.5-1.5B-Q4_K_M,qwen2.5-1.5B,Q4_K_M,1,humaneval,17.4014,43.911432,4.8677,7.7,1.0
-qwen2.5-1.5B-Q4_K_M,qwen2.5-1.5B,Q4_K_M,1,truthfulqa,3.6414,7.936366,4.5237,15.3,1.0
+qwen2.5-1.5B-Q4_K_M,qwen2.5-1.5B,Q4_K_M,1,bbh,2.1202,4.819239,4.5683,15.4,1.0
+qwen2.5-1.5B-Q4_K_M,qwen2.5-1.5B,Q4_K_M,1,commonsenseqa,4.9874,10.894742,4.4798,15.3,1.0
+qwen2.5-1.5B-Q4_K_M,qwen2.5-1.5B,Q4_K_M,1,gsm8k,34.1049,94.951384,5.0795,7.6,1.0
+qwen2.5-1.5B-Q4_K_M,qwen2.5-1.5B,Q4_K_M,1,humaneval,17.3761,45.268599,4.9006,7.7,1.0
+qwen2.5-1.5B-Q4_K_M,qwen2.5-1.5B,Q4_K_M,1,truthfulqa,3.6504,8.008325,4.4892,15.3,1.0

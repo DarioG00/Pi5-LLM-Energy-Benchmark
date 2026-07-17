@@ -11,7 +11,7 @@ esperimento via **SSH**.
 Il PC host coordina tutto:
 
 1. si collega via **SSH** (Paramiko) al Raspberry Pi 5, alimentato dal suo
-   **alimentatore ufficiale** (USB-C, 5,1 V / 3 A, 15 W) e sempre acceso;
+   **alimentatore USB-C da 5,1 V / 3 A (15 W)** e sempre acceso;
 2. campiona il **PMIC** del Pi (`vcgencmd pmic_read_adc`) a ~10 Hz: la potenza è
    la somma dei prodotti corrente×tensione sui 12 rami della scheda;
 3. registra il consumo **idle** del Pi e lo usa come **bias** da sottrarre;
