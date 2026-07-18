@@ -332,47 +332,44 @@ def plot_pareto(cfg_df, out, cost="energy_net_j",
 def plot_pareto_lat_energy(cfg_df, out):
     """Frontiera di Pareto latenza-energia al variare del numero di thread.
 
-    Per ogni modello traccia la traiettoria a 1/2/4 thread nel piano latenza--energia
-    (entrambi costi da minimizzare) e marca in rosso le configurazioni dominate
-    (dominanza valutata all'interno del singolo modello). Serve a scegliere il grado
-    di parallelismo; ha senso solo se sono presenti piu' livelli di thread.
+    Disegna tutte le configurazioni (modello x thread) nel piano latenza--energia
+    (entrambi costi da minimizzare), evidenzia le configurazioni non dominate a
+    livello globale e le collega con la linea di frontiera in rosso. Coerente con
+    le altre frontiere di Pareto; ha senso solo se sono presenti piu' livelli di
+    thread. Serve a scegliere il grado di parallelismo.
     """
-    from matplotlib.lines import Line2D
     d = cfg_df.dropna(subset=["latency_s", "energy_net_j"]).copy()
     if d["threads"].nunique() < 2:
         log.info("Un solo livello di thread: salto la frontiera latenza-energia.")
         return
-    models = sorted(d["model"].unique())
-    cmap = plt.get_cmap("tab10")
-    colors = {m: cmap(i % 10) for i, m in enumerate(models)}
-    fig, ax = plt.subplots(figsize=(9, 6.2))
-    for m in models:
-        sub = d[d["model"] == m].sort_values("threads").reset_index(drop=True)
-        lat = sub["latency_s"].values
-        en = sub["energy_net_j"].values
-        c = colors[m]
-        ax.plot(lat, en, "-", color=c, alpha=0.45, lw=1.3, zorder=1)
-        for i in range(len(sub)):
-            dominated = any((lat[j] <= lat[i]) and (en[j] <= en[i]) and
-                            ((lat[j] < lat[i]) or (en[j] < en[i]))
-                            for j in range(len(sub)) if j != i)
-            ax.scatter(lat[i], en[i], s=90, color=c, zorder=3,
-                       edgecolor="black", linewidth=0.5)
-            ax.annotate(f"{int(sub['threads'][i])}t", (lat[i], en[i]),
-                        textcoords="offset points", xytext=(6, 4), fontsize=8)
-            if dominated:
-                ax.scatter(lat[i], en[i], s=230, facecolors="none", edgecolors="red",
-                           linewidth=1.6, marker="X", zorder=4)
-    handles = [Line2D([0], [0], marker="o", color="w", markerfacecolor=colors[m],
-                      markeredgecolor="k", markersize=9, label=m) for m in models]
-    handles.append(Line2D([0], [0], marker="X", color="w", markeredgecolor="red",
-                          markersize=12, markerfacecolor="none",
-                          label="configurazione dominata"))
-    ax.legend(handles=handles, fontsize=8.5, loc="upper left", framealpha=0.9)
-    ax.set_xlabel("Latenza media per inferenza (s)")
-    ax.set_ylabel("Energia netta per inferenza (J)")
-    ax.set_title("Compromesso latenza-energia al variare del numero di thread")
-    ax.grid(True, alpha=0.3)
+    # frontiera globale: una configurazione e' non dominata se nessun'altra ha
+    # latenza ED energia entrambe non peggiori (con almeno una migliore).
+    lat = d["latency_s"].values
+    en = d["energy_net_j"].values
+    pareto = []
+    for i in range(len(d)):
+        dominated = any((lat[j] <= lat[i]) and (en[j] <= en[i]) and
+                        ((lat[j] < lat[i]) or (en[j] < en[i]))
+                        for j in range(len(d)) if j != i)
+        pareto.append(not dominated)
+    d["pareto"] = pareto
+    fig, ax = plt.subplots(figsize=(10, 7))
+    sns.scatterplot(data=d, x="latency_s", y="energy_net_j",
+                    hue="model", style="threads", s=120, ax=ax)
+    opt = d[d["pareto"]].sort_values("latency_s")
+    ax.plot(opt["latency_s"], opt["energy_net_j"], color="red", lw=1.6, ls="--",
+            marker="o", markersize=15, markerfacecolor="none",
+            markeredgecolor="red", markeredgewidth=2,
+            label="Frontiera di Pareto", zorder=5)
+    for _, r in opt.iterrows():
+        ax.annotate(f"{r['model']} t{int(r['threads'])}",
+                    (r["latency_s"], r["energy_net_j"]),
+                    textcoords="offset points", xytext=(7, 6),
+                    fontsize=8, color="red")
+    ax.set_title("Frontiera di Pareto: latenza vs energia al variare dei thread")
+    ax.set_xlabel("Latenza media per inferenza (s) (minore = meglio)")
+    ax.set_ylabel("Energia netta per inferenza (J) (minore = meglio)")
+    ax.legend(bbox_to_anchor=(1.02, 1), loc="upper left", fontsize=8)
     _save(fig, out)
 
 

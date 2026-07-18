@@ -36,8 +36,8 @@
 \contentsline {section}{\numberline {4.3}Frontiere di Pareto}{33}{section.4.3}%
 \contentsline {subsection}{\numberline {4.3.1}Confronto tra i modelli (Campagna A)}{34}{subsection.4.3.1}%
 \contentsline {subsection}{\numberline {4.3.2}Scelta del grado di parallelismo (Campagna B)}{36}{subsection.4.3.2}%
-\contentsline {section}{\numberline {4.4}Sintesi: classifica complessiva}{36}{section.4.4}%
-\contentsline {section}{\numberline {4.5}Comportamento termico}{39}{section.4.5}%
+\contentsline {section}{\numberline {4.4}Sintesi: classifica complessiva}{37}{section.4.4}%
+\contentsline {section}{\numberline {4.5}Comportamento termico}{38}{section.4.5}%
 \contentsline {chapter}{\numberline {5}Conclusioni}{40}{chapter.5}%
 \contentsline {section}{\numberline {5.1}Sintesi dei risultati}{40}{section.5.1}%
 \contentsline {section}{\numberline {5.2}Indicazioni pratiche}{41}{section.5.2}%

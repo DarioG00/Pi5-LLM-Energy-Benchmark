@@ -323,27 +323,26 @@ Figura~\ref{fig:res-pareto-lat} mostra l'analoga frontiera nel piano
 \subsection{Scelta del grado di parallelismo (Campagna B)}
 
 Nella Campagna B la qualità non entra in gioco (il numero di thread non cambia le
-risposte): latenza ed energia sono due \emph{costi} che il parallelismo influenza in
-direzioni potenzialmente opposte. Rappresentando ciascuna configurazione nel piano
-\textbf{latenza--energia} si individuano, per ogni modello, le combinazioni di thread
-\emph{non dominate}. La Figura~\ref{fig:res-pareto-thread} riporta, per i sei modelli,
-la traiettoria al variare dei thread (1, 2 e 4) e marca in rosso le configurazioni
-dominate. Il risultato è netto: la configurazione a \textbf{4 thread è dominata in
-cinque modelli su sei}, perché rispetto ai 2 thread consuma di più senza ridurre la
-latenza (anzi spesso aumentandola); l'unica eccezione è qwen2.5-1.5B Q4\_K\_M, mentre per
-Llama-3.2-3B Q4\_K\_M la dominanza è ancora più forte (risultano dominati sia 1 sia 4
-thread, e l'unico punto sulla frontiera è quello a 2 thread). La frontiera di ciascun
-modello si riduce così ai soli 1 e 2 thread: la scelta razionale è tra \textbf{1 thread}
-(energia minima, ma latenza elevata) e \textbf{2 thread} (latenza minima, con un modesto
-sovrapprezzo energetico), mentre i 4 thread quasi mai rappresentano un compromesso
-ottimale --- una conferma \emph{senza pesi} dei 2 thread come miglior compromesso.
+risposte): latenza ed energia sono due \emph{costi}, entrambi da minimizzare. La
+Figura~\ref{fig:res-pareto-thread} riporta la frontiera di Pareto nel piano
+\textbf{latenza--energia} considerando tutte le configurazioni di modello e thread (le
+migliori sono in basso a sinistra). La frontiera è occupata \emph{esclusivamente} da
+configurazioni \textbf{qwen2.5-1.5B}: qwen Q8 a 1 thread (energia minima, 23,8~J), qwen
+Q4 a 2 thread e qwen Q4 a 4 thread (latenza minima, 5,9~s); tutte le altre
+configurazioni --- in particolare i modelli più grandi, a qualunque numero di thread ---
+risultano \emph{dominate}. Restringendo l'analisi al singolo modello si ritrova quanto
+osservato sulla latenza: le configurazioni a \textbf{4 thread} sono quasi sempre
+dominate da quelle a 2 thread (consumano di più senza ridurre la latenza), e la scelta
+razionale del parallelismo resta tra \textbf{1 thread} (energia minima, ma latenza
+elevata) e \textbf{2 thread} (latenza minima, con un modesto sovrapprezzo energetico),
+con i \textbf{2 thread} come miglior compromesso complessivo.
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{imm/pareto_lat_energia.png}
-    \caption{Compromesso latenza--energia al variare del numero di thread (Campagna B):
-    per ogni modello è tracciata la traiettoria a 1, 2 e 4 thread e sono marcate in rosso
-    le configurazioni dominate. I 4 thread risultano dominati in cinque modelli su sei.}
+    \caption{Frontiera di Pareto nel piano latenza--energia (Campagna B): tutte le
+    configurazioni di modello e thread; la linea rossa collega le configurazioni non
+    dominate. La frontiera è occupata dalle sole varianti qwen2.5-1.5B.}
     \label{fig:res-pareto-thread}
 \end{figure}
 
