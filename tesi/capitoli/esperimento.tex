@@ -311,6 +311,9 @@ dove ciascun parametro assolve una funzione specifica:
     di contesto di 512 token.
 \end{itemize}
 
+Per la generazione dei token si è impiegato il \textbf{campionamento predefinito} di
+\texttt{llama.cpp} (stocastico, con temperatura maggiore di zero).
+
 Il framework \texttt{llama.cpp} avvia \texttt{llama-cli} in modalità interattiva,
 consentendo di mantenere il modello caricato in memoria per l'intera sessione di
 benchmark ed evitando di ripeterne il caricamento a ogni prompt. Dopo il caricamento, lo script

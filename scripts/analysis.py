@@ -217,6 +217,55 @@ def plot_quality(agg_df, out):
     _save(fig, out)
 
 
+def overall_quality(df: pd.DataFrame) -> pd.DataFrame:
+    """Accuratezza media *complessiva* per modello (su tutti i prompt di tutti i
+    benchmark), con errore standard e intervallo di confidenza al 95%.
+
+    L'incertezza e' stimata sulla variabilita' *tra i prompt*: per ciascun prompt
+    si media prima sulle ripetizioni, poi si calcola media e deviazione standard
+    sull'insieme dei prompt distinti. E' il dato di qualita' piu' affidabile,
+    perche' basato su tutti i 150 prompt anziche' sui 30 di un singolo benchmark.
+    """
+    infer = df[df["benchmark"] != LOAD_TAG].copy()
+    per_prompt = (infer.groupby(["model", "family", "quant", "benchmark", "sample_id"])
+                  ["score"].mean().reset_index())
+    g = (per_prompt.groupby(["model", "family", "quant"])["score"]
+         .agg(accuracy="mean", sd="std", n="count").reset_index())
+    g["se"] = g["sd"] / np.sqrt(g["n"])
+    g["ci95"] = 1.96 * g["se"]
+    return g.sort_values(["family", "quant"]).reset_index(drop=True)
+
+
+def plot_quality_overall(df, out):
+    """Grafico a barre dell'accuratezza media complessiva per modello, con barre
+    d'errore (intervallo di confidenza al 95%).
+
+    Mette in evidenza che il confronto affidabile e' quello sull'aggregato: le
+    barre d'errore delle due precisioni (4 e 8 bit) di una stessa famiglia si
+    sovrappongono, a conferma che sono statisticamente equivalenti in qualita'.
+    """
+    from matplotlib.patches import Patch
+    g = overall_quality(df)
+    colors = {"Q4_K_M": "#4C72B0", "Q8_0": "#DD8452"}
+    x = np.arange(len(g))
+    fig, ax = plt.subplots(figsize=(11, 6))
+    ax.bar(x, g["accuracy"], yerr=g["ci95"], capsize=6,
+           color=[colors.get(q, "#888888") for q in g["quant"]],
+           edgecolor="black", linewidth=0.6)
+    ax.set_xticks(x)
+    ax.set_xticklabels(g["model"], rotation=20, ha="right")
+    ax.set_ylim(0, 1)
+    ax.set_ylabel("Accuratezza media (0-1)")
+    ax.set_title("Accuratezza media complessiva per modello "
+                 "(150 prompt, barre = IC 95%)")
+    for xi, acc, ci in zip(x, g["accuracy"], g["ci95"]):
+        ax.text(xi, acc + ci + 0.015, f"{acc:.3f}", ha="center", fontsize=9)
+    ax.legend(handles=[Patch(color=colors["Q4_K_M"], label="4 bit (Q4_K_M)"),
+                       Patch(color=colors["Q8_0"], label="8 bit (Q8_0)")],
+              loc="lower right")
+    _save(fig, out)
+
+
 def plot_power(cfg_df, out):
     """Grafico a barre della potenza media assorbita, per modello e numero di thread."""
     fig, ax = plt.subplots(figsize=(11, 6))
@@ -280,6 +329,53 @@ def plot_pareto(cfg_df, out, cost="energy_net_j",
     _save(fig, out)
 
 
+def plot_pareto_lat_energy(cfg_df, out):
+    """Frontiera di Pareto latenza-energia al variare del numero di thread.
+
+    Per ogni modello traccia la traiettoria a 1/2/4 thread nel piano latenza--energia
+    (entrambi costi da minimizzare) e marca in rosso le configurazioni dominate
+    (dominanza valutata all'interno del singolo modello). Serve a scegliere il grado
+    di parallelismo; ha senso solo se sono presenti piu' livelli di thread.
+    """
+    from matplotlib.lines import Line2D
+    d = cfg_df.dropna(subset=["latency_s", "energy_net_j"]).copy()
+    if d["threads"].nunique() < 2:
+        log.info("Un solo livello di thread: salto la frontiera latenza-energia.")
+        return
+    models = sorted(d["model"].unique())
+    cmap = plt.get_cmap("tab10")
+    colors = {m: cmap(i % 10) for i, m in enumerate(models)}
+    fig, ax = plt.subplots(figsize=(9, 6.2))
+    for m in models:
+        sub = d[d["model"] == m].sort_values("threads").reset_index(drop=True)
+        lat = sub["latency_s"].values
+        en = sub["energy_net_j"].values
+        c = colors[m]
+        ax.plot(lat, en, "-", color=c, alpha=0.45, lw=1.3, zorder=1)
+        for i in range(len(sub)):
+            dominated = any((lat[j] <= lat[i]) and (en[j] <= en[i]) and
+                            ((lat[j] < lat[i]) or (en[j] < en[i]))
+                            for j in range(len(sub)) if j != i)
+            ax.scatter(lat[i], en[i], s=90, color=c, zorder=3,
+                       edgecolor="black", linewidth=0.5)
+            ax.annotate(f"{int(sub['threads'][i])}t", (lat[i], en[i]),
+                        textcoords="offset points", xytext=(6, 4), fontsize=8)
+            if dominated:
+                ax.scatter(lat[i], en[i], s=230, facecolors="none", edgecolors="red",
+                           linewidth=1.6, marker="X", zorder=4)
+    handles = [Line2D([0], [0], marker="o", color="w", markerfacecolor=colors[m],
+                      markeredgecolor="k", markersize=9, label=m) for m in models]
+    handles.append(Line2D([0], [0], marker="X", color="w", markeredgecolor="red",
+                          markersize=12, markerfacecolor="none",
+                          label="configurazione dominata"))
+    ax.legend(handles=handles, fontsize=8.5, loc="upper left", framealpha=0.9)
+    ax.set_xlabel("Latenza media per inferenza (s)")
+    ax.set_ylabel("Energia netta per inferenza (J)")
+    ax.set_title("Compromesso latenza-energia al variare del numero di thread")
+    ax.grid(True, alpha=0.3)
+    _save(fig, out)
+
+
 def plot_composite(comp_df, out):
     """Grafico della classifica delle configurazioni secondo lo score composito."""
     fig, ax = plt.subplots(figsize=(11, 6))
@@ -339,6 +435,7 @@ def run_analysis(csv_path: str, cfg: dict, base_dir: str = ".") -> None:
 
     # salva tabelle aggregate
     agg.to_csv(os.path.join(base_dir, cfg["output"]["raw_dir"], "aggregated_by_benchmark.csv"), index=False)
+    overall_quality(df).to_csv(os.path.join(base_dir, cfg["output"]["raw_dir"], "quality_overall.csv"), index=False)
     tot_e.to_csv(os.path.join(base_dir, cfg["output"]["raw_dir"], "energy_per_config.csv"), index=False)
     comp.to_csv(os.path.join(base_dir, cfg["output"]["raw_dir"], "ranking_composite.csv"), index=False)
     pareto_e[pareto_e["pareto"]].to_csv(os.path.join(base_dir, cfg["output"]["raw_dir"], "pareto_energia.csv"), index=False)
@@ -350,6 +447,7 @@ def run_analysis(csv_path: str, cfg: dict, base_dir: str = ".") -> None:
     plot_latency(cfgv, os.path.join(plots_dir, "latency.png"))
     plot_latency_box(df, os.path.join(plots_dir, "latency_box.png"))
     plot_quality(agg, os.path.join(plots_dir, "quality_heatmap.png"))
+    plot_quality_overall(df, os.path.join(plots_dir, "quality_overall.png"))
     plot_power(cfgv, os.path.join(plots_dir, "power.png"))
     plot_throughput(cfgv, os.path.join(plots_dir, "throughput.png"))
     plot_tradeoff(cfgv, os.path.join(plots_dir, "tradeoff.png"))
@@ -359,6 +457,7 @@ def run_analysis(csv_path: str, cfg: dict, base_dir: str = ".") -> None:
     plot_pareto(cfgv, os.path.join(plots_dir, "pareto_latenza.png"),
                 "latency_s", "Latenza media di inferenza (s)",
                 "Frontiera di Pareto: latenza vs qualità")
+    plot_pareto_lat_energy(cfgv, os.path.join(plots_dir, "pareto_lat_energia.png"))
     plot_composite(comp, os.path.join(plots_dir, "ranking_composite.png"))
     plot_thermal(df, os.path.join(plots_dir, "thermal.png"))
     log.info(thermal_report(df))

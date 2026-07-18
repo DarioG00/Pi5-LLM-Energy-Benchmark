@@ -18,8 +18,8 @@ possono essere riassunti come segue:
     inferenza; in generale le varianti a 4 bit (Q4\_K\_M) si sono confermate più
     economiche delle corrispondenti a 8 bit (in media circa il 18\% in meno).
     \item \textbf{Qualità delle risposte.} Le differenze di qualità tra i sei
-    modelli sono risultate contenute (tutti tra 0,66 e 0,71) e comparabili con la
-    variabilità della generazione non deterministica; in particolare, il passaggio
+    modelli sono risultate contenute (tutti tra 0,66 e 0,71) e non statisticamente
+    significative (rientrano nell'incertezza di misura); in particolare, il passaggio
     da 8 a 4 bit ha comportato una differenza del tutto \textbf{trascurabile}, rendendo la
     quantizzazione più aggressiva a 4 bit \textbf{conveniente} nella maggior parte
     dei casi (stessa qualità, meno spazio occupato e meno energia).
@@ -65,12 +65,16 @@ sul parallelismo, adotta inoltre una \textbf{singola ripetizione} per configuraz
 (anziché le tre della Campagna A) per contenere i tempi di misura: la scelta è
 giustificata dal fatto che, sullo stesso insieme di 150 prompt, la variabilità tra
 prompt distinti domina quella tra ripetizioni, ma comporta comunque una minore
-mediazione delle fluttuazioni non deterministiche rispetto alla Campagna A. Un ulteriore
+mediazione delle fluttuazioni casuali di misura rispetto alla Campagna A. Un ulteriore
 limite riguarda il supporto di archiviazione: l'esecuzione prolungata sotto carico
 può sollecitare la scheda microSD al punto da corromperne \emph{silenziosamente} i
 file dei modelli --- fenomeno mitigato dalla verifica di integrità \texttt{sha256} e
 dalle pause di raffreddamento adottate, ma che evidenzia la fragilità della microSD
-in un impiego così intensivo. Lo studio
+in un impiego così intensivo. Sul versante della qualità, inoltre, ogni benchmark è
+valutato su soli 30 prompt: i valori di accuratezza per singolo benchmark
+portano perciò un'incertezza dell'ordine di $\pm 9$ punti percentuali e vanno
+interpretati a livello aggregato, mentre differenze di qualità inferiori a tale
+margine non sono statisticamente significative. Lo studio
 è infine limitato a un singolo esemplare di Raspberry Pi~5, a
 un unico motore di inferenza (llama.cpp) e a due soli formati di quantizzazione
 (Q4\_K\_M e Q8\_0): l'estensione ad altre schede, backend o precisioni potrebbe
@@ -85,8 +89,8 @@ rami del PMIC} (anziché della sola somma) permetterebbe di attribuire il consum
 singoli sottosistemi --- memoria, core del SoC, I/O --- e, ad esempio, di confermare
 direttamente l'origine del ribaltamento di potenza tra 4 e 8 bit osservato al variare
 del parallelismo nella Campagna B; un ulteriore ampliamento dei dataset e del
-numero di prompt aumenterebbe ancora la robustezza statistica delle metriche di
-qualità; l'adozione di un supporto di archiviazione più affidabile --- un'unità a
+numero di prompt aumenterebbe la robustezza statistica delle metriche di qualità e ne
+ridurrebbe l'incertezza per singolo benchmark; l'adozione di un supporto di archiviazione più affidabile --- un'unità a
 stato solido collegata via USB oppure una microSD di classe industriale --- eliminerebbe
 inoltre il rischio di corruzione dei file dei modelli osservato nelle campagne più
 lunghe. Sul piano

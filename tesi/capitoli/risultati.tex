@@ -90,21 +90,50 @@ differenza del tutto \textbf{trascurabile} (accuratezza media 0,68 a 8 bit contr
 qualità delle risposte, pur dimezzando circa lo spazio occupato e riducendo
 sensibilmente il consumo.
 
-È importante sottolineare che le differenze di accuratezza qui osservate --- sia tra
-modelli sia tra le due precisioni --- sono dello stesso ordine di grandezza della
-variabilità dovuta alla natura \emph{non deterministica} della generazione
-(campionamento con temperatura non nulla): lo stesso modello, sugli stessi prompt,
-mostra oscillazioni di alcuni punti percentuali da una ripetizione all'altra. Tali
-differenze non vanno quindi interpretate come una superiorità sistematica di una
-precisione sull'altra --- il verso stesso dello scarto cambia da famiglia a famiglia
-(8 bit lievemente superiore per Llama-3.2-3B, 4 bit per gemma e qwen) --- ma indicano
-che le due precisioni sono \textbf{sostanzialmente equivalenti} in qualità.
+Occorre interpretare correttamente le differenze di accuratezza osservate a livello di
+\emph{singolo benchmark}, che in alcuni casi appaiono ampie tra le due precisioni dello
+stesso modello (ad esempio qwen2.5-1.5B su GSM8K: 0,57 a 4 bit contro 0,41 a 8 bit).
+Esse derivano dalla combinazione di due fattori.
+
+Il primo è che la quantizzazione produce modelli \emph{genuinamente diversi}:
+arrotondando i pesi a 4 o a 8 bit si modificano leggermente le distribuzioni di
+probabilità sui token. Sui prompt in cui il modello è "sicuro" il token più probabile
+resta lo stesso e la risposta non cambia; sui prompt \emph{incerti}, invece, anche una
+piccola perturbazione dei pesi può ribaltare l'esito. Le divergenze tra le due
+precisioni si concentrano perciò sui compiti \textbf{al limite delle capacità del
+modello} --- come il ragionamento aritmetico multi-passaggio di GSM8K per un modello da
+appena 1,5 miliardi di parametri --- mentre sui compiti in cui il modello è a suo agio
+le due precisioni coincidono quasi perfettamente (su CommonsenseQA, ad esempio,
+qwen2.5-1.5B a 4 e a 8 bit ottiene risultati praticamente identici).
+
+Il secondo fattore è che ciascun benchmark è valutato su soli \textbf{30 prompt}:
+l'accuratezza di una singola cella porta quindi un'incertezza statistica dell'ordine di
+$\pm 9$ punti percentuali (l'errore standard di una proporzione stimata su 30 campioni),
+per cui uno scarto di cella anche ampio può non riflettere una reale differenza di
+qualità. Per questi motivi la mappa di calore va letta come indicativa delle
+\emph{tendenze} per singolo compito, mentre il confronto affidabile è quello condotto
+sulla \textbf{media complessiva} dei 150 prompt (Figura~\ref{fig:res-qualita-media}): lì
+gli intervalli di confidenza al 95\% delle due precisioni di ogni famiglia si
+sovrappongono, e il verso stesso dello scarto cambia da famiglia a famiglia (8 bit
+lievemente superiore per Llama-3.2-3B, 4 bit per gemma e qwen), a conferma che 4 e 8 bit
+sono \textbf{sostanzialmente equivalenti} in qualità e che nessuna delle due precisioni
+è sistematicamente migliore.
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{imm/quality_heatmap.png}
     \caption{Qualità delle risposte (accuratezza media) per modello e benchmark (Campagna A).}
     \label{fig:res-qualita}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{imm/quality_overall.png}
+    \caption{Accuratezza media complessiva per modello (Campagna A, 150 prompt), con
+    barre d'errore pari all'intervallo di confidenza al 95\%. All'interno di ogni
+    famiglia gli intervalli delle due precisioni (4 e 8 bit) si sovrappongono
+    ampiamente: le differenze di qualità non sono statisticamente significative.}
+    \label{fig:res-qualita-media}
 \end{figure}
 
 \subsection{Velocità di elaborazione}
@@ -115,8 +144,18 @@ secondo. La generazione, che determina in larga parte la latenza percepita, vari
 da circa \textbf{5,1} a \textbf{17,9} token/s a seconda del modello: come atteso i
 modelli più piccoli (qwen2.5-1.5B, fino a 17,9~t/s) generano molto più
 rapidamente dei più grandi (Llama-3.2-3B e gemma-2-2B a 8 bit, intorno a
-5,1~t/s). La quantizzazione a 8 bit riduce inoltre la velocità rispetto ai 4 bit,
-coerentemente col maggior volume di dati da leggere per token.
+5,1~t/s). L'effetto della quantizzazione sulle due fasi è però \emph{opposto}. In
+\textbf{generazione} --- che produce un token alla volta ed è limitata dalla
+larghezza di banda della memoria --- il 4 bit è più veloce dell'8 bit (ad esempio
+qwen2.5-1.5B: 17,9 contro 11,5~t/s), perché deve leggere circa metà dei byte per
+token. Nel \textbf{prompt processing}, invece, i token del prompt vengono elaborati
+insieme (prodotti matrice-matrice, con i pesi riutilizzati su molti token): la fase è
+limitata dal \emph{calcolo} più che dalla memoria, e a pesare è il costo di
+dequantizzazione dello schema a 4 bit (Q4\_K\_M, più complesso del semplice Q8\_0). Di
+conseguenza è l'\textbf{8 bit} a risultare più veloce nel prompt processing
+(qwen2.5-1.5B: 41,2 contro 31,8~t/s; gemma e Llama circa \mbox{+10--13\%}). Poiché
+però la latenza complessiva è dominata dalla generazione (256 token prodotti a fronte
+di prompt brevi), nel complesso il 4 bit resta più rapido \emph{end-to-end}.
 
 Questo effetto si riflette direttamente sulla \textbf{latenza} di inferenza
 (Figura~\ref{fig:res-latenza-modelli}). A parità
@@ -145,66 +184,6 @@ offrono quindi, oltre a un minor consumo, anche una latenza sensibilmente inferi
     \label{fig:res-latenza-modelli}
 \end{figure}
 
-\subsection{Compromesso tra efficienza e qualità}
-
-Poiché nessuna singola metrica è sufficiente a decretare il modello migliore, la
-Figura~\ref{fig:res-tradeoff} colloca ciascuna configurazione nel piano
-energia--qualità. La regione favorevole (bassa energia, alta qualità) è occupata
-nettamente da \textbf{qwen2.5-1.5B Q4\_K\_M}, che unisce l'energia più bassa alla
-una qualità tra le più elevate e rappresenta quindi il miglior compromesso per un impiego
-su dispositivo a risorse limitate; all'estremo opposto le configurazioni
-\textbf{Llama-3.2-3B} offrono un'alta qualità solo sui task di ragionamento, ma a
-un costo di energia e latenza nettamente superiore e senza un vantaggio
-complessivo di qualità che lo giustifichi.
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=\textwidth]{imm/tradeoff.png}
-    \caption{Compromesso tra efficienza energetica e qualità delle risposte (Campagna A, i sei modelli a 2 thread).}
-    \label{fig:res-tradeoff}
-\end{figure}
-
-\subsection{Frontiera di Pareto}
-
-Per individuare le configurazioni migliori senza fissare a priori un peso relativo
-tra gli obiettivi, si ricorre al concetto di \emph{frontiera di Pareto}. Una
-configurazione si dice \emph{dominata} se ne esiste un'altra migliore (o uguale)
-sia nel costo (energia o latenza) sia nella qualità; le configurazioni \emph{non
-dominate} costituiscono la frontiera, cioè l'insieme dei compromessi ottimali per
-cui non è possibile migliorare un obiettivo senza peggiorare l'altro. A differenza
-dello score composito, questa rappresentazione non richiede la scelta di pesi:
-evidenzia direttamente i candidati razionali e lascia al lettore la decisione finale
-in base alle proprie priorità.
-
-La Figura~\ref{fig:res-pareto-en} riporta la frontiera nel piano
-\textbf{energia--qualità} (le configurazioni in basso a destra sono le migliori).
-Il risultato è particolarmente netto: \textbf{qwen2.5-1.5B Q4\_K\_M} unisce
-contemporaneamente l'energia minima (24,6~J) e, insieme, una qualità tra le più elevate: poiché
-nessun'altra configurazione la supera contemporaneamente su entrambi gli assi, essa
-risulta l'unico punto \emph{non dominato} della frontiera. Va però ricordato che le
-differenze di qualità tra i modelli di testa rientrano nella variabilità di misura,
-per cui questa posizione dominante è trainata soprattutto dal consumo nettamente
-inferiore di qwen a 4 bit. Le configurazioni Llama-3.2-3B, in particolare,
-risultano nettamente \emph{dominate}. La Figura~\ref{fig:res-pareto-lat}
-mostra l'analoga frontiera nel piano \textbf{latenza--qualità}; anch'essa si
-riferisce alla Campagna A e confronta quindi i sei modelli a parità di
-parallelismo (2 thread), mentre l'effetto del numero di thread sulla latenza è
-trattato separatamente nella Campagna B (Sezione~\ref{sec:camp-b}).
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=\textwidth]{imm/pareto_energia.png}
-    \caption{Frontiera di Pareto nel piano energia--qualità (Campagna A, i sei modelli a 2 thread; cerchiate in rosso le configurazioni non dominate).}
-    \label{fig:res-pareto-en}
-\end{figure}
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=\textwidth]{imm/pareto_latenza.png}
-    \caption{Frontiera di Pareto nel piano latenza--qualità (Campagna A, i sei modelli a 2 thread).}
-    \label{fig:res-pareto-lat}
-\end{figure}
-
 \section{Effetto del grado di parallelismo (Campagna B)}
 \label{sec:camp-b}
 
@@ -224,6 +203,23 @@ a 4 thread non porta alcun guadagno --- anzi la latenza \emph{peggiora}
 larghezza di banda della memoria più che dal numero di core: il terzo e quarto core
 non accelerano la generazione e introducono contesa. Il valore ottimale di
 parallelismo risulta quindi \textbf{2 thread}.
+
+Un dettaglio interessante riguarda il confronto tra le due precisioni \emph{a 1 thread}:
+per ogni modello la latenza è più bassa con la variante a \textbf{8 bit} che con quella a
+4 bit (ad esempio qwen2.5-1.5B: 7,6~s contro 9,6~s), in apparente contrasto con il fatto
+che i 4 bit debbano leggere meno dati. La spiegazione è ancora la distinzione tra carico
+limitato dalla \emph{memoria} e carico limitato dal \emph{calcolo}. Con un solo thread il
+bus di memoria non è saturo, quindi anche la generazione è più \emph{compute-bound} che
+\emph{memory-bound}: in questo regime il vantaggio del 4 bit (metà dei byte da leggere) è
+annullato dal suo maggior costo di \textbf{dequantizzazione} (lo schema Q4\_K\_M è più
+complesso del semplice Q8\_0), tanto che la velocità di generazione delle due precisioni
+diventa praticamente identica (a 1 thread circa 7,7~t/s per il 4 bit contro 7,5~t/s per
+l'8 bit). A ciò si aggiunge la fase di \emph{prompt processing}, anch'essa compute-bound e
+più rapida a 8 bit: il risultato netto è una latenza complessiva inferiore per l'8 bit a
+1 thread. Passando a 2 o 4 thread, invece, i core saturano la banda di memoria e la
+generazione torna \emph{memory-bound}: il 4 bit riprende un netto vantaggio (a 2 thread
+11,5 contro 7,4~t/s) e, poiché la generazione domina la latenza complessiva, è di nuovo
+il 4 bit ad avere la latenza più bassa.
 
 \begin{figure}[htbp]
     \centering
@@ -281,6 +277,74 @@ variare del grado di parallelismo.
     \includegraphics[width=\textwidth]{imm/power.png}
     \caption{Potenza media assorbita al variare del numero di thread (Campagna B).}
     \label{fig:res-potenza}
+\end{figure}
+
+\section{Frontiere di Pareto}
+
+Per individuare le configurazioni migliori senza fissare a priori un peso relativo tra
+gli obiettivi si ricorre al concetto di \emph{frontiera di Pareto}: una configurazione
+si dice \emph{dominata} se ne esiste un'altra migliore (o uguale) su entrambi gli
+obiettivi considerati, e strettamente migliore su almeno uno; le configurazioni
+\emph{non dominate} costituiscono la frontiera, cioè l'insieme dei compromessi ottimali
+per cui non è possibile migliorare un obiettivo senza peggiorare l'altro. A differenza
+dello score composito, questa rappresentazione non richiede la scelta di pesi: evidenzia
+direttamente i candidati razionali e lascia al lettore la decisione finale in base alle
+proprie priorità. Il criterio si applica sia al confronto tra i modelli (Campagna A) sia
+alla scelta del grado di parallelismo (Campagna B).
+
+\subsection{Confronto tra i modelli (Campagna A)}
+
+La Figura~\ref{fig:res-pareto-en} riporta la frontiera nel piano
+\textbf{energia--qualità} (le configurazioni in basso a destra sono le migliori). Il
+risultato è particolarmente netto: \textbf{qwen2.5-1.5B Q4\_K\_M} unisce l'energia
+minima (24,6~J) a una qualità tra le più elevate; poiché nessun'altra configurazione la
+supera contemporaneamente su entrambi gli assi, essa risulta l'unico punto \emph{non
+dominato} della frontiera. Va però ricordato che le differenze di qualità tra i modelli
+di testa rientrano nella variabilità di misura, per cui questa posizione dominante è
+trainata soprattutto dal consumo nettamente inferiore di qwen a 4 bit. Le configurazioni
+Llama-3.2-3B, in particolare, risultano nettamente \emph{dominate}. La
+Figura~\ref{fig:res-pareto-lat} mostra l'analoga frontiera nel piano
+\textbf{latenza--qualità}, sempre per i sei modelli a 2 thread.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{imm/pareto_energia.png}
+    \caption{Frontiera di Pareto nel piano energia--qualità (Campagna A, i sei modelli a 2 thread; cerchiate in rosso le configurazioni non dominate).}
+    \label{fig:res-pareto-en}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{imm/pareto_latenza.png}
+    \caption{Frontiera di Pareto nel piano latenza--qualità (Campagna A, i sei modelli a 2 thread).}
+    \label{fig:res-pareto-lat}
+\end{figure}
+
+\subsection{Scelta del grado di parallelismo (Campagna B)}
+
+Nella Campagna B la qualità non entra in gioco (il numero di thread non cambia le
+risposte): latenza ed energia sono due \emph{costi} che il parallelismo influenza in
+direzioni potenzialmente opposte. Rappresentando ciascuna configurazione nel piano
+\textbf{latenza--energia} si individuano, per ogni modello, le combinazioni di thread
+\emph{non dominate}. La Figura~\ref{fig:res-pareto-thread} riporta, per i sei modelli,
+la traiettoria al variare dei thread (1, 2 e 4) e marca in rosso le configurazioni
+dominate. Il risultato è netto: la configurazione a \textbf{4 thread è dominata in
+cinque modelli su sei}, perché rispetto ai 2 thread consuma di più senza ridurre la
+latenza (anzi spesso aumentandola); l'unica eccezione è qwen2.5-1.5B Q4\_K\_M, mentre per
+Llama-3.2-3B Q4\_K\_M la dominanza è ancora più forte (risultano dominati sia 1 sia 4
+thread, e l'unico punto sulla frontiera è quello a 2 thread). La frontiera di ciascun
+modello si riduce così ai soli 1 e 2 thread: la scelta razionale è tra \textbf{1 thread}
+(energia minima, ma latenza elevata) e \textbf{2 thread} (latenza minima, con un modesto
+sovrapprezzo energetico), mentre i 4 thread quasi mai rappresentano un compromesso
+ottimale --- una conferma \emph{senza pesi} dei 2 thread come miglior compromesso.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{imm/pareto_lat_energia.png}
+    \caption{Compromesso latenza--energia al variare del numero di thread (Campagna B):
+    per ogni modello è tracciata la traiettoria a 1, 2 e 4 thread e sono marcate in rosso
+    le configurazioni dominate. I 4 thread risultano dominati in cinque modelli su sei.}
+    \label{fig:res-pareto-thread}
 \end{figure}
 
 \section{Sintesi: classifica complessiva}

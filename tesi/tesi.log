@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.5.31)  17 JUL 2026 19:21
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.5.31)  18 JUL 2026 17:32
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -347,7 +347,7 @@ Package hyperref Info: Link coloring OFF on input line 22.
 \@outlinefile=\write3
 \openout3 = `tesi.out'.
 
-<imm/logo.png, id=176, 485.815pt x 252.945pt>
+<imm/logo.png, id=180, 485.815pt x 252.945pt>
 File: imm/logo.png Graphic file (type png)
 <use imm/logo.png>
 Package pdftex.def Info: imm/logo.png  used on input line 27.
@@ -365,7 +365,7 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.32 ...tà di elaborazione}{28}{subsection.4.1.3}
+l.32 ...tà di elaborazione}{29}{subsection.4.1.3}
                                                   % [1
 
 ])
@@ -404,12 +404,12 @@ Underfull \hbox (badness 6526) in paragraph at lines 171--171
 [][][]\T1/cmr/m/n/10 Le di-pen-den-ze pos-so-no es-se-re in-stal-la-te con il co-man-do \T1/cmtt/m/n/10 pip install -r
  []
 
-<./imm/hw_architecture.png, id=290, 1902.10625pt x 1100.11pt>
+<./imm/hw_architecture.png, id=295, 1902.10625pt x 1100.11pt>
 File: ./imm/hw_architecture.png Graphic file (type png)
 <use ./imm/hw_architecture.png>
 Package pdftex.def Info: ./imm/hw_architecture.png  used on input line 183.
 (pdftex.def)             Requested size: 390.0pt x 225.55759pt.
-<./imm/sw_architecture.png, id=293, 1144.275pt x 568.62437pt>
+<./imm/sw_architecture.png, id=298, 1144.275pt x 568.62437pt>
 File: ./imm/sw_architecture.png Graphic file (type png)
 <use ./imm/sw_architecture.png>
 Package pdftex.def Info: ./imm/sw_architecture.png  used on input line 193.
@@ -445,7 +445,7 @@ Overfull \hbox (10.58391pt too wide) in paragraph at lines 289--291
  []
 
 [18] [19] [20] [21]
-Overfull \hbox (7.96103pt too wide) in paragraph at lines 430--434
+Overfull \hbox (7.96103pt too wide) in paragraph at lines 433--437
 []\T1/cmr/m/n/12 modulo di \T1/cmr/bx/n/12 par-sing \T1/cmr/m/n/12 del-l'out-put di \T1/cmtt/m/n/12 llama.cpp\T1/cmr/m/n/12 : dal-la ri-ga fi-na-le \T1/cmtt/m/n/12 [ Prompt:
  []
 
@@ -454,7 +454,7 @@ Overfull \hbox (7.96103pt too wide) in paragraph at lines 430--434
 
  (./capitoli/risultati.tex
 Capitolo 4.
-<imm/efficiency_jpt.png, id=396, 794.97pt x 433.62pt>
+<imm/efficiency_jpt.png, id=401, 794.97pt x 433.62pt>
 File: imm/efficiency_jpt.png Graphic file (type png)
 <use imm/efficiency_jpt.png>
 Package pdftex.def Info: imm/efficiency_jpt.png  used on input line 33.
@@ -465,100 +465,105 @@ Package pdftex.def Info: imm/efficiency_jpt.png  used on input line 33.
 
 
 ]
-<imm/energy_per_config.png, id=405, 794.97pt x 433.62pt>
+<imm/energy_per_config.png, id=410, 794.97pt x 433.62pt>
 File: imm/energy_per_config.png Graphic file (type png)
 <use imm/energy_per_config.png>
 Package pdftex.def Info: imm/energy_per_config.png  used on input line 48.
 (pdftex.def)             Requested size: 390.0pt x 212.7337pt.
-<imm/power_a.png, id=407, 794.97pt x 433.62pt>
+<imm/power_a.png, id=412, 794.97pt x 433.62pt>
 File: imm/power_a.png Graphic file (type png)
 <use imm/power_a.png>
 Package pdftex.def Info: imm/power_a.png  used on input line 66.
 (pdftex.def)             Requested size: 390.0pt x 212.7337pt.
  [25 <./imm/efficiency_jpt.png>] [26 <./imm/energy_per_config.png> <./imm/power_a.png>]
-<imm/quality_heatmap.png, id=422, 867.24pt x 433.62pt>
+<imm/quality_heatmap.png, id=428, 867.24pt x 433.62pt>
 File: imm/quality_heatmap.png Graphic file (type png)
 <use imm/quality_heatmap.png>
-Package pdftex.def Info: imm/quality_heatmap.png  used on input line 105.
+Package pdftex.def Info: imm/quality_heatmap.png  used on input line 124.
 (pdftex.def)             Requested size: 390.0pt x 195.00148pt.
- [27 <./imm/quality_heatmap.png>]
-<imm/throughput.png, id=430, 1084.05pt x 433.62pt>
+<imm/quality_overall.png, id=429, 794.97pt x 433.62pt>
+File: imm/quality_overall.png Graphic file (type png)
+<use imm/quality_overall.png>
+Package pdftex.def Info: imm/quality_overall.png  used on input line 131.
+(pdftex.def)             Requested size: 390.0pt x 212.7337pt.
+ [27] [28 <./imm/quality_heatmap.png> <./imm/quality_overall.png>]
+<imm/throughput.png, id=443, 1084.05pt x 433.62pt>
 File: imm/throughput.png Graphic file (type png)
 <use imm/throughput.png>
-Package pdftex.def Info: imm/throughput.png  used on input line 134.
+Package pdftex.def Info: imm/throughput.png  used on input line 173.
 (pdftex.def)             Requested size: 390.0pt x 155.99721pt.
-<imm/latency_a.png, id=431, 794.97pt x 433.62pt>
+<imm/latency_a.png, id=444, 794.97pt x 433.62pt>
 File: imm/latency_a.png Graphic file (type png)
 <use imm/latency_a.png>
-Package pdftex.def Info: imm/latency_a.png  used on input line 141.
+Package pdftex.def Info: imm/latency_a.png  used on input line 180.
 (pdftex.def)             Requested size: 390.0pt x 212.7337pt.
- [28 <./imm/throughput.png>]
-<imm/tradeoff.png, id=441, 722.7pt x 505.89pt>
-File: imm/tradeoff.png Graphic file (type png)
-<use imm/tradeoff.png>
-Package pdftex.def Info: imm/tradeoff.png  used on input line 162.
-(pdftex.def)             Requested size: 390.0pt x 272.99898pt.
- [29 <./imm/latency_a.png>] [30 <./imm/tradeoff.png>]
-<imm/pareto_energia.png, id=458, 722.7pt x 505.89pt>
-File: imm/pareto_energia.png Graphic file (type png)
-<use imm/pareto_energia.png>
-Package pdftex.def Info: imm/pareto_energia.png  used on input line 196.
-(pdftex.def)             Requested size: 390.0pt x 272.99898pt.
-<imm/pareto_latenza.png, id=459, 722.7pt x 505.89pt>
-File: imm/pareto_latenza.png Graphic file (type png)
-<use imm/pareto_latenza.png>
-Package pdftex.def Info: imm/pareto_latenza.png  used on input line 203.
-(pdftex.def)             Requested size: 390.0pt x 272.99898pt.
- [31 <./imm/pareto_energia.png>] [32 <./imm/pareto_latenza.png>]
-<imm/latency.png, id=472, 794.97pt x 433.62pt>
+ [29] [30 <./imm/throughput.png> <./imm/latency_a.png>]
+<imm/latency.png, id=460, 794.97pt x 433.62pt>
 File: imm/latency.png Graphic file (type png)
 <use imm/latency.png>
-Package pdftex.def Info: imm/latency.png  used on input line 230.
+Package pdftex.def Info: imm/latency.png  used on input line 226.
 (pdftex.def)             Requested size: 390.0pt x 212.7337pt.
- [33 <./imm/latency.png>]
-<imm/power.png, id=480, 794.97pt x 433.62pt>
+ [31] [32 <./imm/latency.png>]
+<imm/power.png, id=473, 794.97pt x 433.62pt>
 File: imm/power.png Graphic file (type png)
 <use imm/power.png>
-Package pdftex.def Info: imm/power.png  used on input line 281.
+Package pdftex.def Info: imm/power.png  used on input line 277.
 (pdftex.def)             Requested size: 390.0pt x 212.7337pt.
- [34] [35 <./imm/power.png>]
-<imm/ranking_composite.png, id=496, 794.97pt x 433.62pt>
+ [33 <./imm/power.png>]
+<imm/pareto_energia.png, id=481, 722.7pt x 505.89pt>
+File: imm/pareto_energia.png Graphic file (type png)
+<use imm/pareto_energia.png>
+Package pdftex.def Info: imm/pareto_energia.png  used on input line 311.
+(pdftex.def)             Requested size: 390.0pt x 272.99898pt.
+<imm/pareto_latenza.png, id=482, 722.7pt x 505.89pt>
+File: imm/pareto_latenza.png Graphic file (type png)
+<use imm/pareto_latenza.png>
+Package pdftex.def Info: imm/pareto_latenza.png  used on input line 318.
+(pdftex.def)             Requested size: 390.0pt x 272.99898pt.
+ [34 <./imm/pareto_energia.png>] [35 <./imm/pareto_latenza.png>]
+<imm/pareto_lat_energia.png, id=496, 650.43pt x 448.074pt>
+File: imm/pareto_lat_energia.png Graphic file (type png)
+<use imm/pareto_lat_energia.png>
+Package pdftex.def Info: imm/pareto_lat_energia.png  used on input line 343.
+(pdftex.def)             Requested size: 390.0pt x 268.67554pt.
+ [36] [37 <./imm/pareto_lat_energia.png>]
+<imm/ranking_composite.png, id=513, 794.97pt x 433.62pt>
 File: imm/ranking_composite.png Graphic file (type png)
 <use imm/ranking_composite.png>
-Package pdftex.def Info: imm/ranking_composite.png  used on input line 339.
+Package pdftex.def Info: imm/ranking_composite.png  used on input line 403.
 (pdftex.def)             Requested size: 390.0pt x 212.7337pt.
- [36 <./imm/ranking_composite.png>]
-<imm/thermal.png, id=505, 794.97pt x 433.62pt>
+ [38 <./imm/ranking_composite.png>]
+<imm/thermal.png, id=521, 794.97pt x 433.62pt>
 File: imm/thermal.png Graphic file (type png)
 <use imm/thermal.png>
-Package pdftex.def Info: imm/thermal.png  used on input line 370.
+Package pdftex.def Info: imm/thermal.png  used on input line 434.
 (pdftex.def)             Requested size: 390.0pt x 212.7337pt.
-) [37 <./imm/thermal.png>]
+) [39 <./imm/thermal.png>]
 \openout2 = `capitoli/conclusioni.aux'.
 
  (./capitoli/conclusioni.tex
 Capitolo 5.
-[38
+[40
 
 
 
 
-] [39]) [40]
+] [41]) [42]
 \openout2 = `capitoli/ringraziamenti.aux'.
 
  (./capitoli/ringraziamenti.tex
 Capitolo 6.
-[41
+[43
 
 
 
 
-]) [42] (./tesi.bbl
+]) [44] (./tesi.bbl
 Underfull \hbox (badness 5359) in paragraph at lines 4--8
 []\T1/cmr/m/n/12 bartowski.  gemma-2-2b-it-GGUF.  []$\T1/cmtt/m/n/12 https : / / huggingface . co /
  []
 
-[43
+[45
 
 
 
@@ -577,27 +582,27 @@ Underfull \hbox (badness 10000) in paragraph at lines 62--66
 \T1/cmtt/m/n/12 raspberrypi . com / news / heating-[]and-[]cooling-[]raspberry-[]pi-[]5/$[]\T1/cmr/m/n/12 ,
  []
 
-) [44] (./tesi.aux (./capitoli/intro.aux) (./capitoli/setup.aux) (./capitoli/esperimento.aux) (./capitoli/risultati.aux) (./capitoli/conclusioni.aux) (./capitoli/ringraziamenti.aux))
+) [46] (./tesi.aux (./capitoli/intro.aux) (./capitoli/setup.aux) (./capitoli/esperimento.aux) (./capitoli/risultati.aux) (./capitoli/conclusioni.aux) (./capitoli/ringraziamenti.aux))
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-05-26>
  ***********
 Package rerunfilecheck Info: File `tesi.out' has not changed.
-(rerunfilecheck)             Checksum: 7A5FC4DFAF1E4C595DAD2B94B304D45B;7788.
+(rerunfilecheck)             Checksum: 97BC45C6F75660055058FEC12205A335;8098.
  ) 
 Here is how much of TeX's memory you used:
- 13107 strings out of 467337
- 202885 string characters out of 5419514
- 631814 words of memory out of 5000000
- 41867 multiletter control sequences out of 15000+600000
+ 13120 strings out of 467337
+ 203241 string characters out of 5419514
+ 632287 words of memory out of 5000000
+ 41876 multiletter control sequences out of 15000+600000
  649050 words of font info for 92 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,10n,79p,429b,622s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,10n,79p,532b,622s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfbx1095.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfbx1728.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfbx2488.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfrm0700.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfrm0800.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfrm1095.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfrm1728.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfti1095.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sfti1200.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sftt1000.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sftt1095.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/cm-super/sftt1200.pfb>
-Output written on tesi.pdf (45 pages, 1587114 bytes).
+Output written on tesi.pdf (47 pages, 1697650 bytes).
 PDF statistics:
- 706 PDF objects out of 1000 (max. 8388607)
- 574 compressed objects within 6 object streams
- 128 named destinations out of 1000 (max. 500000)
- 425 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 722 PDF objects out of 1000 (max. 8388607)
+ 586 compressed objects within 6 object streams
+ 132 named destinations out of 1000 (max. 500000)
+ 438 words of extra memory for PDF output out of 10000 (max. 10000000)
 
