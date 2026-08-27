@@ -1,4 +1,4 @@
-# Pi5-LLM-Energy-Benchmark
+# Pi5-LLM-Energy-Benchmark (Tesi Triennale Ingegneria Informatica con prof. Alessio Vecchio)
 
 Misurazione di **efficienza energetica**, **qualità della risposta** e **latenza
 di inferenza** di LLM quantizzati eseguiti localmente con **llama.cpp** su
